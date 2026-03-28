@@ -248,49 +248,7 @@ export function Notifications({ onNavigate }: { onNavigate: (id: string) => void
   );
 }
 
-// ─── TRADE HISTORY ───────────────────────────────────────────
-export function TradeHistory() {
-  const history = [
-    { id: 1, item1: "🎧 Sony Headphones", item2: "📷 DSLR Camera", partner: "Sara Khan", date: "Jan 15, 2025", value: 18000, rating: 5 },
-    { id: 2, item1: "📚 Book Collection", item2: "🎨 Art Supplies", partner: "Priya Sharma", date: "Dec 10, 2024", value: 3200, rating: 4 },
-    { id: 3, item1: "⌚ Smart Watch", item2: "🎮 Gaming Console", partner: "Rahul Verma", date: "Nov 5, 2024", value: 25000, rating: 5 },
-  ];
 
-  return (
-    <div className={styles.pageWrap}>
-      <div className={styles.pageHeader}>
-        <h1 className={styles.pageTitle}>📋 Trade History</h1>
-        <div className={styles.goldLine} />
-      </div>
-
-      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-        {history.map((h) => (
-          <div key={h.id} className={styles.card} style={{ display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
-            <div style={{ textAlign: "center", flex: 1 }}>
-              <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4 }}>You Gave</div>
-              <div style={{ fontSize: 22 }}>{h.item1.split(" ")[0]}</div>
-              <div style={{ fontSize: 13, fontWeight: 600 }}>{h.item1.split(" ").slice(1).join(" ")}</div>
-            </div>
-            <div style={{ textAlign: "center", color: "var(--gold)", fontSize: 22 }}>⇌</div>
-            <div style={{ textAlign: "center", flex: 1 }}>
-              <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4 }}>You Got</div>
-              <div style={{ fontSize: 22 }}>{h.item2.split(" ")[0]}</div>
-              <div style={{ fontSize: 13, fontWeight: 600 }}>{h.item2.split(" ").slice(1).join(" ")}</div>
-            </div>
-            <div className={styles.hr} style={{ display: "none" }} />
-            <div style={{ textAlign: "right", minWidth: 140 }}>
-              <div style={{ fontSize: 12, color: "var(--text-muted)" }}>with {h.partner}</div>
-              <div style={{ fontSize: 12, color: "var(--text-muted)" }}>{h.date}</div>
-              <div style={{ color: "var(--gold)", fontWeight: 700, fontSize: 15, margin: "4px 0" }}>₹{h.value.toLocaleString()}</div>
-              <div className="stars">{"★".repeat(h.rating)}{"☆".repeat(5 - h.rating)}</div>
-            </div>
-            <span className="badge badge-success">✅ Completed</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 // ─── WISHLIST ─────────────────────────────────────────────────
 export function Wishlist({ onNavigate }: { onNavigate: (id: string) => void }) {

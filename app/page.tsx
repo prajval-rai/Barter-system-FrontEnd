@@ -15,7 +15,6 @@ import ManageMarketplace from "@/components/Managemarketplace";
 import AdminHub from "@/components/Adminhub";
 import {
   Notifications,
-  TradeHistory,
   Wishlist,
   Settings,
 } from "@/components/OtherPages";
@@ -66,7 +65,6 @@ export default function Home() {
       case "my-products":          return <MyProducts onNavigate={setActiveId} />;
       case "add-product":          return <AddProduct onNavigate={setActiveId} />;
       case "chats":                return <Chats />;
-      case "history":              return <TradeHistory />;
       case "notifications":        return <Notifications onNavigate={setActiveId} />;
       case "profile":              return <Profile />;
       case "wishlist":             return <Wishlist onNavigate={setActiveId} />;

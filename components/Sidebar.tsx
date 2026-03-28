@@ -69,7 +69,6 @@ const navSections = [
       { id: "my-products", label: "My Products",   Icon: Package },
       { id: "add-product", label: "Add Product",   Icon: PlusCircle },
       { id: "chats",       label: "Trade Chats",   Icon: MessageCircle, badge: 1 },
-      { id: "history",     label: "Trade History", Icon: ClipboardList },
     ],
   },
   {
