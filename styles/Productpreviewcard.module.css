@@ -1,0 +1,427 @@
+/* ════════════════════════════════════════════════
+   Productpreviewcard.module.css
+════════════════════════════════════════════════ */
+
+/* ── Card ── */
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  transition:
+    transform 0.22s cubic-bezier(0.34,1.56,0.64,1),
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05), 0 3px 12px rgba(0,0,0,0.04);
+}
+
+.clickable { cursor: pointer; }
+
+.clickable:hover,
+.hasActions:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06), 0 14px 36px rgba(0,0,0,0.11);
+  border-color: rgba(124,58,237,0.22);
+}
+
+/* ── Image wrapper ── */
+.imgWrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  background: var(--surface);
+  flex-shrink: 0;
+}
+
+.img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  transition: transform 0.4s cubic-bezier(0.25,0.46,0.45,0.94);
+}
+
+/* Image only zooms — NO dark overlay on hover */
+.clickable:hover .img,
+.hasActions:hover .img { transform: scale(1.04); }
+
+/* ── Scrim ── */
+.scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0,0,0,0.12) 0%,
+    transparent 28%,
+    transparent 58%,
+    rgba(0,0,0,0.22) 100%
+  );
+  pointer-events: none;
+}
+
+/* ── Empty placeholder ── */
+.imgEmpty {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-family: 'DM Sans', sans-serif;
+  background: var(--surface);
+}
+
+/* ── Status pill (top-left over image) ── */
+.statusWrap {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 3;
+}
+
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: 'DM Sans', sans-serif;
+  text-transform: lowercase;
+  letter-spacing: 0.02em;
+  padding: 3px 9px 3px 7px;
+  border-radius: 99px;
+  border: 1px solid transparent;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  user-select: none;
+}
+
+.statusDot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--dot-color, currentColor);
+  flex-shrink: 0;
+}
+
+[data-pulse="true"] .statusDot {
+  animation: dotPulse 1.8s ease-in-out infinite;
+}
+
+@keyframes dotPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.2; transform: scale(0.5); }
+}
+
+/* ── Image count (top-right) ── */
+.imgMore {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 99px;
+  background: rgba(0,0,0,0.44);
+  color: rgba(255,255,255,0.92);
+  backdrop-filter: blur(6px);
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* ── Condition tag (bottom-left of image) ── */
+.condTag {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  z-index: 3;
+  font-size: 9px;
+  font-weight: 700;
+  font-family: 'DM Sans', sans-serif;
+  text-transform: lowercase;
+  padding: 2px 8px;
+  border-radius: 99px;
+  background: rgba(255,255,255,0.62);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* ── Bucket CTA ── */
+.bucketCta {
+  position: absolute;
+  bottom: 0;
+  left: 0; right: 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px;
+  font-size: 11.5px;
+  font-weight: 700;
+  font-family: 'DM Sans', sans-serif;
+  text-transform: lowercase;
+  background: rgba(10,8,20,0.86);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  transform: translateY(100%);
+  transition: transform 0.22s cubic-bezier(0.34,1.56,0.64,1);
+  backdrop-filter: blur(10px);
+}
+
+.imgWrap:hover .bucketCta { transform: translateY(0); }
+.bucketDone { background: var(--success) !important; transform: translateY(0) !important; }
+
+/* ══ BODY ══ */
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 10px 12px 11px;
+  flex: 1;
+  /* Extra bottom padding so the hover bar has room to slide over */
+  padding-bottom: 14px;
+}
+
+.cat {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9px;
+  font-weight: 700;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.9px;
+  margin: 0;
+}
+
+.title {
+  font-size: 14px;
+  font-weight: 800;
+  font-family: 'Syne', sans-serif;
+  color: var(--text-primary);
+  line-height: 1.22;
+  letter-spacing: -0.02em;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.noTitle {
+  color: var(--text-muted);
+  font-style: italic;
+  font-weight: 600;
+}
+
+/* Chips row */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 9.5px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  padding: 2px 7px;
+  border-radius: 99px;
+  background: var(--surface);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
+/* Value badges */
+.vBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 9.5px;
+  font-weight: 800;
+  font-family: 'Syne', sans-serif;
+  padding: 2px 7px;
+  border-radius: 99px;
+  border: 1.5px solid transparent;
+}
+
+.vUp   { background: rgba(22,163,74,0.09);  color: var(--success); border-color: rgba(22,163,74,0.2);  }
+.vDown { background: rgba(225,29,72,0.07);  color: var(--danger);  border-color: rgba(225,29,72,0.18); }
+.vFlat { background: var(--surface);        color: var(--text-muted); border-color: var(--border);     }
+
+/* Exchange row */
+.wantsRow {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.wantsIcon { color: var(--text-muted); flex-shrink: 0; }
+.wantsChips { display: flex; flex-wrap: wrap; gap: 3px; }
+
+.wantChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 9.5px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  padding: 2px 7px;
+  border-radius: 99px;
+  background: var(--gold-dim);
+  color: var(--purple);
+  border: 1px solid var(--gold-border);
+  white-space: nowrap;
+}
+
+.wantMore {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 99px;
+  background: var(--surface);
+  color: var(--text-muted);
+  border: 1px dashed var(--border);
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* Tags */
+.tagsRow { display: flex; flex-wrap: wrap; gap: 3px; }
+
+.tagChip {
+  font-size: 9px;
+  font-weight: 700;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--cyan);
+  padding: 1px 6px;
+  border-radius: 99px;
+  background: rgba(8,145,178,0.07);
+  border: 1px solid rgba(8,145,178,0.18);
+}
+
+/* ════════════════════════════════════════════════
+   HOVER ACTION BAR
+   ─ Sits at the very bottom of the card (below body)
+   ─ Hidden: collapsed to 0 height + invisible
+   ─ Shown: slides open on card hover
+   ─ Does NOT overlap the image — only the card footer
+════════════════════════════════════════════════ */
+.hoverActions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 8px;
+  overflow: hidden;
+
+  /* Collapsed state */
+  max-height: 0;
+  opacity: 0;
+  border-top: 1px solid transparent;
+
+  transition:
+    max-height 0.26s cubic-bezier(0.34, 1.2, 0.64, 1),
+    opacity    0.20s ease,
+    padding    0.24s ease,
+    border-color 0.20s ease;
+}
+
+/* Expanded state on card hover */
+.card:hover .hoverActions {
+  max-height: 52px;
+  opacity: 1;
+  padding: 7px 8px;
+  border-top-color: var(--border);
+}
+
+/* ── Individual buttons ── */
+.act {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: 'DM Sans', sans-serif;
+  text-transform: lowercase;
+  letter-spacing: 0.01em;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition:
+    background 0.14s ease,
+    border-color 0.14s ease,
+    transform 0.14s cubic-bezier(0.34,1.56,0.64,1);
+  white-space: nowrap;
+}
+
+.act:hover  { transform: translateY(-1px); }
+.act:active { transform: scale(0.95); }
+
+/* View — grows to fill, uses theme surface so it looks native */
+.actView {
+  flex: 1;
+  background: var(--surface);
+  color: var(--text-secondary);
+  border-color: var(--border);
+}
+.actView:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+  border-color: rgba(124,58,237,0.25);
+}
+
+/* Scan — amber/gold tint */
+.actScan {
+  background: rgba(124,58,237,0.07);
+  color: var(--purple);
+  border-color: rgba(124,58,237,0.18);
+}
+.actScan:hover {
+  background: rgba(124,58,237,0.14);
+  border-color: rgba(124,58,237,0.32);
+}
+
+/* Edit — cyan tint */
+.actEdit {
+  background: rgba(8,145,178,0.07);
+  color: var(--cyan);
+  border-color: rgba(8,145,178,0.18);
+}
+.actEdit:hover {
+  background: rgba(8,145,178,0.14);
+  border-color: rgba(8,145,178,0.32);
+}
+
+/* Delete — danger, icon-only compact */
+.actDel {
+  padding: 6px 10px;
+  background: rgba(225,29,72,0.06);
+  color: var(--danger);
+  border-color: rgba(225,29,72,0.16);
+}
+.actDel:hover {
+  background: rgba(225,29,72,0.13);
+  border-color: rgba(225,29,72,0.30);
+}

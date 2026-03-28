@@ -1,0 +1,621 @@
+/* ══════════════════════════════════════════════
+   MyProducts.module.css — polished shell
+══════════════════════════════════════════════ */
+
+.shell {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 100vh;
+  background: var(--bg-page);
+  color: var(--text-primary);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  padding: 32px 36px 56px;
+  box-sizing: border-box;
+}
+
+/* ── Header ── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0 0 3px;
+  letter-spacing: -0.4px;
+}
+
+.subtitle {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.bucketCount {
+  color: var(--purple);
+  font-weight: 700;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ── Filter chips ── */
+.filters {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s ease;
+  border: 1.5px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+}
+
+.chip:hover:not(.chipActive) {
+  border-color: var(--gold-border);
+  color: var(--text-secondary);
+  background: var(--gold-dim);
+}
+
+.chipBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 5px;
+  border-radius: 999px;
+  font-size: 9.5px;
+  font-weight: 700;
+  background: var(--border);
+  color: var(--text-muted);
+  transition: all 0.15s;
+}
+
+/* ── Grid ── */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 18px;
+}
+
+/* ══════════════════════════════════════════════
+   SKELETON LOADER
+══════════════════════════════════════════════ */
+
+/* Shimmer keyframe */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+/* All shimmer elements share this mixin via class */
+.skelLine,
+.skelChip,
+.skelChipFilter,
+.skelBtn,
+.skelBtnSm,
+.skelImg,
+.skelStatusBar,
+.skelHeaderBtn {
+  background: linear-gradient(
+    90deg,
+    var(--surface)   0%,
+    var(--surface-2) 40%,
+    var(--surface)   80%
+  );
+  background-size: 400px 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: 6px;
+}
+
+/* ── Header skeleton ── */
+.skelHeaderLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skelTitle {
+  height: 22px;
+  width: 160px;
+  border-radius: 8px;
+}
+
+.skelSubtitle {
+  height: 13px;
+  width: 110px;
+  border-radius: 6px;
+}
+
+.skelHeaderRight {
+  display: flex;
+  gap: 8px;
+}
+
+.skelHeaderBtn {
+  height: 34px;
+  width: 90px;
+  border-radius: 9px;
+}
+
+/* ── Filter chip skeletons ── */
+.skelChipFilter {
+  height: 30px;
+  border-radius: 999px;
+}
+
+/* ── Card skeleton wrapper — mirrors .cardWrap ── */
+.skeletonWrap {
+  display: flex;
+  flex-direction: column;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: #fff;
+  animation: fadeIn 0.35s ease both;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ── Status bar row ── */
+.skelStatusBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  /* override shimmer bg — bar is plain */
+  background: var(--surface) !important;
+  animation: none !important;
+}
+
+/* ── Image placeholder ── */
+.skelImg {
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  border-radius: 0;
+}
+
+/* ── Body lines ── */
+.skelBody {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 13px 10px;
+}
+
+.skelLine { height: 11px; }
+.skelFull  { width: 100%; }
+.skelMed   { width: 68%; }
+.skelShort { width: 55%; height: 10px; }
+.skelXshort { width: 38%; height: 9px; }
+
+.skelChips {
+  display: flex;
+  gap: 5px;
+  margin-top: 2px;
+}
+
+.skelChip {
+  height: 20px;
+  width: 62px;
+  border-radius: 99px;
+}
+
+/* ── Footer ── */
+.skelFooter {
+  display: flex;
+  gap: 6px;
+  padding: 9px 11px 11px;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.skelBtn {
+  flex: 1;
+  height: 32px;
+  border-radius: 9px;
+}
+
+.skelBtnSm {
+  width: 36px;
+  height: 32px;
+  border-radius: 9px;
+}
+
+/* ══════════════════════════════════════════════
+   CARD WRAPPER
+   Status bar on top + ProductPreviewCard + action footer
+══════════════════════════════════════════════ */
+.cardWrap {
+  display: flex;
+  flex-direction: column;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: #fff;
+  cursor: pointer;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  animation: cardIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+
+.cardWrap:hover {
+  border-color: var(--gold-border);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.1);
+  transform: translateY(-3px);
+}
+
+/* Strip inner card's own border/radius/shadow — wrapper handles it */
+.cardWrap > *[class*="card"] {
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.cardBusy {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+/* ── Status bar ── */
+.statusBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  border-bottom: 1px solid transparent;
+  flex-shrink: 0;
+}
+
+.statusLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10.5px;
+  font-weight: 700;
+  font-family: 'DM Mono', monospace;
+  letter-spacing: 0.2px;
+}
+
+.statusDate {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9.5px;
+  color: var(--text-muted);
+  font-family: 'DM Mono', monospace;
+}
+
+/* ── Action footer ── */
+.cardFooter {
+  display: flex;
+  gap: 6px;
+  padding: 9px 11px 11px;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.actionBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  flex: 1;
+  padding: 8px 10px;
+  border-radius: 9px;
+  border: 1.5px solid transparent;
+  font-size: 11.5px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s cubic-bezier(0.34,1.56,0.64,1);
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+}
+
+.actionBtn:hover:not(:disabled) { transform: translateY(-1px); }
+.actionBtn:active:not(:disabled) { transform: scale(0.97); }
+.actionBtn:disabled { opacity: 0.38; cursor: not-allowed; }
+
+.actionEdit {
+  background: rgba(8,145,178,0.08);
+  color: var(--cyan);
+  border-color: rgba(8,145,178,0.2);
+}
+.actionEdit:hover:not(:disabled) {
+  background: rgba(8,145,178,0.15);
+  border-color: rgba(8,145,178,0.35);
+}
+
+.actionResubmit {
+  background: var(--gold-dim);
+  color: var(--purple);
+  border-color: var(--gold-border);
+}
+.actionResubmit:hover:not(:disabled) {
+  background: rgba(124,58,237,0.13);
+  border-color: rgba(124,58,237,0.3);
+}
+
+.actionView {
+  background: rgba(22,163,74,0.08);
+  color: var(--success);
+  border-color: rgba(22,163,74,0.2);
+}
+.actionView:hover:not(:disabled) {
+  background: rgba(22,163,74,0.15);
+  border-color: rgba(22,163,74,0.35);
+}
+
+.actionClosed {
+  background: var(--surface);
+  color: var(--text-muted);
+  border-color: var(--border);
+}
+
+/* Delete — icon only, compact */
+.actionDelete {
+  flex: 0 !important;
+  padding: 8px 12px;
+  background: rgba(225,29,72,0.06);
+  color: var(--danger);
+  border-color: rgba(225,29,72,0.16);
+}
+.actionDelete:hover:not(:disabled) {
+  background: rgba(225,29,72,0.13);
+  border-color: rgba(225,29,72,0.3);
+}
+
+/* ══════════════════════════════════════════════
+   EMPTY / ERROR STATE
+══════════════════════════════════════════════ */
+.stateBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 24px;
+  text-align: center;
+  border: 1px dashed var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+}
+
+.stateIcon {
+  color: var(--text-muted);
+  opacity: 0.35;
+  margin-bottom: 16px;
+}
+
+.stateTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 6px;
+}
+
+.stateMsg {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0 0 20px;
+  max-width: 300px;
+  line-height: 1.6;
+}
+
+/* ══════════════════════════════════════════════
+   DIALOG / OVERLAY
+══════════════════════════════════════════════ */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+  animation: fadeIn 0.15s ease;
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.dialog {
+  background: var(--bg-rail, #fff);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 32px 28px 24px;
+  width: 100%;
+  max-width: 380px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  animation: slideUp 0.2s ease;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.dialogIcon { display: flex; justify-content: center; margin-bottom: 12px; }
+.dialogTitle { font-size: 15px; font-weight: 700; color: var(--text-primary); margin: 0 0 8px; }
+.dialogMsg { font-size: 13px; color: var(--text-muted); line-height: 1.6; margin: 0 0 22px; }
+.dialogActions { display: flex; gap: 10px; justify-content: center; }
+
+/* ══════════════════════════════════════════════
+   BUTTONS
+══════════════════════════════════════════════ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 9px;
+  font-size: 12.5px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btnGhost {
+  background: var(--surface);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+.btnGhost:hover:not(:disabled) {
+  background: var(--surface-hover);
+  color: var(--text-secondary);
+}
+
+.btnDanger {
+  background: rgba(225,29,72,0.09);
+  color: var(--danger);
+  border: 1px solid rgba(225,29,72,0.22);
+}
+.btnDanger:hover:not(:disabled) {
+  background: rgba(225,29,72,0.16);
+  box-shadow: 0 4px 14px rgba(225,29,72,0.15);
+}
+
+.btnGold {
+  background: var(--grad);
+  color: #fff;
+  font-weight: 700;
+  box-shadow: var(--shadow-gold);
+}
+.btnGold:hover:not(:disabled) {
+  filter: brightness(1.07);
+  transform: translateY(-1px);
+}
+
+/* ══════════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════════ */
+.toast {
+  position: fixed;
+  bottom: 26px;
+  right: 26px;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  box-shadow: var(--shadow);
+  animation: toastIn 0.25s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.toastOk {
+  background: rgba(22,163,74,0.09);
+  color: var(--success);
+  border: 1px solid rgba(22,163,74,0.22);
+}
+
+.toastErr {
+  background: rgba(225,29,72,0.09);
+  color: var(--danger);
+  border: 1px solid rgba(225,29,72,0.22);
+}
+
+/* ── Misc ── */
+.spinIcon { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ══════════════════════════════════════════════
+   PRODUCT DETAIL FULL-PAGE MODAL
+   Slides up from bottom over the grid — grid stays mounted
+══════════════════════════════════════════════ */
+.detailModalBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  background: rgba(10, 8, 20, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  animation: backdropIn 0.28s ease both;
+  overflow: hidden;
+}
+
+@keyframes backdropIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.detailModalSheet {
+  position: absolute;
+  inset: 0;
+  top: 48px;                        /* small peek gap at top */
+  background: var(--bg-page);
+  border-radius: 24px 24px 0 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+  animation: sheetUp 0.32s cubic-bezier(0.32, 0.72, 0, 1) both;
+  box-shadow: 0 -8px 40px rgba(0,0,0,0.18);
+
+  /* drag handle visual */
+  &::before {
+    content: '';
+    display: block;
+    width: 40px;
+    height: 4px;
+    border-radius: 99px;
+    background: var(--border);
+    margin: 12px auto 0;
+    opacity: 0.6;
+  }
+}
+
+@keyframes sheetUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}

@@ -1,64 +1,98 @@
-import Image from "next/image";
+"use client";
+
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
+
+import Sidebar from "@/components/Sidebar";
+import Dashboard from "@/components/Dashboard";
+import Marketplace from "@/components/Marketplace";
+import ExchangeRequests from "@/components/ExchangeRequests";
+import MyProducts from "@/components/MyProducts";
+import AddProduct from "@/components/AddProduct";
+import Chats from "@/components/Chats";
+import ManageMarketplace from "@/components/Managemarketplace";
+import AdminHub from "@/components/Adminhub";
+import {
+  Notifications,
+  TradeHistory,
+  Wishlist,
+  Settings,
+} from "@/components/OtherPages";
+
+import { Profile } from "@/components/Profile";
+
+import styles from "@/styles/Pages.module.css";
 
 export default function Home() {
+  const { user, loading, logout } = useAuth();
+  const router = useRouter();
+  const [activeId, setActiveId] = useState("dashboard");
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false); // ← track collapsed
+
+  useEffect(() => {
+    if (!loading && !user) router.replace("/login");
+  }, [user, loading, router]);
+
+  if (loading) {
+    return (
+      <div style={{
+        minHeight: "100vh", background: "var(--black)", display: "flex",
+        flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 20,
+      }}>
+        <div style={{ fontSize: 52 }}>⚖️</div>
+        <div style={{ color: "var(--gold)", fontFamily: "'Cinzel', serif", fontSize: 13, letterSpacing: 3 }}>
+          LOADING ExchangeIT...
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          {[0, 1, 2].map(i => (
+            <div key={i} style={{
+              width: 7, height: 7, borderRadius: "50%", background: "var(--gold)",
+              animation: `pulse 1.2s ease-in-out ${i * 0.2}s infinite`,
+            }} />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) return null;
+
+  const renderPage = () => {
+    switch (activeId) {
+      case "dashboard":            return <Dashboard onNavigate={setActiveId} />;
+      case "marketplace":          return <Marketplace onNavigate={setActiveId} />;
+      case "requests":             return <ExchangeRequests onNavigate={setActiveId} />;
+      case "my-products":          return <MyProducts onNavigate={setActiveId} />;
+      case "add-product":          return <AddProduct onNavigate={setActiveId} />;
+      case "chats":                return <Chats />;
+      case "history":              return <TradeHistory />;
+      case "notifications":        return <Notifications onNavigate={setActiveId} />;
+      case "profile":              return <Profile />;
+      case "wishlist":             return <Wishlist onNavigate={setActiveId} />;
+      case "settings":             return <Settings />;
+      case "manage-marketplace":   return <AdminHub />;
+      default:                     return <Dashboard onNavigate={setActiveId} />;
+    }
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+    // No flex needed on layout — main uses margin-left to clear the fixed sidebar
+    <div style={{ minHeight: "100vh", background: "var(--black)" }}>
+      <Sidebar
+        activeId={activeId}
+        onSelect={setActiveId}
+        user={user}
+        onCollapsedChange={setSidebarCollapsed} // ← new prop
+        onSignOut={async () => {
+          await logout();
+          router.replace("/login");
+        }}
+      />
+      <main
+        className={`${styles.main} ${sidebarCollapsed ? styles.mainCollapsed : ""}`}
+      >
+        {renderPage()}
       </main>
     </div>
   );

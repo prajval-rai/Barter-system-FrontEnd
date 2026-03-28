@@ -1,0 +1,220 @@
+/* ── Page wrapper ── */
+.page {
+  min-height: 100vh;
+  background: var(--black);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  padding: 20px;
+}
+
+/* Background grid pattern */
+.page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(212, 175, 55, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(212, 175, 55, 0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+}
+
+/* Gold radial glow center */
+.page::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.07) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* ── Card ── */
+.card {
+  background: var(--black-light);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 52px 48px;
+  width: 100%;
+  max-width: 440px;
+  position: relative;
+  z-index: 1;
+  animation: cardIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(212, 175, 55, 0.05);
+}
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(30px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── Logo area ── */
+.logoWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 36px;
+}
+
+.logoIcon {
+  font-size: 48px;
+  margin-bottom: 12px;
+  filter: drop-shadow(0 0 20px rgba(212, 175, 55, 0.5));
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-6px); }
+}
+
+.logoTitle {
+  font-family: 'Cinzel', serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 2px;
+  margin-bottom: 4px;
+}
+
+.logoSub {
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+
+/* ── Divider ── */
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold-border), transparent);
+  margin-bottom: 32px;
+}
+
+/* ── Heading ── */
+.heading {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.headingTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.headingSubtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* ── Google Sign-In Button wrapper ── */
+/* Google renders its own iframe — we just size the container */
+.googleBtnWrap {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  border-radius: 12px;
+  overflow: hidden;
+  min-height: 44px;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.3);
+  transition: box-shadow 0.25s ease;
+}
+.googleBtnWrap:hover {
+  box-shadow: 0 6px 28px rgba(0, 0, 0, 0.4), 0 0 0 2px rgba(212, 175, 55, 0.3);
+}
+.googleBtnWrap iframe {
+  width: 100% !important;
+}
+
+/* ── Spinner (shown while signing in) ── */
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(60, 64, 67, 0.3);
+  border-top-color: #3c4043;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Features list ── */
+.features {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+
+.featureItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+
+.featureDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--gold);
+  flex-shrink: 0;
+}
+
+/* ── Footer note ── */
+.footerNote {
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 24px;
+  line-height: 1.6;
+}
+
+/* ── Error state ── */
+.errorBox {
+  background: rgba(231, 76, 60, 0.1);
+  border: 1px solid rgba(231, 76, 60, 0.3);
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 13px;
+  color: var(--danger);
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* ── Corner sparkles ── */
+.sparkle {
+  position: absolute;
+  font-size: 16px;
+  animation: sparkleAnim 3s ease-in-out infinite;
+  pointer-events: none;
+}
+.sparkle:nth-child(1) { top: 16px; left: 20px; animation-delay: 0s; }
+.sparkle:nth-child(2) { top: 16px; right: 20px; animation-delay: 0.7s; }
+.sparkle:nth-child(3) { bottom: 20px; left: 20px; animation-delay: 1.4s; }
+.sparkle:nth-child(4) { bottom: 20px; right: 20px; animation-delay: 2.1s; }
+
+@keyframes sparkleAnim {
+  0%, 100% { opacity: 0.15; transform: scale(0.8) rotate(0deg); }
+  50%       { opacity: 0.8;  transform: scale(1.2) rotate(15deg); }
+}
+
+@media (max-width: 480px) {
+  .card { padding: 36px 24px; }
+  .logoTitle { font-size: 24px; }
+}

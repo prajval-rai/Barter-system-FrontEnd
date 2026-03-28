@@ -1,26 +1,297 @@
-@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=DM+Mono:wght@400;500&display=swap');
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* ═══════════════════════════════════════════════════
+   DESIGN TOKENS
+   Two themes available — swap which block is active:
+     • LIGHT THEME  → currently active (below)
+     • DARK THEME   → commented out (below light)
+   ═══════════════════════════════════════════════════ */
+
+/* ───────────────────────────────────────────────────
+   ✅ LIGHT THEME — ACTIVE
+   ─────────────────────────────────────────────────── */
+
+
+/* ───────────────────────────────────────────────────
+   🌙 DARK THEME — COMMENTED OUT
+   To activate: uncomment this block & comment out
+   the light :root block above.
+   ─────────────────────────────────────────────────── */
+
+
+   :root {
+  /* ── Brand accent ── */
+  --purple:       #7c3aed;
+  --purple-dark:  #5b21b6;
+  --pink:         #db2777;
+  --cyan:         #0891b2;
+  --green:        #16a34a;
+  --red:          #e11d48;
+  --amber:        #d97706;
+
+  /* ── Gradient shorthands ── */
+  --grad:           linear-gradient(135deg, #7c3aed 0%, #db2777 100%);
+  --grad-wide:      linear-gradient(135deg, #7c3aed 0%, #db2777 50%, #0891b2 100%);
+  --active-bg:      linear-gradient(135deg, rgba(124,58,237,0.10) 0%, rgba(219,39,119,0.07) 100%);
+
+  /* ── Legacy "gold" aliases ── */
+  --gold:           var(--purple);
+  --gold-light:     #a78bfa;
+  --gold-dark:      var(--purple-dark);
+  --gold-dim:       rgba(124,58,237,0.08);
+  --gold-border:    rgba(124,58,237,0.2);
+
+  /* ── Backgrounds ── */
+  --bg-page:        #f5f4fa;
+  --bg-rail:        rgba(255,255,255,0.92);
+
+  /* Legacy aliases */
+  --black:          #f5f4fa;
+  --black-light:    #ededf7;
+  --black-mid:      #e6e5f3;
+
+  /* ── Surfaces ── */
+  --surface:        rgba(0,0,0,0.03);
+  --surface-2:      rgba(0,0,0,0.05);
+  --surface-hover:  rgba(0,0,0,0.07);
+
+  /* ── Borders ── */
+  --border:         rgba(0,0,0,0.09);
+  --border-c:       rgba(0,0,0,0.07);
+  --border-light:   rgba(0,0,0,0.05);
+
+  /* ── Typography ── */
+  --text-primary:   #0f0e1a;
+  --text-secondary: rgba(15,14,26,0.65);
+  --text-muted:     rgba(15,14,26,0.40);
+
+  /* ── Semantic ── */
+  --success:        #16a34a;
+  --warning:        #d97706;
+  --danger:         #e11d48;
+  --info:           #0891b2;
+
+  /* ── Layout ── */
+  --rail-width:        68px;
+  --sidebar-width:     68px;
+  --sidebar-collapsed: 68px;
+
+  /* ── Misc ── */
+  --transition:     0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --radius:         12px;
+  --radius-lg:      18px;
+  --shadow:         0 4px 24px rgba(0,0,0,0.10);
+  --shadow-gold:    0 4px 20px rgba(124,58,237,0.16);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+
+/* ═══════════════════════════════════════════════════
+   BASE STYLES
+   ═══════════════════════════════════════════════════ */
+
+/* ✅ Light */ html { color-scheme: light; }
+/* 🌙 Dark  */ /* html { color-scheme: dark; } */
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg-page);
+  color: var(--text-primary);
+  font-family: 'Plus Jakarta Sans', 'Sora', sans-serif;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Layout shell ── */
+.layout {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar         { width: 4px; height: 4px; }
+::-webkit-scrollbar-track   { background: transparent; }
+/* ✅ Light */ ::-webkit-scrollbar-thumb { background: rgba(124,58,237,0.22); border-radius: 99px; }
+/* 🌙 Dark  */ /* ::-webkit-scrollbar-thumb { background: rgba(167,139,250,0.25); border-radius: 99px; } */
+::-webkit-scrollbar-thumb:hover { background: rgba(124,58,237,0.40); }
+
+/* ── Elements ── */
+button       { cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; }
+input,
+textarea,
+select       { font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text-primary); }
+
+/* ── Utility badges ── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  font-family: 'DM Mono', monospace;
+}
+
+.badge-gold    { background: var(--gold-dim);              color: var(--purple); border: 1px solid var(--gold-border); }
+.badge-success { background: rgba(22,163,74,0.09);         color: var(--green);  border: 1px solid rgba(22,163,74,0.2); }
+.badge-warning { background: rgba(217,119,6,0.09);         color: var(--amber);  border: 1px solid rgba(217,119,6,0.2); }
+.badge-danger  { background: rgba(225,29,72,0.09);         color: var(--red);    border: 1px solid rgba(225,29,72,0.2); }
+.badge-info    { background: rgba(8,145,178,0.09);         color: var(--cyan);   border: 1px solid rgba(8,145,178,0.2); }
+
+/* 🌙 Dark badge overrides (uncomment with dark :root):
+.badge-success { background: rgba(74,222,128,0.1);         color: var(--green);  border: 1px solid rgba(74,222,128,0.22); }
+.badge-warning { background: rgba(251,191,36,0.1);         color: var(--amber);  border: 1px solid rgba(251,191,36,0.22); }
+.badge-danger  { background: rgba(251,113,133,0.1);        color: var(--red);    border: 1px solid rgba(251,113,133,0.22); }
+.badge-info    { background: rgba(34,211,238,0.1);         color: var(--cyan);   border: 1px solid rgba(34,211,238,0.22); }
+*/
+
+/* ── Tag chip ── */
+.tag {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--cyan);
+  /* ✅ Light */ background: rgba(8,145,178,0.08);  border: 1px solid rgba(8,145,178,0.2);
+  /* 🌙 Dark  — background: rgba(34,211,238,0.08); border: 1px solid rgba(34,211,238,0.2); */
+  padding: 3px 9px;
+  border-radius: 99px;
+}
+
+/* ── Stars ── */
+.stars { color: var(--purple); font-size: 13px; }
+
+/* ── Reusable card ── */
+.card {
+  /* ✅ Light */ background: rgba(255,255,255,0.80); box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+  /* 🌙 Dark  — background: rgba(255,255,255,0.03); box-shadow: none; */
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 22px 24px;
+}
+
+/* ── Form primitives ── */
+.formGroup    { display: flex; flex-direction: column; gap: 6px; margin-bottom: 18px; }
+.formLabel    { font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.7px; }
+.formRow      { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+.formInput,
+.formTextarea,
+.formSelect {
+  width: 100%;
+  padding: 10px 14px;
+  /* ✅ Light */ background: #fff;
+  /* 🌙 Dark  — background: var(--surface); */
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-primary);
+  font-size: 13.5px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.formInput:focus,
+.formTextarea:focus,
+.formSelect:focus {
+  /* ✅ Light */ border-color: rgba(124,58,237,0.45); box-shadow: 0 0 0 3px rgba(124,58,237,0.10); background: rgba(124,58,237,0.02);
+  /* 🌙 Dark  — border-color: rgba(167,139,250,0.45); box-shadow: 0 0 0 3px rgba(167,139,250,0.1); background: rgba(167,139,250,0.04); */
+}
+.formInput::placeholder,
+.formTextarea::placeholder { color: var(--text-muted); }
+.formTextarea { resize: vertical; min-height: 100px; line-height: 1.6; }
+.formSelect   { appearance: none; cursor: pointer; }
+
+/* ── Button primitives ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 20px;
+  border-radius: var(--radius);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition);
+  white-space: nowrap;
+}
+
+.btnGold {
+  background: var(--grad);
+  color: #fff;
+  /* ✅ Light */ box-shadow: 0 4px 16px rgba(124,58,237,0.28);
+  /* 🌙 Dark  — box-shadow: 0 4px 16px rgba(167,139,250,0.35); */
+}
+.btnGold:hover:not(:disabled) {
+  transform: translateY(-1px);
+  /* ✅ Light */ box-shadow: 0 6px 22px rgba(124,58,237,0.38);
+  /* 🌙 Dark  — box-shadow: 0 6px 22px rgba(167,139,250,0.45); */
+}
+
+.btnOutline {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+.btnOutline:hover:not(:disabled) {
+  /* ✅ Light */ border-color: rgba(124,58,237,0.35);
+  /* 🌙 Dark  — border-color: rgba(167,139,250,0.4); */
+  color: var(--text-primary);
+  background: var(--surface);
+}
+
+.btnSm { padding: 7px 14px; font-size: 12px; }
+
+.btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none !important; }
+
+/* ── Page layout helpers ── */
+.pageWrap    { padding: 0; }
+.pageHeader  { margin-bottom: 28px; }
+.pageTitleRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.pageTitle {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.4px;
+  margin-bottom: 4px;
+}
+.pageSubtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.goldLine {
+  height: 2px;
+  background: var(--grad);
+  border-radius: 99px;
+}
+
+/* ── Animations ── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fadeIn { animation: fadeIn 0.35s ease forwards; }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(0.85); }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
