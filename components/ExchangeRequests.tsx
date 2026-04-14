@@ -198,6 +198,7 @@ export default function ExchangeRequests({ onNavigate }: RequestsProps) {
   const [rejecting, setRejecting] = useState<number | null>(null);
   const [toast, setToast]         = useState<{ msg: string; ok: boolean } | null>(null);
   const [funIdx, setFunIdx]       = useState(0);
+  const base_url = process.env.NEXT_PUBLIC_BACKEND_URL
 
   /* Product detail sheet */
   const [detailProductId, setDetailProductId] = useState<number | null>(null);
@@ -216,7 +217,7 @@ export default function ExchangeRequests({ onNavigate }: RequestsProps) {
   const load = async () => {
     setLoading(true); setError(null);
     try {
-      const res = await fetch("http://localhost:8000/barter/requests/", { credentials: "include" });
+      const res = await fetch( `${base_url}/barter/requests/`, { credentials: "include" });
       if (!res.ok) throw new Error("Failed to load requests");
       setRequests(await res.json());
     } catch (e: any) {
@@ -234,7 +235,7 @@ export default function ExchangeRequests({ onNavigate }: RequestsProps) {
   const active   = tab === "received" ? received : sent;
 
   const changeStatus = async (id: number, status: "accepted" | "rejected") => {
-    const res = await fetch(`http://localhost:8000/barter/request/${id}/`, {
+    const res = await fetch(`${base_url}barter/request/${id}/`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       credentials: "include",

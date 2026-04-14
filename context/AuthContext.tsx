@@ -24,9 +24,10 @@ interface AuthContextValue {
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
+const base_url = process.env.NEXT_PUBLIC_BACKEND_URL
 
 async function callDjangoGoogleLogin(token: string): Promise<AuthUser> {
-  const res = await fetch("http://localhost:8000/accounts/login/", {
+  const res = await fetch(`${base_url}accounts/login/`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -55,9 +56,11 @@ async function callDjangoGoogleLogin(token: string): Promise<AuthUser> {
   };
 }
 
+
+
 async function callDjangoLogout() {
   try {
-    await fetch("http://localhost:8000/auth/logout/", {
+    await fetch(`${base_url}/auth/logout/`, {
       method: "POST",
       credentials: "include",
     });

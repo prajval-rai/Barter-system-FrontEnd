@@ -168,6 +168,7 @@ const STEPS = [
 ];
 
 /* ─── API ────────────────────────────────────────── */
+const base_url = process.env.NEXT_PUBLIC_BACKEND_URL
 const createProduct = async (data: any, images: File[]) => {
   const fd = new FormData();
   fd.append("title", data.title);
@@ -183,7 +184,7 @@ const createProduct = async (data: any, images: File[]) => {
     category_id: o.category_id, icon: o.icon,
   }))));
   images.forEach(img => fd.append("images", img));
-  const res = await fetch("http://localhost:8000/products/create_product/", {
+  const res = await fetch(`${base_url}products/create_product/`, {
     method: "POST", body: fd, credentials: "include",
   });
   if (!res.ok) { const err = await res.json(); throw new Error(err.error || "Failed"); }
@@ -432,7 +433,7 @@ export default function AddProduct({ onNavigate }: AddProductProps) {
     const load = async () => {
       setCatsLoading(true); setCatsError(null);
       try {
-        const res = await fetch("http://localhost:8000/products/categories/", { credentials: "include" });
+        const res = await fetch(`${base_url}/products/categories/`, { credentials: "include" });
         if (!res.ok) throw new Error("Failed to load categories");
         const data: ApiCategory[] = await res.json();
         setCategories(data);
@@ -675,7 +676,7 @@ export default function AddProduct({ onNavigate }: AddProductProps) {
                   onClick={async () => {
                     setCatsLoading(true); setCatsError(null);
                     try {
-                      const res = await fetch("http://localhost:8000/products/categories/", { credentials: "include" });
+                      const res = await fetch(`${base_url}/products/categories/`, { credentials: "include" });
                       if (!res.ok) throw new Error("Failed to load categories");
                       setCategories(await res.json());
                     } catch (e: any) { setCatsError(e.message); }

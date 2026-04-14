@@ -57,7 +57,7 @@ export interface ProductScannerProps {
   onViewMatch?: (p: ScanProduct) => void;
 }
 
-const BASE = "http://localhost:8000";
+const BASE = process.env.NEXT_PUBLIC_BACKEND_URL;
 const RADIUS_STEPS = [5, 10, 25, 50, 100];
 
 /* ── Criterion icon map ── */
@@ -421,7 +421,7 @@ export default function ProductScanner({
 
     try {
       const res = await fetch(
-        `${BASE}/scan/${productId}/?radius=${radius}`,
+        `${BASE}scan/${productId}/?radius=${radius}`,
         { credentials: "include" }
       );
       if (!res.ok) {

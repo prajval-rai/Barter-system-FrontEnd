@@ -33,7 +33,7 @@ const getAvailableActions = (status: StatusFilter): Action[] => {
 };
 
 /* ── API ── */
-const BASE = "http://localhost:8000";
+const BASE = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 const fetchProducts = async (status: string): Promise<Product[]> => {
   const res = await fetch(`${BASE}/products/admin_products_by_status?status=${status}`, { credentials: "include" });
@@ -51,7 +51,7 @@ const fetchProductImages = async (productId: number): Promise<string[]> => {
 };
 
 const changeProductStatus = async (id: number, status: "approved" | "rejected" | "banned"): Promise<void> => {
-  const res = await fetch(`${BASE}/products/change_product_status/?product_id=${id}&status=${status}`, {
+  const res = await fetch(`${BASE}products/change_product_status/?product_id=${id}&status=${status}`, {
     method: "POST", credentials: "include",
   });
   if (!res.ok) throw new Error(`Failed to set status to ${status}`);

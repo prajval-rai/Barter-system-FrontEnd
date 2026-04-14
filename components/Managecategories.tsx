@@ -122,16 +122,16 @@ function IconSelect({ value, onChange }: { value: string; onChange: (v: string) 
 }
 
 /* ─── API ───────────────────────────────────────── */
-const BASE = "http://localhost:8000";
+const BASE = process.env.NEXT_PUBLIC_BACKEND_URL
 
 const fetchCategories = async (): Promise<Category[]> => {
-  const res = await fetch(`${BASE}/products/categories/`, { credentials: "include" });
+  const res = await fetch(`${BASE}products/categories/`, { credentials: "include" });
   if (!res.ok) throw new Error("Failed to fetch categories");
   return res.json();
 };
 
 const createCategory = async (name: string, icon: string): Promise<Category> => {
-  const res = await fetch(`${BASE}/products/categories/`, {
+  const res = await fetch(`${BASE}products/categories/`, {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
@@ -142,14 +142,14 @@ const createCategory = async (name: string, icon: string): Promise<Category> => 
 };
 
 const deleteCategory = async (id: number): Promise<void> => {
-  const res = await fetch(`${BASE}/products/categories/${id}/`, {
+  const res = await fetch(`${BASE}products/categories/${id}/`, {
     method: "DELETE", credentials: "include",
   });
   if (!res.ok) throw new Error("Failed to delete category");
 };
 
 const updateCategory = async (id: number, name: string, icon: string): Promise<Category> => {
-  const res = await fetch(`${BASE}/products/categories/${id}/`, {
+  const res = await fetch(`${BASE}products/categories/${id}/`, {
     method: "PATCH",
     credentials: "include",
     headers: { "Content-Type": "application/json" },

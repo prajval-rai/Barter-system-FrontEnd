@@ -54,20 +54,20 @@ declare global {
 }
 
 /* ─── API ── */
-const BASE = "http://localhost:8000";
+const BASE = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 // "All" → /products/user/   |   others → /products/user/?status=submitted etc.
 async function fetchByFilter(filter: Filter): Promise<UserProduct[]> {
   const url = filter === "All"
-    ? `${BASE}/products/products_by_status/`
-    : `${BASE}/products/products_by_status/?status=${filter.toLowerCase()}`;
+    ? `${BASE}products/products_by_status/`
+    : `${BASE}products/products_by_status/?status=${filter.toLowerCase()}`;
   const res = await fetch(url, { credentials: "include" });
   if (!res.ok) throw new Error("Failed to load products");
   return res.json();
 }
 
 async function apiDelete(id: number) {
-  const res = await fetch(`${BASE}/products/${id}/`, { method: "DELETE", credentials: "include" });
+  const res = await fetch(`${BASE}products/${id}/`, { method: "DELETE", credentials: "include" });
   if (!res.ok) throw new Error("Failed to delete product");
 }
 

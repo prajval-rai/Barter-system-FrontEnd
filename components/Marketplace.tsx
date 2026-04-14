@@ -51,7 +51,7 @@ interface MarketplaceProps {
 }
 
 /* ─── Constants ── */
-const BASE      = "http://localhost:8000";
+const BASE      = process.env.NEXT_PUBLIC_BACKEND_URL
 const PAGE_SIZE = 12;
 
 /* ─── API ── */
@@ -66,13 +66,13 @@ async function fetchMarketplace(params: {
   if (params.search)   q.set("search",   params.search);
   if (params.category) q.set("category", params.category);
 
-  const res = await fetch(`${BASE}/products/marketplace/?${q}`, { credentials: "include" });
+  const res = await fetch(`${BASE}products/marketplace/?${q}`, { credentials: "include" });
   if (!res.ok) throw new Error("Failed to load marketplace");
   return res.json();
 }
 
 async function fetchCategories(): Promise<Category[]> {
-  const res = await fetch(`${BASE}/products/categories/`, { credentials: "include" });
+  const res = await fetch(`${BASE}products/categories/`, { credentials: "include" });
   if (!res.ok) return [];
   return res.json();
 }

@@ -72,7 +72,7 @@ export interface ChatProductPanelProps {
 /* ═══════════════════════════════════════════
    CONSTANTS
 ═══════════════════════════════════════════ */
-const BASE = "http://localhost:8000";
+const BASE = process.env.NEXT_PUBLIC_BACKEND_URL;
 const RADIUS_STEPS = [5, 10, 25, 50, 100];
 
 const STATUS_META = {

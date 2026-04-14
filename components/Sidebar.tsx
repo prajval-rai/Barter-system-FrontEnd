@@ -10,7 +10,7 @@ import styles from "@/styles/Sidebar.module.css";
 import type { AuthUser } from "@/context/AuthContext";
 import { useUnreadSocket } from "../app/hooks/useUnreadSocket";   // ← the hook from last response
 
-const API_BASE = "http://localhost:8000";
+const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 /* ─────────────────────────────────────────────────────────────────────────────
    NOTIFICATION UNREAD COUNT  (unchanged)
@@ -20,7 +20,7 @@ function useNotifUnread(activeId: string) {
   const refresh = useCallback(async () => {
     try {
       const res = await fetch(
-        `${API_BASE}/accounts/notifications/unread-count/`,
+        `${API_BASE}accounts/notifications/unread-count/`,
         { credentials: "include" }
       );
       if (!res.ok) return;

@@ -26,6 +26,7 @@ export default function CompleteProfileModal({ onComplete, onCancel }: CompleteP
   const [saving, setSaving]     = useState(false);
   const [saved, setSaved]       = useState(false);
   const [errors, setErrors]     = useState<Record<string, string>>({});
+  const base_url = process.env.NEXT_PUBLIC_BACKEND_URL
 
   const overlayRef = useRef<HTMLDivElement>(null);
 
@@ -73,7 +74,7 @@ export default function CompleteProfileModal({ onComplete, onCancel }: CompleteP
     if (!validate()) return;
     setSaving(true);
     try {
-      const res = await fetch("http://localhost:8000/accounts/update_profile/", {
+      const res = await fetch(`${base_url}accounts/update_profile/`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

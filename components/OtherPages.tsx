@@ -15,7 +15,7 @@ interface ApiNotification {
   staus: boolean; // note: API typo — "staus" not "status"
   user: number;
 }
-const BASE = "http://localhost:8000";
+const BASE = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 async function apiFetch<T>(path: string, opts?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {

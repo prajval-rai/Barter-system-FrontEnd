@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 
 const BASE_WS = "ws://localhost:8000";
+const base_url = process.env.NEXT_PUBLIC_BACKEND_URL
 
 async function fetchWsToken(): Promise<string | null> {
   try {
-    const r = await fetch("http://localhost:8000/accounts/ws-token/", { credentials: "include" });
+    const r = await fetch(`${base_url}accounts/ws-token/`, { credentials: "include" });
     if (!r.ok) return null;
     return (await r.json()).token ?? null;
   } catch { return null; }

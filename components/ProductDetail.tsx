@@ -103,13 +103,15 @@ function ExchangeModal({
   const [dropOpen, setDropOpen]         = useState(false);
   const [sending, setSending]           = useState(false);
   const [sendErr, setSendErr]           = useState<string | null>(null);
+  const base_url = process.env.NEXT_PUBLIC_BACKEND_URL
+  
 
   /* Load user's own products */
   useEffect(() => {
     const load = async () => {
       setLoadingMine(true);
       try {
-        const res = await fetch("http://localhost:8000/products/my_product", {
+        const res = await fetch(`${base_url}products/my_product`, {
           credentials: "include",
         });
         if (!res.ok) throw new Error("Failed to load your products");
@@ -136,7 +138,7 @@ function ExchangeModal({
     setSending(true);
     setSendErr(null);
     try {
-      const res = await fetch("http://localhost:8000/barter/request/", {
+      const res = await fetch(`${base_url}barter/request/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -332,6 +334,7 @@ export default function ProductDetailPage({ productId, onBack, onNavigate }: Pro
   const [showModal, setShowModal]     = useState(false);
   const [requestSent, setRequestSent] = useState(false);
   const [toast, setToast]             = useState<{ msg: string; ok: boolean } | null>(null);
+  const base_url = process.env.NEXT_PUBLIC_BACKEND_URL
 
   const showToast = (msg: string, ok: boolean) => {
     setToast({ msg, ok });
@@ -342,7 +345,7 @@ export default function ProductDetailPage({ productId, onBack, onNavigate }: Pro
     const load = async () => {
       setLoading(true); setError(null);
       try {
-        const res = await fetch(`http://localhost:8000/products/${productId}`, { credentials: "include" });
+        const res = await fetch(`${base_url}products/${productId}`, { credentials: "include" });
         if (!res.ok) throw new Error("Product not found");
         setProduct(await res.json());
       } catch (e: any) {

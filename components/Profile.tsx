@@ -46,7 +46,7 @@ interface ApiProduct {
   tags?: string;
 }
 
-const BASE = "http://localhost:8000";
+const BASE = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 function getImageUrls(p: ApiProduct): string[] {
   if (p.images && p.images.length > 0) return p.images.map(i => i.image);
@@ -366,7 +366,7 @@ export function Profile() {
   const loadProfile = async () => {
     setProfileLoading(true); setProfileError(null);
     try {
-      const res = await fetch(`${BASE}/accounts/upsertProfile/`, { credentials: "include" });
+      const res = await fetch(`${BASE}accounts/upsertProfile/`, { credentials: "include" });
       if (!res.ok) throw new Error("Failed to load profile");
       const json = await res.json();
       const data: ProfileData = json.data;
@@ -383,7 +383,7 @@ export function Profile() {
   const loadListings = async () => {
     setListLoading(true); setListError(null);
     try {
-      const res = await fetch(`${BASE}/products/products_by_status?status=approved`, { credentials: "include" });
+      const res = await fetch(`${BASE}products/products_by_status?status=approved`, { credentials: "include" });
       if (!res.ok) throw new Error("Failed to load listings");
       setListings(await res.json());
     } catch (e: any) {
@@ -423,7 +423,7 @@ export function Profile() {
       const body: Record<string, unknown> = { description: draftDesc, address: draftAddress };
       if (draftLat !== null) body.latitude  = draftLat;
       if (draftLng !== null) body.longitude = draftLng;
-      const res = await fetch(`${BASE}/accounts/update_profile/`, {
+      const res = await fetch(`${BASE}accounts/update_profile/`, {
         method: "PUT", credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
@@ -452,7 +452,7 @@ export function Profile() {
   const handleDelete = async (id: number) => {
     setDeletingId(id);
     try {
-      const res = await fetch(`${BASE}/products/${id}`, { method: "DELETE", credentials: "include" });
+      const res = await fetch(`${BASE}products/${id}`, { method: "DELETE", credentials: "include" });
       if (!res.ok) throw new Error("Delete failed");
       setListings(prev => prev.filter(p => p.id !== id));
       showToast("Listing deleted.", true);

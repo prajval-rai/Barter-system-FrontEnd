@@ -103,7 +103,7 @@ function msgReducer(s: MsgState, a: MsgAction): MsgState {
 /* ─────────────────────────────────────────
    CONSTANTS & HELPERS
 ───────────────────────────────────────── */
-const BASE       = "http://localhost:8000";
+const BASE       = process.env.NEXT_PUBLIC_BACKEND_URL
 const MAX_IMAGES = 4;
 const MAX_VIDEO  = 1;
 
