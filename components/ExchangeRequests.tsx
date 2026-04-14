@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import {
   ArrowLeftRight, Clock, CheckCircle2, XCircle, Package,
   Loader2, RefreshCw, Inbox, Send, AlertCircle,
-  Check, X, MessageCircle, ChevronRight, Hash,
+  Check, X, MessageCircle, ChevronRight, Hash, Zap,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import styles from "../styles/Exchangerequests.module.css";
@@ -49,6 +49,15 @@ const STATUS_CONFIG = {
   completed: { label: "Completed", color: "var(--purple)",  bg: "rgba(124,58,237,0.09)", border: "rgba(124,58,237,0.22)", Icon: CheckCircle2 },
 };
 
+/* ─── Funny rotating one-liners shown in the banner ── */
+const FUN_LINES = [
+  { emoji: "🔄", text: <>No cash? No problem. <strong>Welcome to the vibe economy.</strong></> },
+  { emoji: "🤝", text: <>Trading since before Bitcoin was cool. <strong>Way before.</strong></> },
+  { emoji: "🧠", text: <>Your clutter is someone else's <strong>treasure (maybe).</strong></> },
+  { emoji: "🎲", text: <>Bartering: like shopping, but <strong>with more plot twists.</strong></> },
+  { emoji: "🪄", text: <>One person's old headphones = another person's <strong>new jam.</strong></> },
+];
+
 /* ─── Product tile (clickable) ── */
 function ProductTile({
   product, label, onClick,
@@ -67,7 +76,7 @@ function ProductTile({
       <div className={styles.tileInfo}>
         <span className={styles.tileLabel}>{label}</span>
         <span className={styles.tileTitle}>{product.title}</span>
-        <span className={styles.tileHint}>Tap to view</span>
+        <span className={styles.tileHint}>tap to peek →</span>
       </div>
     </button>
   );
@@ -119,7 +128,6 @@ function RequestCard({
 
       {/* Body */}
       <div className={styles.cardBody}>
-
         {/* Trade visual */}
         <div className={styles.tradeRow}>
           <ProductTile
@@ -137,7 +145,7 @@ function RequestCard({
           />
         </div>
 
-        {/* System message */}
+        {/* Speech-bubble message */}
         <div className={styles.msgBox}>
           <MessageCircle size={13} className={styles.msgIcon} />
           <p className={styles.msgText}>{sysMsg}</p>
@@ -153,20 +161,20 @@ function RequestCard({
                 {accepting === req.id
                   ? <Loader2 size={14} className={styles.spin} />
                   : <Check size={14} />}
-                {accepting === req.id ? "Accepting…" : "Accept"}
+                {accepting === req.id ? "Sealing deal…" : "Accept 🤝"}
               </button>
               <button className={styles.rejectBtn} onClick={() => onReject(req.id)} disabled={isBusy}>
                 {rejecting === req.id
                   ? <Loader2 size={14} className={styles.spin} />
                   : <X size={14} />}
-                {rejecting === req.id ? "Declining…" : "Decline"}
+                {rejecting === req.id ? "Passing…" : "Nope 👋"}
               </button>
             </div>
           )}
           {req.status === "accepted" && (
             <button className={styles.chatBtn} onClick={() => onNavigate("chats")}>
               <MessageCircle size={14} />
-              Open Chat
+              Let's Talk 💬
               <ChevronRight size={13} />
             </button>
           )}
@@ -189,9 +197,16 @@ export default function ExchangeRequests({ onNavigate }: RequestsProps) {
   const [accepting, setAccepting] = useState<number | null>(null);
   const [rejecting, setRejecting] = useState<number | null>(null);
   const [toast, setToast]         = useState<{ msg: string; ok: boolean } | null>(null);
+  const [funIdx, setFunIdx]       = useState(0);
 
   /* Product detail sheet */
   const [detailProductId, setDetailProductId] = useState<number | null>(null);
+
+  /* Cycle fun banners every 4s */
+  useEffect(() => {
+    const t = setInterval(() => setFunIdx(i => (i + 1) % FUN_LINES.length), 4000);
+    return () => clearInterval(t);
+  }, []);
 
   const showToast = (msg: string, ok: boolean) => {
     setToast({ msg, ok });
@@ -218,7 +233,6 @@ export default function ExchangeRequests({ onNavigate }: RequestsProps) {
   const pending  = requests.filter(r => r.status === "pending").length;
   const active   = tab === "received" ? received : sent;
 
-  /* ── Accept / Reject via PATCH /barter/status/{id}/ ── */
   const changeStatus = async (id: number, status: "accepted" | "rejected") => {
     const res = await fetch(`http://localhost:8000/barter/request/${id}/`, {
       method: "PATCH",
@@ -238,7 +252,7 @@ export default function ExchangeRequests({ onNavigate }: RequestsProps) {
     try {
       await changeStatus(id, "accepted");
       setRequests(prev => prev.map(r => r.id === id ? { ...r, status: "accepted" as const } : r));
-      showToast("Request accepted! 🎉 Opening chat…", true);
+      showToast("Deal accepted! 🎉 Opening chat…", true);
       setTimeout(() => onNavigate("chats"), 1400);
     } catch (e: any) {
       showToast(e.message || "Failed to accept", false);
@@ -250,11 +264,13 @@ export default function ExchangeRequests({ onNavigate }: RequestsProps) {
     try {
       await changeStatus(id, "rejected");
       setRequests(prev => prev.map(r => r.id === id ? { ...r, status: "rejected" as const } : r));
-      showToast("Request declined.", true);
+      showToast("Request passed. Their loss! 😅", true);
     } catch (e: any) {
       showToast(e.message || "Failed to decline", false);
     } finally { setRejecting(null); }
   };
+
+  const funLine = FUN_LINES[funIdx];
 
   return (
     <div className={styles.shell}>
@@ -284,10 +300,12 @@ export default function ExchangeRequests({ onNavigate }: RequestsProps) {
       {/* Header */}
       <div className={styles.header}>
         <div className={styles.headerLeft}>
-          <div className={styles.headerIcon}><ArrowLeftRight size={22} /></div>
-          <div>
-            <h1 className={styles.title}>Exchange Requests</h1>
-            <p className={styles.subtitle}>Manage your incoming and outgoing trade requests</p>
+          <div className={styles.headerIcon}><ArrowLeftRight size={24} /></div>
+          <div className={styles.titleGroup}>
+            <h1 className={styles.title}>
+              Exchange Requests <span className={styles.titleEmoji}>🔃</span>
+            </h1>
+            <p className={styles.subtitle}>// swap stuff · no cash needed · just vibes</p>
           </div>
         </div>
         <button className={styles.refreshBtn} onClick={load} disabled={loading} title="Refresh">
@@ -306,6 +324,7 @@ export default function ExchangeRequests({ onNavigate }: RequestsProps) {
               <div className={styles.statNum}>{received.length}</div>
               <div className={styles.statLabel}>Received</div>
             </div>
+            <span className={styles.statMood}>{received.length > 0 ? "🥳" : "😴"}</span>
           </div>
           <div className={styles.statCard}>
             <div className={styles.statIcon} style={{ background: "rgba(8,145,178,0.09)" }}>
@@ -315,6 +334,7 @@ export default function ExchangeRequests({ onNavigate }: RequestsProps) {
               <div className={styles.statNum}>{sent.length}</div>
               <div className={styles.statLabel}>Sent</div>
             </div>
+            <span className={styles.statMood}>{sent.length > 0 ? "🚀" : "🦗"}</span>
           </div>
           <div className={styles.statCard}>
             <div className={styles.statIcon} style={{ background: "rgba(217,119,6,0.09)" }}>
@@ -324,6 +344,7 @@ export default function ExchangeRequests({ onNavigate }: RequestsProps) {
               <div className={styles.statNum}>{pending}</div>
               <div className={styles.statLabel}>Pending</div>
             </div>
+            <span className={styles.statMood}>{pending > 0 ? "⏳" : "✅"}</span>
           </div>
         </div>
       )}
@@ -350,34 +371,44 @@ export default function ExchangeRequests({ onNavigate }: RequestsProps) {
 
       {/* Content */}
       <div className={styles.content}>
+
+        {/* Rotating fun banner (only shown when there are items) */}
+        {!loading && !error && active.length > 0 && (
+          <div className={styles.funBanner}>
+            <span className={styles.funBannerEmoji}>{funLine.emoji}</span>
+            <span className={styles.funBannerText}>{funLine.text}</span>
+            <Zap size={13} style={{ color: "var(--purple)", opacity: 0.5 }} />
+          </div>
+        )}
+
         {loading ? (
           <div className={styles.stateBox}>
-            <Loader2 size={30} className={styles.spin} style={{ color: "var(--purple)" }} />
-            <p className={styles.stateText}>Loading requests…</p>
+            <Loader2 size={32} className={styles.spin} style={{ color: "var(--purple)" }} />
+            <p className={styles.stateText}>Fetching your deals… hang tight 🕐</p>
           </div>
         ) : error ? (
           <div className={styles.stateBox}>
-            <AlertCircle size={30} style={{ color: "var(--danger)" }} />
-            <p className={styles.stateTitle}>Failed to load</p>
+            <AlertCircle size={32} style={{ color: "var(--danger)" }} />
+            <p className={styles.stateTitle}>Oops, something fumbled 🤦</p>
             <p className={styles.stateText}>{error}</p>
-            <button className={styles.retryBtn} onClick={load}><RefreshCw size={13} /> Retry</button>
+            <button className={styles.retryBtn} onClick={load}><RefreshCw size={13} /> Try again</button>
           </div>
         ) : active.length === 0 ? (
           <div className={styles.stateBox}>
             <div className={styles.emptyIconWrap}>
-              {tab === "received" ? <Inbox size={30} /> : <Send size={28} />}
+              {tab === "received" ? <Inbox size={32} /> : <Send size={28} />}
             </div>
             <p className={styles.stateTitle}>
-              {tab === "received" ? "No requests received yet" : "No requests sent yet"}
+              {tab === "received" ? "Nobody's knocked yet 🚪" : "No shots fired yet 🎯"}
             </p>
             <p className={styles.stateText}>
               {tab === "received"
-                ? "When someone wants to trade with you, they'll appear here."
-                : "Browse the marketplace and send an exchange request!"}
+                ? "When someone wants to trade with you, they'll show up here. Try listing something interesting!"
+                : "You haven't sent any swap requests yet. Go find something worth trading for!"}
             </p>
             {tab === "sent" && (
               <button className={styles.retryBtn} onClick={() => onNavigate("marketplace")}>
-                Browse Marketplace <ChevronRight size={13} />
+                Browse the Swap Shop <ChevronRight size={13} />
               </button>
             )}
           </div>

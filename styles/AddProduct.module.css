@@ -802,3 +802,474 @@
   transition: all 0.15s;
 }
 .catsRetryBtn:hover { background: rgba(225,29,72,0.15); }
+
+/* ══════════════════════════════════════════════
+   ADD THESE TO YOUR AddProduct.module.css
+   (append to the bottom of the existing file)
+══════════════════════════════════════════════ */
+
+/* ── Chapter tag (replaces stepNum + stepHead) ── */
+.chapterTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-family: 'DM Mono', monospace;
+  margin-bottom: 10px;
+}
+
+.chapterTagDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--gold);
+  flex-shrink: 0;
+  animation: chapterDotPulse 2.5s ease infinite;
+}
+
+@keyframes chapterDotPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.4; transform: scale(0.7); }
+}
+
+/* ── New stepHead (no stepNum) ── */
+.stepHead {
+  margin-bottom: 28px;
+}
+
+.stepTitle {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0 0 6px;
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+}
+
+.stepSub {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* ══════════════════════════════════════════════
+   CHAPTER TRANSITION OVERLAY
+   Full-screen between-step celebration cards
+══════════════════════════════════════════════ */
+.chapterOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: chapterFadeIn 0.3s ease both;
+}
+
+@keyframes chapterFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.chapterModal {
+  position: relative;
+  background: var(--bg-page);
+  border: 1px solid var(--gold-border);
+  border-radius: 20px;
+  padding: 44px 40px 36px;
+  width: 100%;
+  max-width: 480px;
+  overflow: hidden;
+  animation: chapterSlideUp 0.35s cubic-bezier(.34, 1.56, .64, 1) both;
+}
+
+@keyframes chapterSlideUp {
+  from { opacity: 0; transform: translateY(24px) scale(0.96); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Ambient radial glow behind modal content */
+.chapterGlow {
+  position: absolute;
+  top: -80px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--gold-dim) 0%, transparent 65%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* All children above the glow */
+.chapterModal > *:not(.chapterGlow) {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Eyebrow ── */
+.chapterEyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--success);
+  background: rgba(22, 163, 74, 0.1);
+  border: 1px solid rgba(22, 163, 74, 0.25);
+  border-radius: 999px;
+  padding: 4px 12px;
+  margin-bottom: 20px;
+  font-family: 'DM Mono', monospace;
+}
+
+/* ── Big emoji ── */
+.chapterEmoji {
+  font-size: 48px;
+  line-height: 1;
+  margin-bottom: 16px;
+  display: block;
+  animation: chapterBounce 0.6s cubic-bezier(.34, 1.56, .64, 1) both;
+  animation-delay: 0.1s;
+}
+
+@keyframes chapterBounce {
+  from { opacity: 0; transform: scale(0.5) translateY(10px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* ── Heading ── */
+.chapterHeading {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0 0 12px;
+  line-height: 1.25;
+  letter-spacing: -0.4px;
+}
+
+/* ── Body copy ── */
+.chapterBody {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  margin: 0 0 22px;
+}
+
+/* ── Celebration line (what was saved) ── */
+.chapterCelebration {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--success);
+  background: rgba(22, 163, 74, 0.08);
+  border: 1px solid rgba(22, 163, 74, 0.2);
+  border-radius: 8px;
+  padding: 7px 12px;
+  margin-bottom: 12px;
+  width: 100%;
+}
+
+/* ── Next chapter pill ── */
+.chapterNext {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gold);
+  background: var(--gold-dim);
+  border: 1px solid var(--gold-border);
+  border-radius: 8px;
+  padding: 7px 12px;
+  margin-bottom: 26px;
+  width: 100%;
+  font-family: 'DM Mono', monospace;
+  letter-spacing: 0.3px;
+}
+
+/* ── CTA button ── */
+.chapterBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  width: 100%;
+  padding: 14px 24px;
+  border-radius: var(--radius);
+  background: var(--grad);
+  border: none;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: var(--shadow-gold);
+  margin-bottom: 22px;
+  letter-spacing: -0.2px;
+}
+
+.chapterBtn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+  box-shadow: 0 8px 24px rgba(245, 158, 11, 0.35);
+}
+
+/* ── Step progress dots ── */
+.chapterDots {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+}
+
+.chapterDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--border);
+  transition: all 0.3s;
+}
+
+.chapterDotActive {
+  background: var(--gold);
+  width: 16px;
+  border-radius: 3px;
+}
+
+.chapterDotDone {
+  background: var(--success);
+  opacity: 0.6;
+}
+
+/* ── Review notice banner ── */
+.reviewNotice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 13px 16px;
+  background: var(--gold-dim);
+  border: 1px solid var(--gold-border);
+  border-radius: var(--radius);
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+
+/* ── Value insight box ── */
+.valueInsight {
+  margin-bottom: 20px;
+}
+
+.valueInsightUp {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 14px;
+  background: rgba(34, 197, 94, 0.08);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  border-radius: var(--radius);
+  font-size: 13px;
+  color: var(--success);
+  font-weight: 600;
+}
+
+.valueInsightDown {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 14px;
+  background: rgba(225, 29, 72, 0.06);
+  border: 1px solid rgba(225, 29, 72, 0.18);
+  border-radius: var(--radius);
+  font-size: 13px;
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.valueInsightFlat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 14px;
+  background: var(--gold-dim);
+  border: 1px solid var(--gold-border);
+  border-radius: var(--radius);
+  font-size: 13px;
+  color: var(--gold);
+  font-weight: 600;
+}
+
+/* ── Value badges (used in live preview) ── */
+.valueBadgeUp {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--success);
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  border-radius: 999px;
+  padding: 2px 7px;
+}
+
+.valueBadgeDown {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--danger);
+  background: rgba(225, 29, 72, 0.08);
+  border: 1px solid rgba(225, 29, 72, 0.2);
+  border-radius: 999px;
+  padding: 2px 7px;
+}
+
+.valueBadgeFlat {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--gold);
+  background: var(--gold-dim);
+  border: 1px solid var(--gold-border);
+  border-radius: 999px;
+  padding: 2px 7px;
+}
+
+/* ══════════════════════════════════════════════
+   SUCCESS SCREEN
+══════════════════════════════════════════════ */
+.successScreen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: var(--bg-page);
+  padding: 24px;
+}
+
+.successBox {
+  background: var(--surface);
+  border: 1px solid var(--gold-border);
+  border-radius: 20px;
+  padding: 48px 40px;
+  max-width: 500px;
+  width: 100%;
+  text-align: center;
+}
+
+.successIconWrap {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  background: rgba(22, 163, 74, 0.12);
+  border: 1px solid rgba(22, 163, 74, 0.25);
+  color: var(--success);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+}
+
+.successIcon { color: var(--success); }
+
+.successTitle {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0 0 12px;
+  letter-spacing: -0.4px;
+}
+
+.successBody {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  margin: 0 0 24px;
+}
+
+.successMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  justify-content: center;
+  margin-bottom: 28px;
+}
+
+.successMetaItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  padding: 4px 11px;
+  border-radius: 999px;
+  background: rgba(22, 163, 74, 0.08);
+  border: 1px solid rgba(22, 163, 74, 0.2);
+  color: var(--success);
+  font-weight: 600;
+}
+
+.successActions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.successBtnPrimary {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 12px 20px;
+  border-radius: var(--radius);
+  background: var(--grad);
+  border: none;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: var(--shadow-gold);
+}
+
+.successBtnPrimary:hover { transform: translateY(-1px); filter: brightness(1.08); }
+
+.successBtnSecondary {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 12px 20px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.successBtnSecondary:hover { border-color: var(--gold-border); color: var(--text-primary); background: var(--gold-dim); }

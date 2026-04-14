@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import styles from "@/styles/Productdetail.module.css";
 import BarterLoader from "@/components/Barterloader";
+import { Icon } from '@iconify/react';
 
 /* ─── Types ── */
 interface ProductImage {
@@ -63,7 +64,7 @@ interface ProductDetailProps {
 declare global {
   namespace JSX {
     interface IntrinsicElements {
-      "iconify-icon": React.DetailedHTMLProps<
+      "Icon": React.DetailedHTMLProps<
         React.HTMLAttributes<HTMLElement> & {
           icon?: string; width?: string | number; height?: string | number;
         },
@@ -178,7 +179,7 @@ function ExchangeModal({
               {product.product_replace_options.length > 0 ? (
                 product.product_replace_options.map(opt => (
                   <div key={opt.id} className={styles.wantCard}>
-                    <iconify-icon icon={product.icon || "noto:package"} width="22" height="22" />
+                    <Icon icon={product.icon || "noto:package"} width="22" height="22" />
                     <div>
                       <p className={styles.wantTitle}>{opt.title}</p>
                       {opt.description && <p className={styles.wantDesc}>{opt.description}</p>}
@@ -543,7 +544,7 @@ export default function ProductDetailPage({ productId, onBack, onNavigate }: Pro
 
             <div className={styles.metaRow}>
               <div className={styles.metaItem}>
-                <iconify-icon icon={product.icon} width="20" height="20" />
+                <Icon icon={product.icon} width="20" height="20" />
               </div>
               {product.purchase_year && (
                 <div className={styles.metaItem}>
@@ -611,7 +612,7 @@ export default function ProductDetailPage({ productId, onBack, onNavigate }: Pro
                   product.product_replace_options.map(opt => (
                     <div key={opt.id} className={styles.exchangeItem}>
                       <div className={styles.exchangeItemIcon}>
-                        <iconify-icon icon={product.icon || "noto:package"} width="18" height="18" />
+                        <Icon icon={product.icon || "noto:package"} width="18" height="18" />
                       </div>
                       <div className={styles.exchangeItemInfo}>
                         <p className={styles.exchangeItemTitle}>{opt.title}</p>

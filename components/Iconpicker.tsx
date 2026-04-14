@@ -118,7 +118,7 @@ export default function IconPicker({ value, onChange, placeholder = "Search 200,
   const [recent, setRecent]       = useState<IconResult[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   /* Parse stored value */
   const [valPrefix, valName] = value?.includes(":") ? value.split(":") : ["", value ?? ""];

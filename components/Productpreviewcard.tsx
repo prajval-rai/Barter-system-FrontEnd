@@ -2,19 +2,23 @@
 
 import { useState } from "react";
 import {
-  Camera, Calendar,
-  Repeat2, Box, ImageIcon, ShoppingBag, Check,
-  Eye, Pencil, Trash2, Scan,
+  Camera, Calendar, Repeat2, Box, ImageIcon,
+  ShoppingBag, Check, Eye, Pencil, Trash2, Scan,
+  ChevronDown, ChevronUp, TrendingUp, TrendingDown,
+  AlertCircle,
 } from "lucide-react";
 import styles from "@/styles/Productpreviewcard.module.css";
+import { Icon } from '@iconify/react';
 
 /* ─── Types ── */
 export interface PreviewReplaceOption {
   title: string;
   icon?: string;
+  description?: string;
+  categoryName?: string;
 }
 
-export type ProductStatus = "submitted" | "approved" | "banned" | string;
+export type ProductStatus = "submitted" | "approved" | "banned" | "rejected" | string;
 
 export interface ProductPreviewCardProps {
   title?: string;
@@ -29,31 +33,25 @@ export interface ProductPreviewCardProps {
   replaceOptions?: PreviewReplaceOption[];
   tags?: string;
   status?: ProductStatus;
+  date?: string;
 
-  /* ── Bucket ── */
   showBucketBtn?: boolean;
   onAddToBucket?: () => void;
   bucketAdded?: boolean;
 
-  /* ── Hover action bar ──────────────────────────────────
-     onView   → always pass — shown to everyone
-     onEdit   → owner only (e.g. Submitted)
-     onDelete → owner only
-     onScan   → owner only (e.g. Approved)
-  ─────────────────────────────────────────────────────── */
   onView?: () => void;
   onEdit?: () => void;
   onDelete?: () => void;
   onScan?: () => void;
+  onResubmit?: () => void;
 
-  /** Click on the card body itself */
   onClick?: () => void;
 }
 
 declare global {
   namespace JSX {
     interface IntrinsicElements {
-      "iconify-icon": React.DetailedHTMLProps<
+      "Icon": React.DetailedHTMLProps<
         React.HTMLAttributes<HTMLElement> & {
           icon?: string; width?: string | number; height?: string | number;
         },
@@ -65,34 +63,48 @@ declare global {
 
 /* ─── Status config ── */
 const STATUS_CFG: Record<string, {
-  label: string; dot: string; text: string; bg: string; border: string; pulse: boolean;
+  label: string; cls: string; pulse: boolean;
 }> = {
-  submitted: { label: "in review", dot: "var(--warning)", text: "var(--warning)", bg: "rgba(217,119,6,0.09)",  border: "rgba(217,119,6,0.22)",  pulse: true  },
-  approved:  { label: "live",      dot: "var(--success)", text: "var(--success)", bg: "rgba(22,163,74,0.09)",  border: "rgba(22,163,74,0.22)",  pulse: false },
-  banned:    { label: "banned",    dot: "var(--danger)",  text: "var(--danger)",  bg: "rgba(225,29,72,0.09)",  border: "rgba(225,29,72,0.22)",  pulse: false },
+  submitted: { label: "in review",  cls: "review",    pulse: true  },
+  approved:  { label: "live",       cls: "live",      pulse: false },
+  banned:    { label: "banned",     cls: "rejected",  pulse: false },
+  rejected:  { label: "rejected",   cls: "rejected",  pulse: false },
 };
 
 function getStatus(s?: string) {
   if (!s) return null;
   return STATUS_CFG[s.toLowerCase()] ?? {
-    label: s.toLowerCase(), dot: "var(--text-muted)", text: "var(--text-muted)",
-    bg: "var(--surface)", border: "var(--border)", pulse: false,
+    label: s.toLowerCase(), cls: "default", pulse: false,
   };
 }
 
-/* ─── Value % badge ── */
-function ValuePctBadge({ purchasePrice, marketPrice }: {
+/* ─── Condition class map ── */
+const COND_CLS: Record<string, string> = {
+  "brand new": "condNew", "new": "condNew",
+  "like new": "condLike",
+  "good": "condGood",
+  "fair": "condFair",
+};
+
+function condClass(label?: string) {
+  if (!label) return "";
+  return COND_CLS[label.toLowerCase()] || "condGood";
+}
+
+/* ─── Value badge ── */
+function ValueBadge({ purchasePrice, marketPrice }: {
   purchasePrice: number | ""; marketPrice: number | "";
 }) {
   if (!purchasePrice || !marketPrice || Number(purchasePrice) === 0) return null;
   const paid = Number(purchasePrice), market = Number(marketPrice);
   const diff = market - paid;
-  const pct  = Math.abs(Math.round((diff / paid) * 100));
+  if (diff === 0) return <span className={`${styles.metaChip} ${styles.valFlat}`}>↔ 0%</span>;
+  const pct = Math.abs(Math.round((diff / paid) * 100));
   const gain = diff > 0;
-  if (diff === 0) return <span className={`${styles.vBadge} ${styles.vFlat}`}>↔ 0%</span>;
   return (
-    <span className={`${styles.vBadge} ${gain ? styles.vUp : styles.vDown}`}>
-      {gain ? "↑+" : "↓-"}{pct}%
+    <span className={`${styles.metaChip} ${gain ? styles.valUp : styles.valDown}`}>
+      {gain ? <TrendingUp size={9} /> : <TrendingDown size={9} />}
+      {gain ? `+${pct}%` : `-${pct}%`} vs paid
     </span>
   );
 }
@@ -100,10 +112,97 @@ function ValuePctBadge({ purchasePrice, marketPrice }: {
 /* ─── Image with fallback ── */
 function CardImage({ src, alt }: { src: string; alt: string }) {
   const [err, setErr] = useState(false);
-  if (err) return (
-    <div className={styles.imgEmpty}><Camera size={28} /><span>no photo</span></div>
+  if (err) {
+    return (
+      <div className={styles.imgEmpty}>
+        <Camera size={28} />
+        <span>photo unavailable</span>
+      </div>
+    );
+  }
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className={styles.img}
+      onError={() => setErr(true)}
+      loading="lazy"
+    />
   );
-  return <img src={src} alt={alt} className={styles.img} onError={() => setErr(true)} />;
+}
+
+/* ─── Exchange chips with expand ── */
+const VISIBLE_CHIPS = 2;
+
+function ExchangeSection({ options }: { options: PreviewReplaceOption[] }) {
+  const [expanded, setExpanded] = useState(false);
+  const active = options.filter(o => o.title?.trim());
+  if (active.length === 0) return null;
+
+  const visible = active.slice(0, VISIBLE_CHIPS);
+  const overflow = active.slice(VISIBLE_CHIPS);
+  const hasMore = overflow.length > 0;
+
+  return (
+    <div className={styles.exchangeSection}>
+      <div className={styles.exchangeLabel}>
+        <Repeat2 size={10} />
+        Wants in exchange
+      </div>
+
+      {/* Visible chips */}
+      <div className={styles.exchangeChips}>
+        {visible.map((o, i) => (
+          <span key={i} className={styles.exChip}>
+            {o.icon
+              ? <Icon icon={o.icon} width="11" height="11" />
+              : <Box size={9} />}
+            {o.title}
+          </span>
+        ))}
+        {hasMore && !expanded && (
+          <button
+            className={styles.exMore}
+            onClick={e => { e.stopPropagation(); setExpanded(true); }}
+          >
+            +{overflow.length} more <ChevronDown size={10} />
+          </button>
+        )}
+      </div>
+
+      {/* Expanded panel */}
+      {expanded && (
+        <div className={styles.expandPanel}>
+          <div className={styles.expandHeader}>
+            <span>All {active.length} exchange options</span>
+            <button
+              className={styles.expandClose}
+              onClick={e => { e.stopPropagation(); setExpanded(false); }}
+            >
+              Close <ChevronUp size={10} />
+            </button>
+          </div>
+          {active.map((o, i) => (
+            <div key={i} className={styles.expandRow}>
+              <div className={styles.expandIcon}>
+                {o.icon
+                  ? <Icon icon={o.icon} width="14" height="14" />
+                  : <Box size={13} />}
+              </div>
+              <div className={styles.expandInfo}>
+                <div className={styles.expandTitle}>{o.title}</div>
+                {(o.categoryName || o.description) && (
+                  <div className={styles.expandSub}>
+                    {[o.categoryName, o.description].filter(Boolean).join(" · ")}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 /* ════════════════════════════
@@ -122,6 +221,7 @@ export default function ProductPreviewCard({
   replaceOptions = [],
   tags,
   status,
+  date,
   showBucketBtn = false,
   onAddToBucket,
   bucketAdded = false,
@@ -129,62 +229,75 @@ export default function ProductPreviewCard({
   onEdit,
   onDelete,
   onScan,
+  onResubmit,
   onClick,
 }: ProductPreviewCardProps) {
-  const activeOpts = replaceOptions.filter(o => o.title?.trim()).slice(0, 2);
   const sc = getStatus(status);
-  const hasActions = !!(onView || onEdit || onDelete || onScan);
+  const hasActions = !!(onView || onEdit || onDelete || onScan || onResubmit);
+  const isRejected = status?.toLowerCase() === "rejected" || status?.toLowerCase() === "banned";
+
+  const condLabel = condition?.toLowerCase() || "";
+  const cCls = condLabel ? condClass(condLabel) : "";
 
   return (
     <article
-      className={`${styles.card} ${onClick ? styles.clickable : ""} ${hasActions ? styles.hasActions : ""}`}
+      className={`${styles.card} ${onClick ? styles.clickable : ""} ${hasActions ? styles.hasActions : ""} ${isRejected ? styles.cardRejected : ""}`}
       onClick={onClick}
     >
       {/* ══ IMAGE ══ */}
       <div className={styles.imgWrap}>
         {imageUrls.length > 0
           ? <CardImage src={imageUrls[0]} alt={title || "product"} />
-          : <div className={styles.imgEmpty}><Camera size={28} /><span>no photo yet</span></div>
-        }
+          : (
+            <div className={styles.imgEmpty}>
+              <Camera size={28} />
+              <span>{title || "no photo yet"}</span>
+            </div>
+          )}
 
         <div className={styles.scrim} />
 
+        {/* Status badge — top left */}
         {sc && (
-          <div className={styles.statusWrap}>
-            <span
-              className={styles.statusPill}
-              style={{ "--dot-color": sc.dot, color: sc.text, background: sc.bg, borderColor: sc.border } as React.CSSProperties}
-              data-pulse={sc.pulse ? "true" : undefined}
-            >
-              <span className={styles.statusDot} />
-              {sc.label}
-            </span>
+          <div className={`${styles.statusBadge} ${styles[`badge_${sc.cls}`]}`}>
+            <span className={`${styles.statusDot} ${sc.pulse ? styles.statusDotPulse : ""}`} />
+            {sc.label}
           </div>
         )}
 
+        {/* Image count — top right */}
         {imageUrls.length > 1 && (
-          <span className={styles.imgMore}><ImageIcon size={9} /> {imageUrls.length}</span>
-        )}
-
-        {condition && (
-          <span
-            className={styles.condTag}
-            style={conditionColor ? {
-              color: conditionColor,
-              background: conditionColor + "1a",
-              borderColor: conditionColor + "40",
-            } as React.CSSProperties : {}}
-          >
-            {condition}
+          <span className={styles.imgCount}>
+            <ImageIcon size={9} /> {imageUrls.length}
           </span>
         )}
 
+        {/* Condition — bottom left */}
+        {condition && (
+          <span
+            className={`${styles.condTag} ${cCls ? styles[cCls] : ""}`}
+            style={conditionColor && !cCls ? {
+              color: conditionColor,
+              background: conditionColor + "22",
+              borderColor: conditionColor + "50",
+            } : undefined}
+          >
+            {condition.toLowerCase()}
+          </span>
+        )}
+
+        {/* Date — bottom right */}
+        {date && <span className={styles.dateTag}>{date}</span>}
+
+        {/* Bucket CTA */}
         {showBucketBtn && (
           <button
             className={`${styles.bucketCta} ${bucketAdded ? styles.bucketDone : ""}`}
             onClick={e => { e.stopPropagation(); onAddToBucket?.(); }}
           >
-            {bucketAdded ? <><Check size={13} /> saved</> : <><ShoppingBag size={13} /> want this</>}
+            {bucketAdded
+              ? <><Check size={13} /> saved</>
+              : <><ShoppingBag size={13} /> want this</>}
           </button>
         )}
       </div>
@@ -193,6 +306,7 @@ export default function ProductPreviewCard({
       <div className={styles.body}>
         {categoryName && (
           <p className={styles.cat}>
+            <span className={styles.catDot} />
             {CatIcon && <CatIcon size={9} />}
             {categoryName}
           </p>
@@ -202,33 +316,19 @@ export default function ProductPreviewCard({
           {title || <em className={styles.noTitle}>untitled drop</em>}
         </h3>
 
-        <div className={styles.chips}>
+        <div className={styles.metaRow}>
           {purchaseYear && (
-            <span className={styles.chip}><Calendar size={9} /> {purchaseYear}</span>
+            <span className={styles.metaChip}>
+              <Calendar size={9} /> {purchaseYear}
+            </span>
           )}
-          {purchasePrice && marketPrice && (
-            <ValuePctBadge purchasePrice={purchasePrice} marketPrice={marketPrice} />
+          <ValueBadge purchasePrice={purchasePrice ?? ""} marketPrice={marketPrice ?? ""} />
+          {isRejected && (
+            <span className={styles.rejectChip}>
+              <AlertCircle size={9} /> Resubmit required
+            </span>
           )}
         </div>
-
-        {activeOpts.length > 0 && (
-          <div className={styles.wantsRow}>
-            <Repeat2 size={10} className={styles.wantsIcon} />
-            <div className={styles.wantsChips}>
-              {activeOpts.map((o, i) => (
-                <span key={i} className={styles.wantChip}>
-                  {o.icon ? <iconify-icon icon={o.icon} width="10" height="10" /> : <Box size={9} />}
-                  {o.title}
-                </span>
-              ))}
-              {replaceOptions.filter(o => o.title?.trim()).length > 2 && (
-                <span className={styles.wantMore}>
-                  +{replaceOptions.filter(o => o.title?.trim()).length - 2}
-                </span>
-              )}
-            </div>
-          </div>
-        )}
 
         {tags && (
           <div className={styles.tagsRow}>
@@ -239,31 +339,35 @@ export default function ProductPreviewCard({
         )}
       </div>
 
-      {/* ══ HOVER ACTION BAR ══
-          Lives BELOW the body — expands downward on hover.
-          Does NOT overlap the image at all.
-          Order: View (everyone) → Scan → Edit → Delete
-      */}
+      {/* ══ EXCHANGE ══ */}
+      <ExchangeSection options={replaceOptions} />
+
+      {/* ══ ACTION BAR ══ */}
       {hasActions && (
-        <div className={styles.hoverActions} onClick={e => e.stopPropagation()}>
+        <div className={styles.actionBar} onClick={e => e.stopPropagation()}>
           {onView && (
-            <button className={`${styles.act} ${styles.actView}`} onClick={onView}>
-              <Eye size={12} /> view
+            <button className={`${styles.actBtn} ${styles.actView}`} onClick={onView}>
+              <Eye size={12} /> View
             </button>
           )}
           {onScan && (
-            <button className={`${styles.act} ${styles.actScan}`} onClick={onScan}>
-              <Scan size={12} /> scan
+            <button className={`${styles.actBtn} ${styles.actScan}`} onClick={onScan}>
+              <Scan size={12} /> Scan
             </button>
           )}
           {onEdit && (
-            <button className={`${styles.act} ${styles.actEdit}`} onClick={onEdit}>
-              <Pencil size={12} /> edit
+            <button className={`${styles.actBtn} ${styles.actEdit}`} onClick={onEdit}>
+              <Pencil size={12} /> Edit
+            </button>
+          )}
+          {onResubmit && (
+            <button className={`${styles.actBtn} ${styles.actResubmit}`} onClick={onResubmit}>
+              <Pencil size={12} /> Resubmit
             </button>
           )}
           {onDelete && (
-            <button className={`${styles.act} ${styles.actDel}`} onClick={onDelete}>
-              <Trash2 size={12} />
+            <button className={`${styles.actBtn} ${styles.actDel}`} onClick={onDelete}>
+              <Trash2 size={13} />
             </button>
           )}
         </div>

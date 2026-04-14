@@ -1,14 +1,13 @@
 /* ═══════════════════════════════════════════
-   Fixed Icon Rail Sidebar — Gen-Z · Always On
-   All colors pulled from globals.css :root
+   Sidebar.module.css
+   Light · Flat · No gradients · Clean tooltips
    ═══════════════════════════════════════════ */
 
 /* ── Overlay (mobile) ── */
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.72);
-  backdrop-filter: blur(6px);
+  background: rgba(0, 0, 0, 0.35);
   z-index: 99;
 }
 
@@ -23,14 +22,17 @@
   height: 40px;
   align-items: center;
   justify-content: center;
-  background: var(--bg-rail);
+  background: #ffffff;
   border: 1px solid var(--border-c);
   color: var(--purple);
   border-radius: 12px;
   cursor: pointer;
   transition: all var(--transition);
 }
-.hamburger:hover { background: var(--surface-hover); border-color: var(--purple); }
+.hamburger:hover {
+  background: var(--surface-hover);
+  border-color: var(--purple);
+}
 
 /* ── Close btn (mobile only) ── */
 .closeBtn {
@@ -49,7 +51,11 @@
   flex-shrink: 0;
   transition: all var(--transition);
 }
-.closeBtn:hover { color: var(--red); border-color: var(--red); }
+.closeBtn:hover {
+  color: var(--red);
+  border-color: rgba(225, 29, 72, 0.3);
+  background: rgba(225, 29, 72, 0.05);
+}
 
 /* ═══════════════════════════════
    RAIL
@@ -60,16 +66,16 @@
   left: 12px;
   bottom: 12px;
   width: var(--rail-width);
-  background: var(--bg-rail);
-  backdrop-filter: blur(24px) saturate(180%);
+  /* flat white — no blur, no dark glass */
+  background: #ffffff;
   border: 1px solid var(--border-c);
-  border-radius: 22px;
+  border-radius: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
   z-index: 100;
   overflow: visible;
-  box-shadow: var(--shadow);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06), 0 4px 16px rgba(0, 0, 0, 0.04);
 }
 
 /* ── Logo slot ── */
@@ -86,12 +92,12 @@
   width: 36px;
   height: 36px;
   border-radius: 11px;
-  background: var(--grad);
+  /* flat solid — no gradient */
+  background: var(--purple);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
-  box-shadow: var(--shadow-gold);
   flex-shrink: 0;
 }
 
@@ -115,6 +121,7 @@
   overflow-y: auto;
   overflow-x: visible;
   scrollbar-width: none;
+  justify-content: center;
   gap: 0;
 }
 .nav::-webkit-scrollbar { display: none; }
@@ -135,7 +142,7 @@
   margin: 6px 0;
 }
 
-/* ── Nav item wrapper (for tooltip) ── */
+/* ── Item wrapper — needed for tooltip positioning ── */
 .itemWrap {
   position: relative;
   width: 100%;
@@ -149,42 +156,56 @@
   position: relative;
   width: 44px;
   height: 44px;
-  border-radius: 14px;
+  border-radius: 13px;
   border: 1px solid transparent;
   background: transparent;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all var(--transition);
+  transition: background var(--transition), color var(--transition), border-color var(--transition);
   flex-shrink: 0;
 }
 
 .navBtn:hover {
-  background: var(--surface-hover);
-  color: var(--text-primary);
+  background: rgba(124, 58, 237, 0.07);
+  color: var(--purple);
 }
 
+/* Active — flat tint + left indicator, no gradient */
 .navBtnActive {
-  background: var(--active-bg) !important;
-  border-color: var(--gold-border) !important;
+  background: rgba(124, 58, 237, 0.09) !important;
+  border-color: rgba(124, 58, 237, 0.16) !important;
   color: var(--purple) !important;
-  box-shadow: var(--shadow-gold);
+}
+
+/* Active left-edge bar */
+.navBtnActive::before {
+  content: "";
+  position: absolute;
+  left: -9px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 20px;
+  border-radius: 0 3px 3px 0;
+  background: var(--purple);
 }
 
 .navBtnAdmin { color: var(--purple); }
-.navBtnAdmin:hover { background: var(--gold-dim); }
+.navBtnAdmin:hover { background: rgba(124, 58, 237, 0.07); }
 
-/* Badge */
+/* ── Badge ── */
 .badge {
   position: absolute;
-  top: 6px;
-  right: 6px;
-  min-width: 16px;
-  height: 16px;
+  top: 7px;
+  right: 7px;
+  min-width: 15px;
+  height: 15px;
   border-radius: 20px;
-  background: var(--grad);
+  /* flat solid red — no gradient */
+  background: var(--red);
   color: #fff;
   font-size: 9px;
   font-weight: 700;
@@ -192,34 +213,53 @@
   align-items: center;
   justify-content: center;
   padding: 0 4px;
-  box-shadow: var(--shadow-gold);
   font-family: 'DM Mono', monospace;
   pointer-events: none;
+  border: 1.5px solid #ffffff;
 }
 
-/* ── Tooltip ── */
+/* ════════════════════════════════
+   TOOLTIP
+   ════════════════════════════════ */
 .tooltip {
+  /* Position: right of the button */
   position: absolute;
-  left: calc(100% + 12px);
+  left: calc(100% + 11px);
   top: 50%;
-  transform: translateY(-50%) translateX(-4px);
-  background: var(--bg-rail);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--border-c);
-  color: var(--text-primary);
+  transform: translateY(-50%) translateX(-5px);
+
+  /* Flat card — matches sidebar white surface */
+  background: #1a1825;
+  color: #ffffff;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: 12px;
   font-weight: 600;
+  letter-spacing: -0.1px;
   white-space: nowrap;
-  padding: 6px 12px;
-  border-radius: 10px;
-  pointer-events: none;
+  padding: 6px 11px;
+  border-radius: 9px;
+
+  /* Hidden until hover */
   opacity: 0;
-  transition: opacity var(--transition), transform var(--transition);
-  font-family: 'Plus Jakarta Sans', sans-serif;
+  pointer-events: none;
+  transition:
+    opacity 0.14s ease,
+    transform 0.14s ease;
   z-index: 999;
-  box-shadow: var(--shadow);
 }
 
+/* Arrow pointing left toward the button */
+.tooltip::before {
+  content: "";
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 5px solid transparent;
+  border-right-color: #1a1825;
+}
+
+/* Show on hover */
 .itemWrap:hover .tooltip,
 .avatarWrap:hover .tooltip {
   opacity: 1;
@@ -246,28 +286,27 @@
   width: 44px;
 }
 
-/* ── Avatar button ── */
+/* ── Avatar button — flat, no gradient bg ── */
 .avatarBtn {
   position: relative;
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   border: none;
-  background: var(--grad);
-  outline: 2px solid var(--gold-border);
+  background: rgba(124, 58, 237, 0.09);
+  outline: 2px solid rgba(124, 58, 237, 0.20);
   outline-offset: 2px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  transition: all var(--transition);
+  transition: outline-color var(--transition), background var(--transition);
   padding: 0;
 }
-
 .avatarBtn:hover {
   outline-color: var(--purple);
-  box-shadow: 0 0 0 4px var(--gold-dim);
+  background: rgba(124, 58, 237, 0.13);
 }
 
 .avatarImg {
@@ -278,31 +317,31 @@
   display: block;
 }
 
+/* Initials — flat solid color, no gradient */
 .avatarInitials {
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  background: var(--grad);
+  background: var(--purple);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 800;
   color: #fff;
   font-family: 'Plus Jakarta Sans', sans-serif;
-  letter-spacing: -0.3px;
+  letter-spacing: -0.2px;
 }
 
 .onlineDot {
   position: absolute;
   bottom: 1px;
   right: 1px;
-  width: 10px;
-  height: 10px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
   background: var(--green);
-  border: 2px solid var(--bg-page);
-  box-shadow: 0 0 6px var(--green);
+  border: 2px solid #ffffff;
   pointer-events: none;
 }
 
@@ -312,15 +351,15 @@
 .popup {
   position: absolute;
   bottom: 0;
-  left: calc(100% + 14px);
-  width: 240px;
-  background: var(--bg-rail);
-  backdrop-filter: blur(20px);
+  left: calc(100% + 12px);
+  width: 236px;
+  /* flat white card */
+  background: #ffffff;
   border: 1px solid var(--border-c);
-  border-radius: 18px;
+  border-radius: 16px;
   padding: 12px;
   z-index: 500;
-  box-shadow: var(--shadow);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.10), 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 
 .popupProfile {
@@ -336,24 +375,25 @@
 }
 
 .popupAvatarImg {
-  width: 44px;
-  height: 44px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   object-fit: cover;
   display: block;
-  outline: 2px solid var(--gold-border);
+  outline: 2px solid rgba(124, 58, 237, 0.20);
   outline-offset: 2px;
 }
 
+/* Popup initials — flat solid color */
 .popupAvatarInitials {
-  width: 44px;
-  height: 44px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
-  background: var(--grad);
+  background: var(--purple);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 800;
   color: #fff;
   font-family: 'Plus Jakarta Sans', sans-serif;
@@ -363,16 +403,15 @@
   position: absolute;
   bottom: 1px;
   right: 1px;
-  width: 10px;
-  height: 10px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
   background: var(--green);
-  border: 2px solid var(--bg-rail);
-  box-shadow: 0 0 6px var(--green);
+  border: 2px solid #ffffff;
 }
 
 .popupName {
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--text-primary);
   font-family: 'Plus Jakarta Sans', sans-serif;
@@ -381,18 +420,18 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 148px;
+  max-width: 144px;
 }
 
 .popupEmail {
-  font-size: 11px;
+  font-size: 10.5px;
   color: var(--text-muted);
   font-family: 'DM Mono', monospace;
   margin: 0 0 5px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 148px;
+  max-width: 144px;
 }
 
 .rolePill {
@@ -407,13 +446,13 @@
   letter-spacing: 0.4px;
   font-family: 'DM Mono', monospace;
 }
-.rolePillUser  { background: rgba(8,145,178,0.1);   color: var(--cyan);   border: 1px solid rgba(8,145,178,0.2); }
-.rolePillAdmin { background: var(--gold-dim);        color: var(--purple); border: 1px solid var(--gold-border); }
+.rolePillUser  { background: rgba(8,145,178,0.08);   color: var(--cyan);   border: 1px solid rgba(8,145,178,0.18); }
+.rolePillAdmin { background: rgba(124,58,237,0.08);  color: var(--purple); border: 1px solid rgba(124,58,237,0.18); }
 
 .popupDivider {
   height: 1px;
   background: var(--border-c);
-  margin: 6px 0;
+  margin: 5px 0;
 }
 
 .popupItem {
@@ -427,17 +466,17 @@
   color: var(--text-secondary);
   font-size: 13px;
   font-weight: 500;
-  border-radius: 10px;
+  border-radius: 9px;
   cursor: pointer;
   text-align: left;
-  transition: all var(--transition);
+  transition: background var(--transition), color var(--transition);
   font-family: 'Plus Jakarta Sans', sans-serif;
 }
-.popupItem:hover       { background: var(--surface-hover); color: var(--text-primary); }
-.popupItemAdmin        { color: var(--purple); }
-.popupItemAdmin:hover  { background: var(--gold-dim); color: var(--purple); }
-.popupItemDanger       { color: var(--red); }
-.popupItemDanger:hover { background: rgba(225,29,72,0.09); color: var(--red); }
+.popupItem:hover        { background: var(--surface-hover); color: var(--text-primary); }
+.popupItemAdmin         { color: var(--purple); }
+.popupItemAdmin:hover   { background: rgba(124, 58, 237, 0.07); color: var(--purple); }
+.popupItemDanger        { color: var(--red); }
+.popupItemDanger:hover  { background: rgba(225, 29, 72, 0.07); color: var(--red); }
 
 /* ══════════════════
    MOBILE
@@ -450,7 +489,7 @@
     top: 0;
     left: 0;
     bottom: 0;
-    border-radius: 0 22px 22px 0;
+    border-radius: 0 20px 20px 0;
     width: 200px;
     transform: translateX(-100%);
     transition: transform var(--transition);
@@ -461,8 +500,11 @@
 
   .mobileOpen {
     transform: translateX(0);
-    box-shadow: 8px 0 60px rgba(0,0,0,0.4);
+    box-shadow: 6px 0 40px rgba(0, 0, 0, 0.12);
   }
+
+  /* Active bar: hide left-edge on mobile (clipped) */
+  .navBtnActive::before { display: none; }
 
   .itemWrap {
     justify-content: flex-start;
@@ -475,32 +517,27 @@
     flex-shrink: 0;
   }
 
+  /* On mobile: tooltip becomes an inline label */
   .tooltip {
     position: static;
-    transform: none;
+    transform: none !important;
     opacity: 1;
     pointer-events: auto;
     background: transparent;
+    color: var(--text-secondary);
     border: none;
     box-shadow: none;
     padding: 0 0 0 10px;
     font-size: 13.5px;
-    color: var(--text-secondary);
     font-weight: 500;
     transition: none;
-    backdrop-filter: none;
   }
+  .tooltip::before { display: none; }
 
-  .itemWrap:hover .tooltip { transform: none; }
-
-  .group { align-items: flex-start; padding: 0 8px; }
+  .group        { align-items: flex-start; padding: 0 8px; }
   .groupDivider { width: calc(100% - 16px); }
-
-  .logoSlot { justify-content: flex-start; padding-left: 18px; }
-
-  .bottom { align-items: flex-start; padding-left: 18px; }
-
-  .avatarWrap { width: auto; flex-direction: row; gap: 12px; }
-
-  .popup { display: none; }
+  .logoSlot     { justify-content: flex-start; padding-left: 18px; }
+  .bottom       { align-items: flex-start; padding-left: 18px; }
+  .avatarWrap   { width: auto; flex-direction: row; gap: 12px; }
+  .popup        { display: none; }
 }

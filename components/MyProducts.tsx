@@ -12,6 +12,7 @@ import ProductPreviewCard from "@/components/Productpreviewcard";
 import ProductDetailPage from "@/components/ProductDetail";
 import ProductScanner from "@/components/Productscanner";
 import type { PreviewReplaceOption } from "@/components/Productpreviewcard";
+import { Icon } from '@iconify/react';
 
 /* ─── Types ── */
 export interface Category { id: number; name: string; }
@@ -44,7 +45,7 @@ interface MyProductsProps { onNavigate: (id: string) => void; }
 declare global {
   namespace JSX {
     interface IntrinsicElements {
-      "iconify-icon": React.DetailedHTMLProps<
+      "Icon": React.DetailedHTMLProps<
         React.HTMLAttributes<HTMLElement> & { icon?: string; width?: string | number; height?: string | number },
         HTMLElement
       >;

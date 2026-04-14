@@ -8,7 +8,6 @@ import {
 } from "lucide-react";
 import styles from "@/styles/MainContent.module.css";
 
-/* ── per-page metadata ── */
 const PAGE_META: Record<string, {
   label: string;
   desc: string;
@@ -46,7 +45,7 @@ export default function MainContent({ activeId, children }: MainContentProps) {
   useEffect(() => {
     if (prevId.current !== activeId && contentRef.current) {
       contentRef.current.classList.remove(styles.pageEnter);
-      void contentRef.current.offsetWidth; // reflow
+      void contentRef.current.offsetWidth;
       contentRef.current.classList.add(styles.pageEnter);
       prevId.current = activeId;
     }
@@ -55,13 +54,12 @@ export default function MainContent({ activeId, children }: MainContentProps) {
   return (
     <div className={styles.shell}>
 
-      {/* ── ambient glow blobs ── */}
+      {/* ── Subtle ambient tints (light mode — very faint) ── */}
       <div className={`${styles.blob} ${styles.blob1}`} />
       <div className={`${styles.blob} ${styles.blob2}`} />
-      <div className={`${styles.blob} ${styles.blob3}`} />
 
       {/* ══════════════════════════════
-          FLOATING TOP NAVBAR / HEADER
+          FLOATING TOP NAVBAR
           ══════════════════════════════ */}
       <header className={`${styles.floatingNav} ${styles[`nav_${meta.accent}`]}`}>
         <div className={styles.navInner}>
@@ -69,7 +67,7 @@ export default function MainContent({ activeId, children }: MainContentProps) {
           {/* Left: icon + page title + desc */}
           <div className={styles.navLeft}>
             <div className={`${styles.navIconBox} ${styles[`iconBox_${meta.accent}`]}`}>
-              <Icon size={17} strokeWidth={2.2} />
+              <Icon size={16} strokeWidth={2} />
             </div>
             <div className={styles.navText}>
               <span className={styles.navTitle}>{meta.label}</span>
@@ -91,7 +89,7 @@ export default function MainContent({ activeId, children }: MainContentProps) {
           </div>
 
         </div>
-        {/* gradient underline accent */}
+        {/* thin accent underline */}
         <div className={`${styles.navUnderline} ${styles[`underline_${meta.accent}`]}`} />
       </header>
 

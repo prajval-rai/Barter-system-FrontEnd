@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 
 import Sidebar from "@/components/Sidebar";
-import Dashboard from "@/components/Dashboard";
 import Marketplace from "@/components/Marketplace";
 import ExchangeRequests from "@/components/ExchangeRequests";
 import MyProducts from "@/components/MyProducts";
@@ -26,7 +25,7 @@ import styles from "@/styles/Pages.module.css";
 export default function Home() {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
-  const [activeId, setActiveId] = useState("dashboard");
+  const [activeId, setActiveId] = useState("marketplace");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false); // ← track collapsed
 
   useEffect(() => {
@@ -59,7 +58,6 @@ export default function Home() {
 
   const renderPage = () => {
     switch (activeId) {
-      case "dashboard":            return <Dashboard onNavigate={setActiveId} />;
       case "marketplace":          return <Marketplace onNavigate={setActiveId} />;
       case "requests":             return <ExchangeRequests onNavigate={setActiveId} />;
       case "my-products":          return <MyProducts onNavigate={setActiveId} />;
@@ -70,7 +68,7 @@ export default function Home() {
       case "wishlist":             return <Wishlist onNavigate={setActiveId} />;
       case "settings":             return <Settings />;
       case "manage-marketplace":   return <AdminHub />;
-      default:                     return <Dashboard onNavigate={setActiveId} />;
+      default:                     return <Marketplace onNavigate={setActiveId} />;
     }
   };
 

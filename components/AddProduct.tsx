@@ -3,21 +3,25 @@
 import { useState, useEffect, useRef } from "react";
 import {
   ArrowRight, ArrowLeft, Check, Upload, X, Plus, Trash2,
-  Package, Tag, FileText, Image as ImageIcon, Repeat2, Rocket,
+  Package, Tag, FileText, Image as ImageIcon, Repeat2,
   ChevronDown, Search, Loader2, Eye, Layers, Camera,
-  Lightbulb, Calendar, DollarSign, TrendingUp, IndianRupee,
-  Music, BookOpen, Home, Dumbbell, Palette, Shirt,
+  Lightbulb, Calendar, IndianRupee,
+  TrendingUp, Music, BookOpen, Home, Dumbbell, Palette, Shirt,
   Trophy, Box, Laptop, Zap, Star, CircleDot,
   Utensils, Car, Gamepad2, Gem, Headphones, Watch, Bike,
   Sofa, Tv, Smartphone, Baby, Flower2, Coffee, Plane,
   Hammer, Wrench, Heart, Globe, ShoppingBag, Leaf, Sun, Moon,
   LayoutGrid, RefreshCw, AlertCircle, TrendingDown, Send,
+  Sparkles, CheckCircle2, BookMarked, ImagePlus, DollarSign, ArrowUpRight,
 } from "lucide-react";
 import styles from "@/styles/AddProduct.module.css";
 import BarterLoader from "@/components/Barterloader";
 import ProductPreviewCard from "./Productpreviewcard";
 import CompleteProfileModal from "@/components/Completeprofilemodal";
 import { useAuth } from "@/context/AuthContext";
+import { Icon } from '@iconify/react';
+
+
 /* ─── Types ──────────────────────────────────────── */
 interface ReplaceOption {
   category_id: number | "";
@@ -26,13 +30,74 @@ interface ReplaceOption {
   icon: string;
 }
 interface AddProductProps { onNavigate: (id: string) => void; }
+interface ApiCategory { id: number; name: string; icon?: string; }
 
-interface ApiCategory {
-  id: number;
-  name: string;
-  icon?: string;
+/* ─── Chapter transition config ─────────────────── */
+interface ChapterTransition {
+  emoji: string;
+  eyebrow: string;
+  heading: string;
+  body: string;
+  highlight: string;
+  highlightIcon: React.ElementType;
+  btnLabel: string;
+  celebration: string; // small stat/win line
 }
 
+const CHAPTER_TRANSITIONS: Record<number, ChapterTransition> = {
+  2: {
+    emoji: "📖",
+    eyebrow: "Chapter 1 complete!",
+    heading: "Your item has a name — now give it a voice.",
+    body: "Listings with honest, specific descriptions trade 3× faster than bare-bones ones. You've got a name. Now tell us the story behind it — why you bought it, what it means, what's included.",
+    highlight: "Chapter 2 · Its story",
+    highlightIcon: BookMarked,
+    btnLabel: "Tell its story",
+    celebration: "Title, category & condition saved ✓",
+  },
+  3: {
+    emoji: "📸",
+    eyebrow: "Chapter 2 complete!",
+    heading: "The story is set. Now make it visible.",
+    body: "A picture is worth a trade. Items with 3+ photos from different angles close deals twice as fast. Natural light, all angles — show it like you'd want to see it if you were buying.",
+    highlight: "Chapter 3 · Show it off",
+    highlightIcon: ImagePlus,
+    btnLabel: "Add photos",
+    celebration: "Description saved ✓",
+  },
+  4: {
+    emoji: "💰",
+    eyebrow: "Chapter 3 complete!",
+    heading: "Looking sharp! Now let's talk value.",
+    body: "Traders want to know they're getting a fair deal. Setting a purchase price and current market value gives them the context they need to say yes quickly.",
+    highlight: "Chapter 4 · What's it worth?",
+    highlightIcon: DollarSign,
+    btnLabel: "Set the value",
+    celebration: "Photos uploaded ✓",
+  },
+  5: {
+    emoji: "🔄",
+    eyebrow: "Chapter 4 complete!",
+    heading: "Value noted. Now — what would make you trade?",
+    body: "This is where the magic happens. Tell us what you'd accept in exchange. The more open you are, the wider your net — and the faster you'll find a match.",
+    highlight: "Chapter 5 · Your trade wishlist",
+    highlightIcon: Repeat2,
+    btnLabel: "Set trade terms",
+    celebration: "Pricing & tags saved ✓",
+  },
+  6: {
+    emoji: "🚀",
+    eyebrow: "Almost there!",
+    heading: "Your listing is ready to go live.",
+    body: "One final look before it heads to admin review. Once approved, traders across the marketplace will be able to discover and offer a trade. You've done the hard work — let's finish strong.",
+    highlight: "Chapter 6 · Final review",
+    highlightIcon: Send,
+    btnLabel: "Review & submit",
+    celebration: "Exchange options saved ✓",
+  },
+};
+
+/* ─── Icon / category helpers ────────────────────── */
 const ICON_MAP: Record<string, React.ElementType> = {
   Tag, Package, Laptop, Music, BookOpen, Home, Dumbbell, Palette,
   Shirt, Trophy, Box, Utensils, Car, Gamepad2, Gem, Camera,
@@ -40,7 +105,6 @@ const ICON_MAP: Record<string, React.ElementType> = {
   Coffee, Plane, Hammer, Wrench, Zap, Heart, Star, Globe,
   ShoppingBag, Leaf, Sun, Moon, LayoutGrid, Layers, Search,
 };
-
 const resolveIcon = (name?: string): React.ElementType =>
   (name && ICON_MAP[name]) ? ICON_MAP[name] : Tag;
 
@@ -80,7 +144,7 @@ const searchIcons = async (query: string, prefix: string): Promise<string[]> => 
 declare global {
   namespace JSX {
     interface IntrinsicElements {
-      "iconify-icon": React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement> & {
+      "Icon": React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement> & {
         icon?: string; width?: string | number; height?: string | number;
       }, HTMLElement>;
     }
@@ -95,51 +159,12 @@ const fmtSize = (b: number) => {
 };
 
 const STEPS = [
-  { id: 1, label: "Basics",    Icon: Package,   desc: "Name, category & condition" },
-  { id: 2, label: "Details",   Icon: FileText,  desc: "Story, year & docs" },
-  { id: 3, label: "Photos",    Icon: ImageIcon, desc: "Upload your images" },
-  { id: 4, label: "Value",     Icon: Tag,       desc: "Price & what you want" },
-  { id: 5, label: "Exchange",  Icon: Repeat2,   desc: "What you'll accept" },
-  { id: 6, label: "Review",    Icon: Send,      desc: "Submit for approval" },
-];
-
-const ONBOARD_TIPS = [
-  {
-    Icon: FileText,
-    heading: "Titles that get noticed",
-    body: "Include the brand, model, and one key detail. 'Sony WH-1000XM5 Noise-Cancelling Headphones' beats 'Headphones' every time.",
-    fields: ["Product title", "Category", "Condition"],
-  },
-  {
-    Icon: BookOpen,
-    heading: "Stories close trades",
-    body: "Explain why you're trading it, what's included, and any quirks. Honesty builds trust faster than a perfect description.",
-    fields: ["Description", "Model name", "Year purchased"],
-  },
-  {
-    Icon: Camera,
-    heading: "Photos are your storefront",
-    body: "Natural light, all angles, any wear shown. Items with 3+ photos trade 2× faster than single-photo listings.",
-    fields: ["Cover photo", "Additional angles", "Close-ups of wear"],
-  },
-  {
-    Icon: TrendingUp,
-    heading: "Fair value = faster trades",
-    body: "Check similar items online. Setting both purchase price and market price helps traders understand the deal.",
-    fields: ["Purchase price", "Market value", "Tags"],
-  },
-  {
-    Icon: Repeat2,
-    heading: "More options = more matches",
-    body: "Add 2–3 exchange options to triple your chances. An icon makes each option stand out in the feed.",
-    fields: ["Exchange title", "Category", "Icon", "Details"],
-  },
-  {
-    Icon: Send,
-    heading: "Almost there — submit for review!",
-    body: "Your listing goes to our admin team first. Once approved it'll be live in the marketplace. Double-check your cover photo and title.",
-    fields: ["Cover photo", "Title review", "Exchange options"],
-  },
+  { id: 1, label: "Basics",   Icon: Package,   chapterLabel: "The Basics" },
+  { id: 2, label: "Story",    Icon: BookOpen,  chapterLabel: "Its Story" },
+  { id: 3, label: "Photos",   Icon: Camera,    chapterLabel: "The Visuals" },
+  { id: 4, label: "Value",    Icon: Tag,       chapterLabel: "The Value" },
+  { id: 5, label: "Exchange", Icon: Repeat2,   chapterLabel: "The Wishlist" },
+  { id: 6, label: "Review",   Icon: Send,      chapterLabel: "The Finale" },
 ];
 
 /* ─── API ────────────────────────────────────────── */
@@ -164,7 +189,6 @@ const createProduct = async (data: any, images: File[]) => {
   if (!res.ok) { const err = await res.json(); throw new Error(err.error || "Failed"); }
   return res.json();
 };
-
 
 /* ─── Icon Picker ────────────────────────────────── */
 function IconPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
@@ -198,7 +222,7 @@ function IconPicker({ value, onChange }: { value: string; onChange: (v: string) 
     <div className={styles.iconPickerWrap} ref={ref}>
       <button type="button" className={styles.iconPickerTrigger} onClick={() => setOpen(p => !p)}>
         {value
-          ? <iconify-icon icon={value} width="20" height="20" />
+          ? <Icon  icon={value} width="20" height="20" />
           : <span className={styles.iconPickerEmpty}>Pick icon</span>}
         <ChevronDown size={12} style={{ transition: "transform .2s", transform: open ? "rotate(180deg)" : "none" }} />
       </button>
@@ -225,7 +249,7 @@ function IconPicker({ value, onChange }: { value: string; onChange: (v: string) 
                 <button key={id} type="button" title={name.replace(/-/g, " ")}
                   className={`${styles.iconPickerItem} ${value === id ? styles.iconPickerItemActive : ""}`}
                   onClick={() => { onChange(id); setOpen(false); }}>
-                  <iconify-icon icon={id} width="22" height="22" />
+                  <Icon  icon={id} width="22" height="22" />
                 </button>
               );
             })}
@@ -237,45 +261,66 @@ function IconPicker({ value, onChange }: { value: string; onChange: (v: string) 
   );
 }
 
-/* ─── Onboarding Popup ───────────────────────────── */
-function OnboardingPopup({ step, onDismiss, onNeverShow }: {
-  step: number; onDismiss: () => void; onNeverShow: () => void;
+/* ─── Chapter Transition Screen ─────────────────── */
+function ChapterTransitionScreen({
+  toStep,
+  fromStepData,
+  onContinue,
+}: {
+  toStep: number;
+  fromStepData?: { label: string };
+  onContinue: () => void;
 }) {
-  const tip = ONBOARD_TIPS[step - 1];
-  if (!tip) return null;
-  const { Icon: TipIcon } = tip;
+  const tr = CHAPTER_TRANSITIONS[toStep];
+  if (!tr) return null;
+  const { highlightIcon: HIcon } = tr;
 
   return (
-    <div className={styles.onboardOverlay}>
-      <div className={styles.onboardModal}>
-        <div className={styles.onboardGlow} />
-        <div className={styles.onboardIconWrap}>
-          <TipIcon size={28} />
+    <div className={styles.chapterOverlay}>
+      <div className={styles.chapterModal}>
+        {/* Ambient background glow */}
+        <div className={styles.chapterGlow} />
+
+        {/* Eyebrow */}
+        <div className={styles.chapterEyebrow}>
+          <CheckCircle2 size={12} />
+          {tr.eyebrow}
         </div>
-        <div className={styles.onboardBadge}>
-          <Lightbulb size={11} /> Step {step} tip
+
+        {/* Big emoji */}
+        <div className={styles.chapterEmoji}>{tr.emoji}</div>
+
+        {/* Heading */}
+        <h2 className={styles.chapterHeading}>{tr.heading}</h2>
+
+        {/* Body */}
+        <p className={styles.chapterBody}>{tr.body}</p>
+
+        {/* Celebration line — what was just saved */}
+        <div className={styles.chapterCelebration}>
+          <Check size={11} />
+          {tr.celebration}
         </div>
-        <h2 className={styles.onboardHeading}>{tip.heading}</h2>
-        <p className={styles.onboardBody}>{tip.body}</p>
-        <div className={styles.onboardFields}>
-          <div className={styles.onboardFieldsLabel}>Key fields this step:</div>
-          <div className={styles.onboardFieldsList}>
-            {tip.fields.map(f => (
-              <span key={f} className={styles.onboardFieldChip}>
-                <Check size={10} /> {f}
-              </span>
-            ))}
-          </div>
+
+        {/* Next chapter pill */}
+        <div className={styles.chapterNext}>
+          <HIcon size={12} />
+          Up next: {tr.highlight}
         </div>
-        <div className={styles.onboardActions}>
-          <button className={styles.onboardNever} onClick={onNeverShow}>Don't show again</button>
-          <button className={styles.onboardDismiss} onClick={onDismiss}>
-            Got it <ArrowRight size={14} />
-          </button>
-        </div>
-        <div className={styles.onboardStepDots}>
-          {STEPS.map((_, i) => (
-            <div key={i} className={`${styles.onboardDot} ${i + 1 === step ? styles.onboardDotActive : ""}`} />
+
+        {/* CTA */}
+        <button className={styles.chapterBtn} onClick={onContinue}>
+          {tr.btnLabel}
+          <ArrowRight size={15} />
+        </button>
+
+        {/* Step dots */}
+        <div className={styles.chapterDots}>
+          {STEPS.map((s, i) => (
+            <div
+              key={i}
+              className={`${styles.chapterDot} ${toStep - 1 > s.id ? styles.chapterDotDone : ""} ${toStep - 1 === s.id ? styles.chapterDotActive : ""}`}
+            />
           ))}
         </div>
       </div>
@@ -286,21 +331,10 @@ function OnboardingPopup({ step, onDismiss, onNeverShow }: {
 /* ─── Value change badge ─────────────────────────── */
 function ValueChangeBadge({ purchasePrice, marketPrice }: { purchasePrice: number | ""; marketPrice: number | "" }) {
   if (!purchasePrice || !marketPrice || Number(purchasePrice) === 0) return null;
-  const paid   = Number(purchasePrice);
-  const market = Number(marketPrice);
-  const diff   = market - paid;
-  const pct    = Math.abs(Math.round((diff / paid) * 100));
-  const gain   = diff > 0;
-  const flat   = diff === 0;
-
-  if (flat) {
-    return (
-      <span className={styles.valueBadgeFlat}>
-        <TrendingUp size={9} /> Held value
-      </span>
-    );
-  }
-
+  const paid = Number(purchasePrice), market = Number(marketPrice);
+  const diff = market - paid, pct = Math.abs(Math.round((diff / paid) * 100));
+  const gain = diff > 0, flat = diff === 0;
+  if (flat) return <span className={styles.valueBadgeFlat}><TrendingUp size={9} /> Held value</span>;
   return (
     <span className={gain ? styles.valueBadgeUp : styles.valueBadgeDown}>
       {gain ? <TrendingUp size={9} /> : <TrendingDown size={9} />}
@@ -310,49 +344,33 @@ function ValueChangeBadge({ purchasePrice, marketPrice }: { purchasePrice: numbe
 }
 
 /* ─── Live Preview ───────────────────────────────── */
-function LivePreview({
-  title,
-  description,
-  categoryId,
-  condition,
-  purchasePrice,
-  marketPrice,
-  previews,
-  tags,
-  replaceOptions,
-  purchaseYear,
-  categories,
-}: any) {
-  const cat     = categories?.find((c: ApiCategory) => c.id === categoryId);
+function LivePreview({ title, description, categoryId, condition, purchasePrice, marketPrice, previews, tags, replaceOptions, purchaseYear, categories }: any) {
+  const cat = categories?.find((c: ApiCategory) => c.id === categoryId);
   const CatIcon = cat ? resolveIcon(cat.icon) : undefined;
-  const cond    = CONDITIONS.find(c => c.value === condition);
-
-  // Map replaceOptions → PreviewReplaceOption shape
+  const cond = CONDITIONS.find(c => c.value === condition);
   const previewOpts = (replaceOptions ?? [])
     .filter((o: ReplaceOption) => o.title?.trim())
     .map((o: ReplaceOption) => ({ title: o.title, icon: o.icon }));
 
-  // Listing strength — identical logic as before
   const strengthItems = [
-    { done: title?.length > 2,           label: "Title" },
-    { done: !!categoryId,                label: "Category" },
-    { done: !!condition,                 label: "Condition" },
-    { done: description?.length > 9,     label: "Description" },
-    { done: !!purchaseYear,              label: "Year" },
-    { done: previews?.length > 0,        label: "Photos" },
-    { done: previews?.length >= 3,       label: "3+ Photos" },
-    { done: !!purchasePrice,             label: "Purchase price" },
-    { done: !!marketPrice,               label: "Market price" },
+    { done: title?.length > 2,            label: "Title" },
+    { done: !!categoryId,                 label: "Category" },
+    { done: !!condition,                  label: "Condition" },
+    { done: description?.length > 9,      label: "Description" },
+    { done: !!purchaseYear,               label: "Year" },
+    { done: previews?.length > 0,         label: "Photos" },
+    { done: previews?.length >= 3,        label: "3+ Photos" },
+    { done: !!purchasePrice,              label: "Purchase price" },
+    { done: !!marketPrice,                label: "Market price" },
     { done: !!replaceOptions?.[0]?.title, label: "Exchange option" },
-    { done: replaceOptions?.length >= 2, label: "2nd exchange" },
-    { done: !!tags,                      label: "Tags" },
+    { done: replaceOptions?.length >= 2,  label: "2nd exchange" },
+    { done: !!tags,                       label: "Tags" },
   ];
-  const strength      = Math.round(strengthItems.filter(s => s.done).length / strengthItems.length * 100);
+  const strength = Math.round(strengthItems.filter(s => s.done).length / strengthItems.length * 100);
   const strengthColor = strength >= 70 ? "var(--success)" : strength >= 40 ? "var(--gold)" : "var(--danger)";
 
   return (
     <div className={styles.previewPanel}>
-      {/* Header */}
       <div className={styles.previewHeader}>
         <Eye size={14} />
         <span>Live Preview</span>
@@ -360,8 +378,6 @@ function LivePreview({
           <CircleDot size={9} /> updating
         </span>
       </div>
-
-      {/* ── ProductPreviewCard replaces the old hand-rolled card ── */}
       <ProductPreviewCard
         title={title}
         categoryName={cat?.name}
@@ -375,28 +391,18 @@ function LivePreview({
         replaceOptions={previewOpts}
         tags={tags}
       />
-
-      {/* Listing strength — unchanged */}
       <div className={styles.previewStrength}>
         <div className={styles.previewStrengthHeader}>
           <span><Layers size={11} /> Listing strength</span>
           <strong style={{ color: strengthColor }}>{strength}%</strong>
         </div>
         <div className={styles.previewBar}>
-          <div
-            className={styles.previewBarFill}
-            style={{ width: `${strength}%`, background: strengthColor }}
-          />
+          <div className={styles.previewBarFill} style={{ width: `${strength}%`, background: strengthColor }} />
         </div>
         <div className={styles.previewChecklist}>
           {strengthItems.map((item, i) => (
-            <div
-              key={i}
-              className={`${styles.previewCheckItem} ${item.done ? styles.previewCheckDone : ""}`}
-            >
-              <div className={styles.previewCheckDot}>
-                {item.done && <Check size={8} />}
-              </div>
+            <div key={i} className={`${styles.previewCheckItem} ${item.done ? styles.previewCheckDone : ""}`}>
+              <div className={styles.previewCheckDot}>{item.done && <Check size={8} />}</div>
               {item.label}
             </div>
           ))}
@@ -410,16 +416,17 @@ function LivePreview({
    MAIN COMPONENT
 ════════════════════════════════════════════════════ */
 export default function AddProduct({ onNavigate }: AddProductProps) {
-  const [step, setStep]           = useState(1);
-  const [dir, setDir]             = useState<"fwd" | "bwd">("fwd");
-  const [animating, setAnimating] = useState(false);
+  const [step, setStep]                   = useState(1);
+  const [dir, setDir]                     = useState<"fwd" | "bwd">("fwd");
+  const [animating, setAnimating]         = useState(false);
+  const [showTransition, setShowTransition] = useState(false);
+  const [pendingStep, setPendingStep]     = useState<number | null>(null);
   const { user } = useAuth();
 
   const [categories, setCategories]   = useState<ApiCategory[]>([]);
   const [catsLoading, setCatsLoading] = useState(true);
   const [catsError, setCatsError]     = useState<string | null>(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
-
 
   useEffect(() => {
     const load = async () => {
@@ -461,14 +468,7 @@ export default function AddProduct({ onNavigate }: AddProductProps) {
   const [toast, setToast]       = useState<{ show: boolean; type: "success" | "error"; message: string }>({ show: false, type: "success", message: "" });
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const [showOnboard, setShowOnboard] = useState(false);
-  useEffect(() => {
-    const seen = localStorage.getItem("ap_onboard_seen");
-    if (!seen) setShowOnboard(true);
-  }, []);
-  const dismissOnboard   = () => setShowOnboard(false);
-  const neverShowOnboard = () => { localStorage.setItem("ap_onboard_seen", "1"); setShowOnboard(false); };
-
+  /* ─── Navigation ─── */
   const goTo = (next: number) => {
     if (animating) return;
     setDir(next > step ? "fwd" : "bwd");
@@ -499,10 +499,30 @@ export default function AddProduct({ onNavigate }: AddProductProps) {
     return Object.keys(e).length === 0;
   };
 
-  const next = () => { if (validateStep()) goTo(step + 1); };
+  const next = () => {
+    if (!validateStep()) return;
+    const nextStep = step + 1;
+    // Show chapter transition for every step except going to step 1
+    if (nextStep <= STEPS.length && CHAPTER_TRANSITIONS[nextStep]) {
+      setPendingStep(nextStep);
+      setShowTransition(true);
+    } else {
+      goTo(nextStep);
+    }
+  };
+
+  const handleTransitionContinue = () => {
+    setShowTransition(false);
+    if (pendingStep !== null) {
+      goTo(pendingStep);
+      setPendingStep(null);
+    }
+  };
+
   const back = () => goTo(step - 1);
   const clearErr = (k: string) => setErrors(p => { const n = { ...p }; delete n[k]; return n; });
 
+  /* ─── Images ─── */
   const addImages = (files: File[]) => {
     if (images.length + files.length > 10) { setErrors(p => ({ ...p, images: "Max 10 images" })); return; }
     const allowed = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
@@ -527,6 +547,7 @@ export default function AddProduct({ onNavigate }: AddProductProps) {
     setActiveImg(prev => Math.max(0, prev >= idx ? prev - 1 : prev));
   };
 
+  /* ─── Exchange options ─── */
   const addOpt    = () => setReplaceOptions(p => [...p, { category_id: "", title: "", description: "", icon: "" }]);
   const removeOpt = (i: number) => { if (replaceOptions.length > 1) setReplaceOptions(p => p.filter((_, j) => j !== i)); };
   const updateOpt = (i: number, f: keyof ReplaceOption, v: any) => {
@@ -534,42 +555,39 @@ export default function AddProduct({ onNavigate }: AddProductProps) {
     clearErr(`ro_cat_${i}`); clearErr(`ro_title_${i}`);
   };
 
+  /* ─── Toast ─── */
   const showToast = (type: "success" | "error", message: string) => {
     if (toastTimer.current) clearTimeout(toastTimer.current);
     setToast({ show: true, type, message });
     toastTimer.current = setTimeout(() => setToast(t => ({ ...t, show: false })), 4500);
   };
 
-const submitProduct = async () => {
-  setLoading(true);
-  try {
-    await createProduct({
-      title: title.trim(), description: description.trim(),
-      category_id: Number(categoryId), name: name.trim(),
-      purchase_year: Number(purchaseYear), purchase_bill: purchaseBill,
-      purchase_price: purchasePrice || undefined,
-      market_price: marketPrice || undefined,
-      replace_options: replaceOptions,
-    }, images);
-    setLoading(false);
-    setSubmitted(true);
-  } catch (err: any) {
-    setLoading(false);
-    showToast("error", err.message || "Something went wrong. Please try again.");
-  }
-};
+  /* ─── Submit ─── */
+  const submitProduct = async () => {
+    setLoading(true);
+    try {
+      await createProduct({
+        title: title.trim(), description: description.trim(),
+        category_id: Number(categoryId), name: name.trim(),
+        purchase_year: Number(purchaseYear), purchase_bill: purchaseBill,
+        purchase_price: purchasePrice || undefined,
+        market_price: marketPrice || undefined,
+        replace_options: replaceOptions,
+      }, images);
+      setLoading(false);
+      setSubmitted(true);
+    } catch (err: any) {
+      setLoading(false);
+      showToast("error", err.message || "Something went wrong. Please try again.");
+    }
+  };
 
-const handleSubmit = async () => {
-  if (!validateStep()) return;
-
-  const profileIncomplete = !user?.address || !user?.lat || !user?.long;
-  if (profileIncomplete) {
-    setShowProfileModal(true);
-    return;
-  }
-
-  submitProduct();
-};
+  const handleSubmit = async () => {
+    if (!validateStep()) return;
+    const profileIncomplete = !user?.address || !user?.lat || !user?.long;
+    if (profileIncomplete) { setShowProfileModal(true); return; }
+    submitProduct();
+  };
 
   const resetForm = () => {
     setTitle(""); setDescription(""); setCategoryId(""); setCondition(""); setName("");
@@ -577,7 +595,7 @@ const handleSubmit = async () => {
     setTags("");
     setReplaceOptions([{ category_id: "", title: "", description: "", icon: "" }]);
     setImages([]); setPreviews([]); setActiveImg(0); setErrors({}); setStep(1);
-    setSubmitted(false);
+    setSubmitted(false); setShowTransition(false); setPendingStep(null);
   };
 
   const progress = ((step - 1) / (STEPS.length - 1)) * 100;
@@ -613,7 +631,7 @@ const handleSubmit = async () => {
     );
   }
 
-  /* ─── Step renders ───────────────────────────── */
+  /* ─── Step content ──────────────────────────── */
   const renderStep = () => {
     switch (step) {
 
@@ -621,15 +639,16 @@ const handleSubmit = async () => {
       case 1: return (
         <>
           <div className={styles.stepHead}>
-            <span className={styles.stepNum}>01</span>
-            <div>
-              <h2 className={styles.stepTitle}>What are you trading?</h2>
-              <p className={styles.stepSub}>Name it, tag it, and rate its condition.</p>
+            <div className={styles.chapterTag}>
+              <span className={styles.chapterTagDot} />
+              Chapter 1 · The Basics
             </div>
+            <h2 className={styles.stepTitle}>What are you trading?</h2>
+            <p className={styles.stepSub}>Every great trade starts with a name. Give your item an identity — brand, model, the detail that makes someone stop scrolling.</p>
           </div>
 
           <div className={styles.field}>
-            <label className={styles.label}>Product title <span className={styles.req}>*</span></label>
+            <label className={styles.label}>Item title <span className={styles.req}>*</span></label>
             <input className={`${styles.input} ${errors.title ? styles.inputErr : ""}`}
               placeholder="e.g. Vintage Canon AE-1 Film Camera"
               value={title} maxLength={100} autoFocus
@@ -702,15 +721,16 @@ const handleSubmit = async () => {
         </>
       );
 
-      /* ── STEP 2: Details ── */
+      /* ── STEP 2: Story ── */
       case 2: return (
         <>
           <div className={styles.stepHead}>
-            <span className={styles.stepNum}>02</span>
-            <div>
-              <h2 className={styles.stepTitle}>Tell us its story</h2>
-              <p className={styles.stepSub}>Honest, specific listings trade faster.</p>
+            <div className={styles.chapterTag}>
+              <span className={styles.chapterTagDot} />
+              Chapter 2 · Its Story
             </div>
+            <h2 className={styles.stepTitle}>Tell us what makes it special</h2>
+            <p className={styles.stepSub}>Honest, specific listings close trades. Why are you trading it? What's included? Any quirks a new owner should know?</p>
           </div>
 
           <div className={styles.field}>
@@ -767,11 +787,12 @@ const handleSubmit = async () => {
       case 3: return (
         <>
           <div className={styles.stepHead}>
-            <span className={styles.stepNum}>03</span>
-            <div>
-              <h2 className={styles.stepTitle}>Show it off</h2>
-              <p className={styles.stepSub}>3+ photos = 2× more trades. First photo is the cover.</p>
+            <div className={styles.chapterTag}>
+              <span className={styles.chapterTagDot} />
+              Chapter 3 · The Visuals
             </div>
+            <h2 className={styles.stepTitle}>Show it off</h2>
+            <p className={styles.stepSub}>3+ photos = 2× more trades. Natural light, all angles. The first photo becomes your cover — make it count.</p>
           </div>
 
           <div
@@ -836,11 +857,12 @@ const handleSubmit = async () => {
       case 4: return (
         <>
           <div className={styles.stepHead}>
-            <span className={styles.stepNum}>04</span>
-            <div>
-              <h2 className={styles.stepTitle}>What's it worth?</h2>
-              <p className={styles.stepSub}>All fields optional — but they help traders find fair deals faster.</p>
+            <div className={styles.chapterTag}>
+              <span className={styles.chapterTagDot} />
+              Chapter 4 · The Value
             </div>
+            <h2 className={styles.stepTitle}>What's it worth?</h2>
+            <p className={styles.stepSub}>All optional — but pricing context helps traders feel confident saying yes. Check similar listings online.</p>
           </div>
 
           <div className={styles.optionalBanner}>
@@ -862,7 +884,6 @@ const handleSubmit = async () => {
                   onChange={e => setPurchasePrice(e.target.value === "" ? "" : Number(e.target.value))} />
               </div>
             </div>
-
             <div className={styles.field}>
               <label className={styles.label}>
                 <TrendingUp size={11} style={{ verticalAlign: "middle" }} />
@@ -878,24 +899,16 @@ const handleSubmit = async () => {
             </div>
           </div>
 
-          {/* Inline value change insight */}
           {purchasePrice && marketPrice && (
             <div className={styles.valueInsight}>
               {(() => {
-                const paid   = Number(purchasePrice);
-                const market = Number(marketPrice);
-                const diff   = market - paid;
-                const pct    = Math.abs(Math.round((diff / paid) * 100));
-                const gain   = diff > 0;
-                const flat   = diff === 0;
-                if (flat) return (
-                  <span className={styles.valueInsightFlat}>
-                    <TrendingUp size={13} /> This item held its value perfectly.
-                  </span>
-                );
+                const paid = Number(purchasePrice), market = Number(marketPrice);
+                const diff = market - paid, pct = Math.abs(Math.round((diff / paid) * 100));
+                const gain = diff > 0, flat = diff === 0;
+                if (flat) return <span className={styles.valueInsightFlat}><TrendingUp size={13} /> This item held its value perfectly.</span>;
                 return (
                   <span className={gain ? styles.valueInsightUp : styles.valueInsightDown}>
-                    {gain ? <TrendingUp size={13} /> : <TrendingDown size={13} />}
+                    {gain ? <TrendingUp size={13} /> : <TrendingDown size={9} />}
                     {gain
                       ? `This item appreciated +${pct}% — it's worth ₹${(market - paid).toLocaleString()} more than you paid!`
                       : `This item depreciated -${pct}% — it's worth ₹${(paid - market).toLocaleString()} less than you paid.`}
@@ -925,11 +938,12 @@ const handleSubmit = async () => {
       case 5: return (
         <>
           <div className={styles.stepHead}>
-            <span className={styles.stepNum}>05</span>
-            <div>
-              <h2 className={styles.stepTitle}>What will you accept?</h2>
-              <p className={styles.stepSub}>Add items you'd trade for. Icons help yours stand out.</p>
+            <div className={styles.chapterTag}>
+              <span className={styles.chapterTagDot} />
+              Chapter 5 · The Wishlist
             </div>
+            <h2 className={styles.stepTitle}>What would make you say yes?</h2>
+            <p className={styles.stepSub}>Be specific, be open. Adding 2–3 things you'd accept triples your chances of finding a match.</p>
           </div>
 
           <div className={styles.replaceList}>
@@ -956,9 +970,7 @@ const handleSubmit = async () => {
                         className={`${styles.select} ${errors[`ro_cat_${idx}`] ? styles.inputErr : ""}`}
                         value={opt.category_id}
                         onChange={e => updateOpt(idx, "category_id", Number(e.target.value))}>
-                        <option value="">
-                          {catsLoading ? "Loading…" : "Pick category"}
-                        </option>
+                        <option value="">{catsLoading ? "Loading…" : "Pick category"}</option>
                         {categories.map(c => (
                           <option key={c.id} value={c.id}>{c.name}</option>
                         ))}
@@ -995,11 +1007,12 @@ const handleSubmit = async () => {
       case 6: return (
         <>
           <div className={styles.stepHead}>
-            <span className={styles.stepNum}>06</span>
-            <div>
-              <h2 className={styles.stepTitle}>Ready to submit?</h2>
-              <p className={styles.stepSub}>Your listing will go to admin review before going live.</p>
+            <div className={styles.chapterTag}>
+              <span className={styles.chapterTagDot} />
+              Chapter 6 · The Finale
             </div>
+            <h2 className={styles.stepTitle}>Ready to submit?</h2>
+            <p className={styles.stepSub}>Your listing will go to admin review before going live. One final read-through — then let's launch it.</p>
           </div>
 
           <div className={styles.reviewNotice}>
@@ -1038,7 +1051,7 @@ const handleSubmit = async () => {
               {replaceOptions.filter(o => o.title).map((o, i) => (
                 <div key={i} className={styles.reviewOpt}>
                   {o.icon
-                    ? <iconify-icon icon={o.icon} width="18" height="18" />
+                    ? <Icon  icon={o.icon} width="18" height="18" />
                     : <Box size={18} />}
                   <div>
                     <div className={styles.reviewOptTitle}>{o.title}</div>
@@ -1059,18 +1072,19 @@ const handleSubmit = async () => {
     <>
       {loading && <BarterLoader text="Submitting for Review…" />}
 
-{showProfileModal && (
-  <CompleteProfileModal
-    onComplete={(updatedUser) => {
-      setShowProfileModal(false);
-      submitProduct();   // call submitProduct directly — skips the profile check
-    }}
-    onCancel={() => {}}   // no-op — modal cannot be dismissed
-  />
-)}
+      {showProfileModal && (
+        <CompleteProfileModal
+          onComplete={() => { setShowProfileModal(false); submitProduct(); }}
+          onCancel={() => {}}
+        />
+      )}
 
-      {showOnboard && (
-        <OnboardingPopup step={step} onDismiss={dismissOnboard} onNeverShow={neverShowOnboard} />
+      {/* ── Chapter Transition Overlay ── */}
+      {showTransition && pendingStep !== null && (
+        <ChapterTransitionScreen
+          toStep={pendingStep}
+          onContinue={handleTransitionContinue}
+        />
       )}
 
       {toast.show && (
@@ -1082,7 +1096,6 @@ const handleSubmit = async () => {
       )}
 
       <div className={styles.shell}>
-
         {/* Progress bar */}
         <div className={styles.progressBar}>
           <div className={styles.progressFill} style={{ width: `${progress}%` }} />
@@ -1091,8 +1104,7 @@ const handleSubmit = async () => {
         {/* Step pills */}
         <div className={styles.stepPills}>
           {STEPS.map(s => {
-            const done   = step > s.id;
-            const active = step === s.id;
+            const done = step > s.id, active = step === s.id;
             return (
               <div key={s.id} className={`${styles.pill} ${active ? styles.pillActive : ""} ${done ? styles.pillDone : ""}`}>
                 <div className={styles.pillDot}>
@@ -1150,9 +1162,6 @@ const handleSubmit = async () => {
               purchaseYear={purchaseYear}
               categories={categories}
             />
-            <button className={styles.tipBtn} onClick={() => setShowOnboard(true)}>
-              <Lightbulb size={13} /> Tips for this step
-            </button>
           </div>
 
         </div>
