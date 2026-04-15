@@ -196,7 +196,7 @@ function ScannerPanel({
       setStatusMsg(MSGS[Math.min(Math.floor(tick / 6), MSGS.length - 1)]);
     }, 120);
     try {
-      const res = await fetch(`${BASE}/scan/${product.id}/?radius=${radius}`, { credentials: "include" });
+      const res = await fetch(`${BASE}scan/${product.id}/?radius=${radius}`, { credentials: "include" });
       if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Scan failed");
       const data: ScanProduct[] = await res.json();
       if (intervalRef.current) clearInterval(intervalRef.current);
@@ -505,7 +505,7 @@ function ProductListPanel({
   const load = useCallback(async () => {
     setLoading(true); setError(null);
     try {
-      const res = await fetch(`${BASE}/products/products_by_status/`, { credentials: "include" });
+      const res = await fetch(`${BASE}products/products_by_status/`, { credentials: "include" });
       if (!res.ok) throw new Error("Failed to load");
       const raw: UserProduct[] = await res.json();
       setProducts(raw.map(p => ({ ...p, status: normalizeStatus(p.status) })));

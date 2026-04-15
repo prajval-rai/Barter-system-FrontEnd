@@ -36,7 +36,7 @@ const getAvailableActions = (status: StatusFilter): Action[] => {
 const BASE = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 const fetchProducts = async (status: string): Promise<Product[]> => {
-  const res = await fetch(`${BASE}/products/admin_products_by_status?status=${status}`, { credentials: "include" });
+  const res = await fetch(`${BASE}products/admin_products_by_status?status=${status}`, { credentials: "include" });
   if (!res.ok) throw new Error("Failed to fetch products");
   return res.json();
 };

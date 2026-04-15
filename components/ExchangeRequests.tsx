@@ -217,7 +217,7 @@ export default function ExchangeRequests({ onNavigate }: RequestsProps) {
   const load = async () => {
     setLoading(true); setError(null);
     try {
-      const res = await fetch( `${base_url}/barter/requests/`, { credentials: "include" });
+      const res = await fetch( `${base_url}barter/requests/`, { credentials: "include" });
       if (!res.ok) throw new Error("Failed to load requests");
       setRequests(await res.json());
     } catch (e: any) {

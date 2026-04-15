@@ -60,7 +60,7 @@ async function callDjangoGoogleLogin(token: string): Promise<AuthUser> {
 
 async function callDjangoLogout() {
   try {
-    await fetch(`${base_url}/auth/logout/`, {
+    await fetch(`${base_url}auth/logout/`, {
       method: "POST",
       credentials: "include",
     });

@@ -433,7 +433,7 @@ export default function AddProduct({ onNavigate }: AddProductProps) {
     const load = async () => {
       setCatsLoading(true); setCatsError(null);
       try {
-        const res = await fetch(`${base_url}/products/categories/`, { credentials: "include" });
+        const res = await fetch(`${base_url}products/categories/`, { credentials: "include" });
         if (!res.ok) throw new Error("Failed to load categories");
         const data: ApiCategory[] = await res.json();
         setCategories(data);
@@ -676,7 +676,7 @@ export default function AddProduct({ onNavigate }: AddProductProps) {
                   onClick={async () => {
                     setCatsLoading(true); setCatsError(null);
                     try {
-                      const res = await fetch(`${base_url}/products/categories/`, { credentials: "include" });
+                      const res = await fetch(`${base_url}products/categories/`, { credentials: "include" });
                       if (!res.ok) throw new Error("Failed to load categories");
                       setCategories(await res.json());
                     } catch (e: any) { setCatsError(e.message); }

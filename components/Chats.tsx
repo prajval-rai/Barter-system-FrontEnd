@@ -138,7 +138,7 @@ const truncate = (s: string, n = 38) => s.length > n ? s.slice(0, n) + "…" : s
 ───────────────────────────────────────── */
 async function fetchWsToken(): Promise<string | null> {
   try {
-    const r = await fetch(`${BASE}/accounts/ws-token/`, { credentials: "include" });
+    const r = await fetch(`${BASE}accounts/ws-token/`, { credentials: "include" });
     if (!r.ok) return null;
     return (await r.json()).token ?? null;
   } catch { return null; }
@@ -361,7 +361,7 @@ function RatingModal({ req, userEmail, onDone }: { req: AcceptedRequest; userEma
   const submit    = async () => {
     if (rating === 0) return; setLoading(true);
     try {
-      await fetch(`${BASE}/barter/rate/${req.id}/`, {
+      await fetch(`${BASE}barter/rate/${req.id}/`, {
         method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include",
         body: JSON.stringify({ rating, review, rated_user: otherUser }),
       });
@@ -424,7 +424,7 @@ function OtpModal({ req, userEmail, onComplete, onClose }: {
   const [copied, setCopied]   = useState(false);
   useEffect(() => {
     if (!isInitiator) return; setLoading(true);
-    fetch(`${BASE}/chat/request/${req.id}/otp/generate/`, { method: "POST", credentials: "include" })
+    fetch(`${BASE}chat/request/${req.id}/otp/generate/`, { method: "POST", credentials: "include" })
       .then(r => r.json()).then(d => { setOtp(d.otp); setLoading(false); })
       .catch(() => { setError("Failed to generate OTP"); setLoading(false); });
   }, [isInitiator, req.id]);
@@ -435,7 +435,7 @@ function OtpModal({ req, userEmail, onComplete, onClose }: {
   const submitOtp = async () => {
     if (!input.trim()) return; setLoading(true); setError(null);
     try {
-      const res  = await fetch(`${BASE}/chat/request/${req.id}/otp/verify/`, {
+      const res  = await fetch(`${BASE}chat/request/${req.id}/otp/verify/`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         credentials: "include", body: JSON.stringify({ otp: input.trim() }),
       });
@@ -854,7 +854,7 @@ function ChatView({
   const patchDeal = async (status: "cancelled" | "fraud") => {
     setActionLoading(true);
     try {
-      const res = await fetch(`${BASE}/barter/request/${req.id}/`, {
+      const res = await fetch(`${BASE}barter/request/${req.id}/`, {
         method: "PATCH", headers: { "Content-Type": "application/json" },
         credentials: "include", body: JSON.stringify({ status }),
       });
@@ -1124,7 +1124,7 @@ export default function Chats() {
   const loadChats = async () => {
     setChatLoading(true); setChatError(null);
     try {
-      const res  = await fetch(`${BASE}/barter/get_accepted_request/`, { credentials: "include" });
+      const res  = await fetch(`${BASE}barter/get_accepted_request/`, { credentials: "include" });
       if (!res.ok) throw new Error("Failed to load chats");
       const data: AcceptedRequest[] = await res.json();
       setRequests(data);
@@ -1151,7 +1151,7 @@ export default function Chats() {
 
   const loadBarterRequests = async () => {
     try {
-      const res  = await fetch(`${BASE}/barter/requests/`, { credentials: "include" });
+      const res  = await fetch(`${BASE}barter/requests/`, { credentials: "include" });
       if (!res.ok) return;
       const data: BarterRequest[] = await res.json();
       setBarterRequests(data.filter(r => r.status === "pending"));
@@ -1165,7 +1165,7 @@ export default function Chats() {
   const handleAccept = async (id: number) => {
     setAccepting(id);
     try {
-      const res = await fetch(`${BASE}/barter/request/${id}/`, {
+      const res = await fetch(`${BASE}barter/request/${id}/`, {
         method: "PATCH", headers: { "Content-Type": "application/json" },
         credentials: "include", body: JSON.stringify({ status: "accepted" }),
       });
@@ -1180,7 +1180,7 @@ export default function Chats() {
   const handleReject = async (id: number) => {
     setRejecting(id);
     try {
-      const res = await fetch(`${BASE}/barter/request/${id}/`, {
+      const res = await fetch(`${BASE}barter/request/${id}/`, {
         method: "PATCH", headers: { "Content-Type": "application/json" },
         credentials: "include", body: JSON.stringify({ status: "rejected" }),
       });
