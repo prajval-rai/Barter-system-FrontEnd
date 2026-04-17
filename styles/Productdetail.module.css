@@ -138,13 +138,16 @@
 .mainImgWrap {
   position: relative;
   width: 100%;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 1 / 1;          /* square feels intentional on mobile */
   border-radius: 20px;
   overflow: hidden;
   background: var(--surface);
   border: 1px solid var(--border);
   cursor: zoom-in;
   transition: box-shadow 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .mainImgWrap:hover { box-shadow: 0 8px 32px rgba(0,0,0,0.12); }
@@ -152,13 +155,14 @@
 .mainImg {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
   display: block;
   transition: transform 0.4s ease;
+  padding: 12px;
 }
 
-.mainImgWrap:hover .mainImg { transform: scale(1.03); }
+.mainImgWrap:hover .mainImg { transform: scale(1.02); }
 
 .noImg {
   width: 100%;
@@ -259,8 +263,8 @@
 
 .thumb {
   flex-shrink: 0;
-  width: 64px;
-  height: 64px;
+  width: 72px;                   /* was 64px desktop, 52px mobile — now consistent */
+  height: 72px;
   border-radius: 10px;
   overflow: hidden;
   border: 2px solid var(--border);
@@ -269,10 +273,11 @@
   background: var(--surface);
 }
 
+
 .thumb img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: cover;               /* thumbs stay as cover — intentional crop is fine */
   display: block;
 }
 
@@ -821,16 +826,24 @@
 ══════════════════════════ */
 .modalOverlay {
   position: fixed;
-  inset: 0;
-  background: rgba(10,8,20,0.6);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  inset: 0;               /* top/right/bottom/left: 0 */
   z-index: 1000;
-  padding: 20px;
-  animation: fadeIn 0.15s ease;
+  display: flex;
+  align-items: center;    /* vertically center the card */
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  -webkit-overflow-scrolling: touch;
+}
+
+.modalCard {
+  position: relative;
+  width: 90%;
+  max-width: 420px;
+  max-height: 85vh;       /* prevent overflow on small phones */
+  overflow-y: auto;
+  border-radius: 16px;
+  background: var(--card-bg);
+  padding: 24px;
 }
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -1260,10 +1273,13 @@
   animation: fadeIn 0.15s ease;
 }
 
+/* Lightbox image — fill the overlay properly */
 .lightboxImg {
+  width: 90vw;                /* ← was: max-width only */
+  height: 85vh;               /* ← was: max-height only */
   max-width: 90vw;
   max-height: 85vh;
-  object-fit: contain;
+  object-fit: contain;        /* show full image, no crop */
   border-radius: 12px;
   box-shadow: 0 24px 80px rgba(0,0,0,0.6);
 }
@@ -1414,6 +1430,46 @@
   .breadcrumbActive { max-width: 140px; }
 }
 
+@media (max-width: 860px) {
+  .mainImgWrap {
+    aspect-ratio: 4 / 3;         /* landscape on tablet — more image, less white */
+    border-radius: 16px;
+  }
+}
+
+@media (max-width: 600px) {
+  .mainImgWrap {
+    aspect-ratio: 3 / 4;         /* portrait on phone — matches how people hold/photo books */
+    border-radius: 14px;
+    max-height: 340px;           /* cap so it doesn't eat the whole screen */
+  }
+
+  .mainImg {
+    padding: 8px;
+  }
+
+  .thumb {
+    width: 64px;
+    height: 64px;
+  }
+
+  .thumbRow {
+    gap: 6px;
+    padding-bottom: 4px;
+  }
+}
+
+@media (max-width: 380px) {
+  .mainImgWrap {
+    max-height: 280px;
+  }
+
+  .thumb {
+    width: 56px;
+    height: 56px;
+  }
+}
+
 @media (max-width: 600px) {
   .page    { padding: 12px 14px 28px; }
   .layout  { gap: 14px; }
@@ -1457,4 +1513,38 @@
   .title       { font-size: 18px; }
   .mainImgWrap { border-radius: 12px; }
   .backBtn     { padding: 5px 8px; font-size: 11px; }
+}
+
+/* catRow is redundant on mobile — status shows on image, category in breadcrumb */
+@media (max-width: 600px) {
+  .catRow {
+    display: none;
+  }
+}
+
+/* Status tag is shown on the image overlay on mobile — hide the duplicate */
+@media (max-width: 860px) {
+  .statusTagDesktop {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .ctaBlock {
+    position: sticky;
+    bottom: 0;
+    background: var(--card-bg, #fff);
+    padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--border);
+    margin: 0 -14px;
+    padding-left: 14px;
+    padding-right: 14px;
+    z-index: 10;
+  }
+
+  /* Hide secondary actions from sticky bar — keep only primary CTA */
+  .ctaSecondary,
+  .ctaGhost {
+    display: none;
+  }
 }

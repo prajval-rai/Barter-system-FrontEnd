@@ -4,7 +4,7 @@ import {
   ChevronLeft, ChevronRight, Maximize2, ImageIcon,
   ShieldCheck, BookOpen, Eye, X,
 } from "lucide-react";
-import styles from "@/styles/Productdetail.module.css";
+import styles from "@/styles/Productgallery.module.css";
 
 interface ProductImage { id: number; image: string; created_at: string; product: number; }
 
