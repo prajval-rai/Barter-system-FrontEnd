@@ -27,15 +27,15 @@ export default function ProductInfo({
   return (
     <>
       {/* Category + status row */}
-      <div className={styles.catRow}>
-        <span className={styles.catTag}><Tag size={10} /> {category}</span>
-        <span
-          className={styles.statusTag}
-          style={{ color: statusColor, background: statusBg, borderColor: statusColor + "33" } as React.CSSProperties}
-        >
-          <StatusIcon size={10} /> {statusLabel}
-        </span>
-      </div>
+<div className={styles.catRow}>
+  <span className={styles.catTag}><Tag size={10} /> {category}</span>
+  <span
+    className={`${styles.statusTag} ${styles.statusTagDesktop}`}  // ← add this class
+    style={{ color: statusColor, background: statusBg, borderColor: statusColor + "33" } as React.CSSProperties}
+  >
+    <StatusIcon size={10} /> {statusLabel}
+  </span>
+</div>
 
       {/* Title */}
       <h1 className={styles.title}>{title}</h1>

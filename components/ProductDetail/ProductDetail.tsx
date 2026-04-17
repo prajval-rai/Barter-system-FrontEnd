@@ -1,7 +1,7 @@
 // components/ProductDetail/index.tsx  (was ProductDetailPage.tsx)
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ArrowLeft, Heart, Share2, Flag, ChevronRight, Check, X, AlertTriangle } from "lucide-react";
 import {
   Clock, CheckCircle, XCircle, Lock,
@@ -58,6 +58,7 @@ const getStatus = (s: string) => STATUS_MAP[s.toLowerCase()] ?? STATUS_MAP["subm
    MAIN COMPONENT
 ════════════════════════════════════ */
 export default function ProductDetailPage({ productId, onBack, onNavigate }: Props) {
+  const pageRef = useRef<HTMLDivElement>(null);
   const [product, setProduct]         = useState<ProductDetail | null>(null);
   const [loading, setLoading]         = useState(true);
   const [error, setError]             = useState<string | null>(null);
@@ -99,11 +100,13 @@ export default function ProductDetailPage({ productId, onBack, onNavigate }: Pro
     return () => window.removeEventListener("keydown", handler);
   }, [showModal, onBack]);
 
-  const handleRequestSent = () => {
-    setShowModal(false);
-    setRequestSent(true);
-    showToast("Exchange request sent! 🎉", true);
-  };
+  // Replace handleRequestSent:
+const handleRequestSent = () => {
+  setShowModal(false);
+  document.body.style.overflow = ""; // ← add this line
+  setRequestSent(true);
+  showToast("Exchange request sent! 🎉", true);
+};
 
   const handleShare = async () => {
     const url = window.location.href;
@@ -155,12 +158,15 @@ export default function ProductDetailPage({ productId, onBack, onNavigate }: Pro
         <ExchangeModal
           productId={product.id}
           productTitle={product.title}
-          onClose={() => setShowModal(false)}
+          onClose={() => {
+  setShowModal(false);
+  document.body.style.overflow = "";
+}}
           onSent={handleRequestSent}
         />
       )}
 
-      <div className={styles.page}>
+      <div className={styles.page} ref={pageRef}>
 
         {/* ── Top bar ── */}
         <div className={styles.topBar}>
@@ -236,7 +242,24 @@ export default function ProductDetailPage({ productId, onBack, onNavigate }: Pro
               productId={product.id}
               createdAt={product.created_at}
               hasBill={hasBill}
-              onSendRequest={() => setShowModal(true)}
+              onSendRequest={() => {
+  // Scroll every possible container to top
+  window.scrollTo(0, 0);
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
+
+  // Scroll the ref's scrollable parents
+  let el: HTMLElement | null = pageRef.current ?? null;
+  while (el) {
+    el.scrollTop = 0;
+    el = el.parentElement;
+  }
+
+  document.body.style.overflow = "hidden";
+
+  // Small delay so scroll completes before modal renders
+  setTimeout(() => setShowModal(true), 50);
+}}
               onToggleBookmark={handleToggleBookmark}
               onShare={handleShare}
             />
