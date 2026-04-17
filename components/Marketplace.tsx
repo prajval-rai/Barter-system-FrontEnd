@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import styles from "@/styles/Marketplace.module.css";
 import ProductPreviewCard from "@/components/Productpreviewcard";
-import ProductDetailPage from "@/components/ProductDetail";
+import ProductDetailPage from "@/components/ProductDetail/ProductDetail";
 import type { PreviewReplaceOption } from "@/components/Productpreviewcard";
 
 /* ─── Types ── */

@@ -9,7 +9,7 @@ import {
   Search, ExternalLink,
 } from "lucide-react";
 import styles from "../styles/Chatproductpanel.module.css";
-import ProductDetailPage from "./ProductDetail"; // ← your existing component
+import ProductDetailPage from "./ProductDetail/ProductDetail"; // ← your existing component
 
 /* ═══════════════════════════════════════════
    TYPES

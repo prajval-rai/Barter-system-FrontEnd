@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import ProductPreviewCard from "@/components/Productpreviewcard";
-import ProductDetailPage from "@/components/ProductDetail";
+import ProductDetailPage from "@/components/ProductDetail/ProductDetail";
 import ProductScanner from "@/components/Productscanner";
 import type { PreviewReplaceOption } from "@/components/Productpreviewcard";
 import styles from "@/styles/Pages.module.css";
