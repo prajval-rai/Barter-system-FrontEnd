@@ -9,7 +9,7 @@ import {
 import styles from "@/styles/Myproducts.module.css";
 import BarterLoader from "@/components/Barterloader";
 import ProductPreviewCard from "@/components/Productpreviewcard";
-import ProductDetailPage from "@/components/ProductDetail";
+import ProductDetailPage from "@/components/ProductDetail/ProductDetail";
 import ProductScanner from "@/components/Productscanner";
 import type { PreviewReplaceOption } from "@/components/Productpreviewcard";
 import { Icon } from '@iconify/react';

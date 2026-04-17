@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import styles from "../styles/Exchangerequests.module.css";
-import ProductDetailPage from "../components/ProductDetail";
+import ProductDetailPage from "./ProductDetail/ProductDetail";
 
 /* ─── Types ── */
 interface RequestProduct {
