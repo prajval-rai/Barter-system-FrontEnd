@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 
-const BASE_WS = "ws://localhost:8000";
+const BASE_WS = process.env.NEXT_PUBLIC_WEB_SOCEKT;
 const base_url = process.env.NEXT_PUBLIC_BACKEND_URL
 
 async function fetchWsToken(): Promise<string | null> {
