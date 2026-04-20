@@ -192,7 +192,7 @@ function useChatSocket(
     if (wsRef.current) { wsRef.current.onclose = null; wsRef.current.close(); }
     const token = await fetchWsToken();
     const qs    = token ? `?token=${encodeURIComponent(token)}` : "";
-    const ws    = new WebSocket(`ws://localhost:8000/ws/chat/${requestId}/${qs}`);
+    const ws    = new WebSocket(`${process.env.NEXT_PUBLIC_WEB_SOCEKT}ws/chat/${requestId}/${qs}`);
     wsRef.current = ws;
     ws.onopen  = () => { if (mountedRef.current) setConnected(true); };
     ws.onmessage = (e) => {
