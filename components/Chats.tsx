@@ -1054,6 +1054,53 @@ export default function Chats() {
   const selectedRef = useRef<AcceptedRequest | null>(null);
   useEffect(() => { selectedRef.current = selected; }, [selected]);
 
+  // Add this hook in the Chats component
+useEffect(() => {
+  if (!user?.email) return;
+  let ws: WebSocket;
+  let reconnTimer: ReturnType<typeof setTimeout>;
+
+  const connect = async () => {
+    const token = await fetchWsToken();
+    const qs    = token ? `?token=${encodeURIComponent(token)}` : "";
+    ws = new WebSocket(`${process.env.NEXT_PUBLIC_WEB_SOCEKT}ws/unread/${qs}`);
+
+    ws.onmessage = (e) => {
+      const d = JSON.parse(e.data);
+      if (d.type === "unread_counts") {
+        // d.counts = { "23": 2, "13": 5, ... }
+        setChatMeta(prev => {
+          const next = { ...prev };
+          Object.entries(d.counts as Record<string, number>).forEach(([id, count]) => {
+            const reqId = Number(id);
+            // Don't overwrite if chat is currently open (already zeroed locally)
+            if (selectedRef.current?.id === reqId) return;
+            next[reqId] = { ...(next[reqId] ?? { lastMsg: "", lastTime: "", lastSender: "" }), unread: count };
+          });
+          // Zero out any chats not in the counts (all seen)
+          Object.keys(next).forEach(id => {
+            if (!(id in d.counts) && next[Number(id)]?.unread > 0) {
+              if (selectedRef.current?.id !== Number(id))
+                next[Number(id)] = { ...next[Number(id)], unread: 0 };
+            }
+          });
+          return next;
+        });
+      }
+    };
+
+    ws.onclose = () => {
+      reconnTimer = setTimeout(connect, 3000);
+    };
+  };
+
+  connect();
+  return () => {
+    clearTimeout(reconnTimer);
+    ws?.close();
+  };
+}, [user?.email]);
+
   // Stable ref to requests list (for looking up chat names in notifs)
   const requestsRef = useRef<AcceptedRequest[]>([]);
   useEffect(() => { requestsRef.current = requests; }, [requests]);
