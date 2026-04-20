@@ -5,7 +5,7 @@ const base_url = process.env.NEXT_PUBLIC_BACKEND_URL
 
 async function fetchWsToken(): Promise<string | null> {
   try {
-    const r = await fetch(`${base_url}accounts/ws-token/`, { credentials: "include" });
+    const r = await fetch(`${base_url}chat/ws-token/`, { credentials: "include" });
     if (!r.ok) return null;
     return (await r.json()).token ?? null;
   } catch { return null; }
@@ -25,7 +25,7 @@ export function useUnreadSocket(userEmail: string | undefined) {
 
     const token = await fetchWsToken();
     const qs    = token ? `?token=${encodeURIComponent(token)}` : "";
-    const ws    = new WebSocket(`${BASE_WS}/ws/unread/${qs}`);
+    const ws    = new WebSocket(`${BASE_WS}ws/unread/${qs}`);
     wsRef.current = ws;
 
     ws.onmessage = (e) => {
