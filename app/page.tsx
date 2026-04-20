@@ -5,11 +5,11 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 
 import Sidebar from "@/components/Sidebar";
-import Marketplace from "@/components/Marketplace";
-import ExchangeRequests from "@/components/ExchangeRequests";
-import MyProducts from "@/components/MyProducts";
-import AddProduct from "@/components/AddProduct";
-import Chats from "@/components/Chats";
+// import Marketplace from "@/components/Marketplace";
+// import ExchangeRequests from "@/components/ExchangeRequests";
+// import MyProducts from "@/components/MyProducts";
+// import AddProduct from "@/components/AddProduct";
+// import Chats from "@/components/Chats";
 import ManageMarketplace from "@/components/Managemarketplace";
 import AdminHub from "@/components/Adminhub";
 import {
@@ -58,17 +58,17 @@ export default function Home() {
 
   const renderPage = () => {
     switch (activeId) {
-      case "marketplace":          return <Marketplace onNavigate={setActiveId} />;
-      case "requests":             return <ExchangeRequests onNavigate={setActiveId} />;
-      case "my-products":          return <MyProducts onNavigate={setActiveId} />;
-      case "add-product":          return <AddProduct onNavigate={setActiveId} />;
-      case "chats":                return <Chats />;
+      // case "marketplace":          return <Marketplace onNavigate={setActiveId} />;
+      // case "requests":             return <ExchangeRequests onNavigate={setActiveId} />;
+      // case "my-products":          return <MyProducts onNavigate={setActiveId} />;
+      // case "add-product":          return <AddProduct onNavigate={setActiveId} />;
+      // case "chats":                return <Chats />;
       case "notifications":        return <Notifications onNavigate={setActiveId} />;
       case "profile":              return <Profile />;
       case "wishlist":             return <Wishlist onNavigate={setActiveId} />;
       case "settings":             return <Settings />;
       case "manage-marketplace":   return <AdminHub />;
-      default:                     return <Marketplace onNavigate={setActiveId} />;
+      // default:                     return <Marketplace onNavigate={setActiveId} />;
     }
   };
 
