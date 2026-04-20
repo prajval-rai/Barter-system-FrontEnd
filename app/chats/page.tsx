@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import ProductDetailPage from "@/components/ProductDetail/ProductDetail";
-import styles from "../styles/Chat.module.css";
+import styles from "../../styles/Chat.module.css";
 
 /* ─────────────────────────────────────────
    TYPES

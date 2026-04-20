@@ -1,21 +1,22 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import {
   ShoppingBag, Package, PlusCircle, MessageCircle,
-  Bell, User, Heart, Settings, ShieldCheck,
-  LogOut, Zap, Menu, X,
+  Bell, Heart, Settings, ShieldCheck,
+  LogOut, Zap, User, ChevronDown,
 } from "lucide-react";
-import styles from "@/styles/Sidebar.module.css";
+import styles from "../styles/Sidebar.module.css";
 import type { AuthUser } from "@/context/AuthContext";
-import { useUnreadSocket } from "../app/hooks/useUnreadSocket";   // ← the hook from last response
+import { useUnreadSocket } from "../app/hooks/useUnreadSocket";
 
 const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   NOTIFICATION UNREAD COUNT  (unchanged)
+   NOTIFICATION UNREAD COUNT
 ───────────────────────────────────────────────────────────────────────────── */
-function useNotifUnread(activeId: string) {
+function useNotifUnread(pathname: string) {
   const [count, setCount] = useState(0);
   const refresh = useCallback(async () => {
     try {
@@ -28,87 +29,50 @@ function useNotifUnread(activeId: string) {
       setCount(data.unread_count);
     } catch {}
   }, []);
-  useEffect(() => { refresh(); }, [activeId, refresh]);
+  useEffect(() => { refresh(); }, [pathname, refresh]);
   return { count, refresh };
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
    NAV CONFIG
 ───────────────────────────────────────────────────────────────────────────── */
-const NAV_SECTIONS = [
-  {
-    label: "Main",
-    items: [
-      { id: "marketplace", label: "Marketplace", Icon: ShoppingBag },
-    ],
-  },
-  {
-    label: "Trade",
-    items: [
-      { id: "my-products", label: "My Products",  Icon: Package },
-      { id: "add-product", label: "Add Product",  Icon: PlusCircle },
-      { id: "chats",       label: "Trade Chats",  Icon: MessageCircle },
-    ],
-  },
-  {
-    label: "Account",
-    items: [
-      { id: "notifications", label: "Notifications", Icon: Bell },
-      { id: "wishlist",      label: "Wishlist",       Icon: Heart },
-    ],
-  },
+const NAV_ITEMS = [
+  { id: "marketplace",   label: "Marketplace",   Icon: ShoppingBag },
+  { id: "my-products",   label: "My Products",   Icon: Package },
+  { id: "add-product",   label: "Add Product",   Icon: PlusCircle },
+  { id: "chats",         label: "Trade Chats",   Icon: MessageCircle },
+  { id: "notifications", label: "Notifications", Icon: Bell },
+  { id: "wishlist",      label: "Wishlist",       Icon: Heart },
 ];
 
-const ADMIN_SECTION = {
-  label: "Admin",
-  items: [{ id: "manage-marketplace", label: "Manage", Icon: ShieldCheck }],
-};
+const ADMIN_ITEM = { id: "manage-marketplace", label: "Manage", Icon: ShieldCheck };
 
 /* ─────────────────────────────────────────────────────────────────────────────
    PROPS
 ───────────────────────────────────────────────────────────────────────────── */
-interface SidebarProps {
-  activeId: string;
-  onSelect: (id: string) => void;
+interface NavbarProps {
   user: AuthUser;
   onSignOut: () => void;
-  onCollapsedChange?: (collapsed: boolean) => void;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
    COMPONENT
 ───────────────────────────────────────────────────────────────────────────── */
-export default function Sidebar({
-  activeId, onSelect, user, onSignOut, onCollapsedChange,
-}: SidebarProps) {
-  const [mobileOpen,   setMobileOpen]   = useState(false);
+export default function Navbar({ user, onSignOut }: NavbarProps) {
+  const router   = useRouter();
+  const pathname = usePathname();
+
   const [showUserMenu, setShowUserMenu] = useState(false);
   const isAdmin = user.role === "Admin";
 
-  // ── Live chat unread count via WebSocket (useUnreadSocket handles
-  //    connect / reconnect / token fetching internally) ──────────────────────
-  const chatUnread = useUnreadSocket(user?.email);
-
-  // ── Notification unread count via REST poll ───────────────────────────────
-  const { count: notifUnread, refresh: refreshNotif } = useNotifUnread(activeId);
-
-  // Ping for a fresh notif count when user navigates to that section
-  useEffect(() => {
-    if (activeId === "notifications") refreshNotif();
-  }, [activeId, refreshNotif]);
-
-  const sections = isAdmin
-    ? [NAV_SECTIONS[0], NAV_SECTIONS[1], ADMIN_SECTION, NAV_SECTIONS[2]]
-    : NAV_SECTIONS;
-
-  useEffect(() => { onCollapsedChange?.(true); }, []);
+  const chatUnread                                     = useUnreadSocket(user?.email);
+  const { count: notifUnread, refresh: refreshNotif } = useNotifUnread(pathname);
 
   useEffect(() => {
-    const r = () => { if (window.innerWidth > 768) setMobileOpen(false); };
-    window.addEventListener("resize", r);
-    return () => window.removeEventListener("resize", r);
-  }, []);
+    if (pathname === "/notifications") refreshNotif();
+  }, [pathname, refreshNotif]);
 
+  // Close dropdown on outside click
   useEffect(() => {
     const h = (e: MouseEvent) => {
       if (!(e.target as HTMLElement).closest("[data-usermenu]"))
@@ -118,18 +82,31 @@ export default function Sidebar({
     return () => document.removeEventListener("mousedown", h);
   }, []);
 
-  const handleSelect = (id: string) => {
-    onSelect(id);
-    setMobileOpen(false);
+  // Lock body scroll when mobile sheet is open
+  useEffect(() => {
+    if (showUserMenu) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [showUserMenu]);
+
+  const navigate = (id: string) => {
+    router.push(`/${id}`);
     setShowUserMenu(false);
   };
 
-  // Map item id → badge count (undefined = no badge rendered at all)
+  const isActive = (id: string) =>
+    pathname === `/${id}` || pathname.startsWith(`/${id}/`);
+
   const getBadge = (id: string): number | undefined => {
     if (id === "chats")         return chatUnread  > 0 ? chatUnread  : undefined;
     if (id === "notifications") return notifUnread > 0 ? notifUnread : undefined;
     return undefined;
   };
+
+  const items = isAdmin ? [...NAV_ITEMS, ADMIN_ITEM] : NAV_ITEMS;
 
   const initials =
     user.firstName && user.lastName
@@ -141,155 +118,193 @@ export default function Sidebar({
       ? `${user.firstName} ${user.lastName}`
       : user.name;
 
-  return (
+  /* ── shared user menu content ── */
+  const UserMenuContent = () => (
     <>
-      {mobileOpen && (
-        <div className={styles.overlay} onClick={() => setMobileOpen(false)} />
-      )}
+      <div className={styles.dropProfile}>
+        <div className={styles.dropAvatarWrap}>
+          {user.image
+            ? <img src={user.image} alt={displayName} className={styles.dropAvatarImg} referrerPolicy="no-referrer" />
+            : <div className={styles.dropAvatarInitials}>{initials}</div>}
+          <span className={styles.dropOnlineDot} />
+        </div>
+        <div className={styles.dropProfileText}>
+          <p className={styles.dropName}>{displayName}</p>
+          <p className={styles.dropEmail}>{user.email}</p>
+          <span className={`${styles.rolePill} ${isAdmin ? styles.rolePillAdmin : styles.rolePillUser}`}>
+            {isAdmin ? <><ShieldCheck size={8} /> Admin</> : <><User size={8} /> Member</>}
+          </span>
+        </div>
+      </div>
 
-      <button className={styles.hamburger} onClick={() => setMobileOpen(true)}>
-        <Menu size={20} />
+      <div className={styles.dropDivider} />
+      <button className={styles.dropItem} onClick={() => navigate("profile")}>
+        <User size={14} /> My Profile
+      </button>
+      <button className={styles.dropItem} onClick={() => navigate("settings")}>
+        <Settings size={14} /> Settings
       </button>
 
-      <aside className={`${styles.rail} ${mobileOpen ? styles.mobileOpen : ""}`}>
+      {isAdmin && (
+        <>
+          <div className={styles.dropDivider} />
+          <button className={`${styles.dropItem} ${styles.dropItemAdmin}`} onClick={() => navigate("manage-marketplace")}>
+            <ShieldCheck size={14} /> Manage Marketplace
+          </button>
+        </>
+      )}
 
-        <button className={styles.closeBtn} onClick={() => setMobileOpen(false)}>
-          <X size={16} />
+      <div className={styles.dropDivider} />
+      <button
+        className={`${styles.dropItem} ${styles.dropItemDanger}`}
+        onClick={() => { setShowUserMenu(false); onSignOut(); }}
+      >
+        <LogOut size={14} /> Sign Out
+      </button>
+    </>
+  );
+
+  return (
+    <>
+      {/* ══════════════════════════════════════
+          TOP NAVBAR  (tablet + desktop)
+      ══════════════════════════════════════ */}
+      <header className={styles.topBar}>
+
+        {/* Logo */}
+        <button className={styles.logo} onClick={() => navigate("marketplace")}>
+          <div className={styles.logoIcon}><Zap size={15} strokeWidth={2.8} /></div>
+          <span className={styles.logoText}>BarterX</span>
         </button>
 
-        {/* ── Logo ── */}
-        <div className={styles.logoSlot}>
-          <div className={styles.logoIcon}>
-            <Zap size={16} strokeWidth={2.5} />
-          </div>
-        </div>
-
-        <div className={styles.hr} />
-
-        {/* ── Nav ── */}
-        <nav className={styles.nav}>
-          {sections.map((section, si) => (
-            <div key={si} className={styles.group}>
-              {section.items.map((item) => {
-                const badge    = getBadge(item.id);
-                const isActive = activeId === item.id;
-                return (
-                  <div key={item.id} className={styles.itemWrap}>
-                    <button
-                      className={[
-                        styles.navBtn,
-                        isActive ? styles.navBtnActive : "",
-                        item.id === "manage-marketplace" ? styles.navBtnAdmin : "",
-                      ].join(" ")}
-                      onClick={() => handleSelect(item.id)}
-                      aria-label={item.label}
-                    >
-                      <item.Icon size={19} strokeWidth={isActive ? 2.2 : 1.8} />
-
-                      {badge !== undefined && (
-                        <span
-                          className={styles.badge}
-                          style={{ minWidth: badge > 9 ? 18 : 16 }}
-                        >
-                          {badge > 99 ? "99+" : badge}
-                        </span>
-                      )}
-                    </button>
-                    <span className={styles.tooltip}>{item.label}</span>
-                  </div>
-                );
-              })}
-              {si < sections.length - 1 && <div className={styles.groupDivider} />}
-            </div>
-          ))}
+        {/* Nav links */}
+        <nav className={styles.navLinks}>
+          {items.map(({ id, label, Icon }) => {
+            const badge  = getBadge(id);
+            const active = isActive(id);
+            return (
+              <button
+                key={id}
+                className={[
+                  styles.navLink,
+                  active ? styles.navLinkActive : "",
+                  id === "manage-marketplace" ? styles.navLinkAdmin : "",
+                ].join(" ")}
+                onClick={() => navigate(id)}
+              >
+                <span className={styles.navLinkInner}>
+                  <Icon size={15} strokeWidth={active ? 2.3 : 1.8} />
+                  <span className={styles.navLinkLabel}>{label}</span>
+                  {badge !== undefined && (
+                    <span className={styles.badge}>{badge > 99 ? "99+" : badge}</span>
+                  )}
+                </span>
+              </button>
+            );
+          })}
         </nav>
 
-        {/* ── Avatar / user menu ── */}
-        <div className={styles.bottom}>
-          <div className={styles.hr} />
-          <div className={styles.avatarWrap} data-usermenu>
-            <button
-              className={styles.avatarBtn}
-              onClick={() => setShowUserMenu((p) => !p)}
-              aria-label="Account menu"
-            >
-              {user.image ? (
-                <img
-                  src={user.image}
-                  alt={displayName}
-                  className={styles.avatarImg}
-                  referrerPolicy="no-referrer"
-                />
-              ) : (
-                <span className={styles.avatarInitials}>{initials}</span>
-              )}
-              <span className={styles.onlineDot} />
-            </button>
-            <span className={styles.tooltip}>{displayName}</span>
+        {/* Avatar / dropdown */}
+        <div className={styles.avatarArea} data-usermenu>
+          <button
+            className={styles.avatarBtn}
+            onClick={() => setShowUserMenu(p => !p)}
+            data-usermenu
+          >
+            {user.image
+              ? <img src={user.image} alt={displayName} className={styles.avatarImg} referrerPolicy="no-referrer" />
+              : <span className={styles.avatarInitials}>{initials}</span>}
+            <ChevronDown
+              size={13}
+              className={`${styles.chevron} ${showUserMenu ? styles.chevronOpen : ""}`}
+            />
+          </button>
 
-            {showUserMenu && (
-              <div className={styles.popup} data-usermenu>
-                <div className={styles.popupProfile}>
-                  <div className={styles.popupAvatarWrap}>
-                    {user.image ? (
-                      <img
-                        src={user.image}
-                        alt={displayName}
-                        className={styles.popupAvatarImg}
-                        referrerPolicy="no-referrer"
-                      />
-                    ) : (
-                      <div className={styles.popupAvatarInitials}>{initials}</div>
-                    )}
-                    <span className={styles.popupOnlineDot} />
-                  </div>
-                  <div>
-                    <p className={styles.popupName}>{displayName}</p>
-                    <p className={styles.popupEmail}>{user.email}</p>
-                    <span
-                      className={`${styles.rolePill} ${
-                        isAdmin ? styles.rolePillAdmin : styles.rolePillUser
-                      }`}
-                    >
-                      {isAdmin
-                        ? <><ShieldCheck size={9} /> Admin</>
-                        : <><User size={9} /> Member</>}
-                    </span>
-                  </div>
-                </div>
-
-                <div className={styles.popupDivider} />
-                <button className={styles.popupItem} onClick={() => handleSelect("profile")}>
-                  <User size={14} /> My Profile
-                </button>
-                <button className={styles.popupItem} onClick={() => handleSelect("settings")}>
-                  <Settings size={14} /> Settings
-                </button>
-
-                {isAdmin && (
-                  <>
-                    <div className={styles.popupDivider} />
-                    <button
-                      className={`${styles.popupItem} ${styles.popupItemAdmin}`}
-                      onClick={() => handleSelect("manage-marketplace")}
-                    >
-                      <ShieldCheck size={14} /> Manage Marketplace
-                    </button>
-                  </>
-                )}
-
-                <div className={styles.popupDivider} />
-                <button
-                  className={`${styles.popupItem} ${styles.popupItemDanger}`}
-                  onClick={() => { setShowUserMenu(false); onSignOut(); }}
-                >
-                  <LogOut size={14} /> Sign Out
-                </button>
-              </div>
-            )}
-          </div>
+          {showUserMenu && (
+            <div className={styles.dropdown} data-usermenu>
+              <UserMenuContent />
+            </div>
+          )}
         </div>
-      </aside>
+      </header>
+
+      {/* ══════════════════════════════════════
+          BOTTOM NAV  (mobile only ≤640px)
+      ══════════════════════════════════════ */}
+      <nav className={styles.bottomNav}>
+
+        {/* First 4 items as tabs */}
+        {items.slice(0, 4).map(({ id, label, Icon }) => {
+          const badge  = getBadge(id);
+          const active = isActive(id);
+          return (
+            <button
+              key={id}
+              className={`${styles.bottomItem} ${active ? styles.bottomItemActive : ""}`}
+              onClick={() => navigate(id)}
+            >
+              <span className={styles.bottomIconWrap}>
+                <Icon size={20} strokeWidth={active ? 2.3 : 1.7} />
+                {badge !== undefined && (
+                  <span className={styles.bottomBadge}>{badge > 99 ? "99+" : badge}</span>
+                )}
+              </span>
+              <span className={styles.bottomLabel}>{label}</span>
+            </button>
+          );
+        })}
+
+        {/* "More" tab */}
+        <div className={styles.bottomMoreWrap} data-usermenu>
+          <button
+            className={`${styles.bottomItem} ${showUserMenu ? styles.bottomItemActive : ""}`}
+            onClick={() => setShowUserMenu(p => !p)}
+            data-usermenu
+          >
+            <span className={styles.bottomIconWrap}>
+              {user.image
+                ? <img src={user.image} alt="" className={styles.bottomAvatar} referrerPolicy="no-referrer" />
+                : <span className={styles.bottomAvatarInitials}>{initials}</span>}
+              {items.slice(4).some(i => getBadge(i.id) !== undefined) && (
+                <span className={styles.bottomBadge}>!</span>
+              )}
+            </span>
+            <span className={styles.bottomLabel}>More</span>
+          </button>
+
+          {showUserMenu && (
+            <div className={styles.bottomSheet} data-usermenu>
+              <div className={styles.bottomSheetHandle} />
+
+              {items.slice(4).map(({ id, label, Icon }) => {
+                const badge  = getBadge(id);
+                const active = isActive(id);
+                return (
+                  <button
+                    key={id}
+                    className={`${styles.dropItem} ${active ? styles.dropItemActive : ""}`}
+                    onClick={() => navigate(id)}
+                  >
+                    <Icon size={15} /> {label}
+                    {badge !== undefined && (
+                      <span className={styles.dropBadge}>{badge > 99 ? "99+" : badge}</span>
+                    )}
+                  </button>
+                );
+              })}
+
+              {items.slice(4).length > 0 && <div className={styles.dropDivider} />}
+
+              <UserMenuContent />
+            </div>
+          )}
+        </div>
+      </nav>
+
+      {/* Backdrop for mobile sheet */}
+      {showUserMenu && (
+        <div className={styles.mobileScrim} onClick={() => setShowUserMenu(false)} />
+      )}
     </>
   );
 }

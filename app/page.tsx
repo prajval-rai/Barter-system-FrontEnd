@@ -76,10 +76,7 @@ export default function Home() {
     // No flex needed on layout — main uses margin-left to clear the fixed sidebar
     <div style={{ minHeight: "100vh", background: "var(--black)" }}>
       <Sidebar
-        activeId={activeId}
-        onSelect={setActiveId}
         user={user}
-        onCollapsedChange={setSidebarCollapsed} // ← new prop
         onSignOut={async () => {
           await logout();
           router.replace("/login");

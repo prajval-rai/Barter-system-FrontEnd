@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import styles from "@/styles/AddProduct.module.css";
 import BarterLoader from "@/components/Barterloader";
-import ProductPreviewCard from "./Productpreviewcard";
+import ProductPreviewCard from "../../components/Productpreviewcard";
 import CompleteProfileModal from "@/components/Completeprofilemodal";
 import { useAuth } from "@/context/AuthContext";
 import { Icon } from '@iconify/react';
@@ -1164,7 +1164,7 @@ export default function AddProduct({ onNavigate }: AddProductProps) {
               categories={categories}
             />
           </div>
-
+ProductPreviewCard from "./Productpreviewcard";
         </div>
       </div>
     </>

@@ -1,328 +1,169 @@
 /* ═══════════════════════════════════════════
-   Sidebar.module.css
-   Light · Flat · No gradients · Clean tooltips
+   Navbar.module.css
+   Top bar (desktop) + Bottom nav (mobile)
    ═══════════════════════════════════════════ */
 
-/* ── Overlay (mobile) ── */
-.overlay {
+/* ─────────────────────────────────────────
+   TOP BAR  (hidden on mobile)
+───────────────────────────────────────── */
+.topBar {
   position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.35);
-  z-index: 99;
-}
-
-/* ── Hamburger (mobile only) ── */
-.hamburger {
-  display: none;
-  position: fixed;
-  top: 14px;
-  left: 14px;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 72px;
+  background: var(--nav-bg);
+  border-bottom: none;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 0 28px;
   z-index: 200;
-  width: 40px;
-  height: 40px;
-  align-items: center;
-  justify-content: center;
-  background: #ffffff;
-  border: 1px solid var(--border-c);
-  color: var(--purple);
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all var(--transition);
-}
-.hamburger:hover {
-  background: var(--surface-hover);
-  border-color: var(--purple);
+  box-shadow: 0 2px 12px rgba(0, 80, 120, 0.18);
 }
 
-/* ── Close btn (mobile only) ── */
-.closeBtn {
-  display: none;
-  width: 30px;
-  height: 30px;
-  align-items: center;
-  justify-content: center;
-  align-self: flex-end;
-  margin: 12px 12px 0;
-  background: var(--surface);
-  border: 1px solid var(--border-c);
-  color: var(--text-muted);
-  border-radius: 8px;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: all var(--transition);
-}
-.closeBtn:hover {
-  color: var(--red);
-  border-color: rgba(225, 29, 72, 0.3);
-  background: rgba(225, 29, 72, 0.05);
-}
-
-/* ═══════════════════════════════
-   RAIL
-   ═══════════════════════════════ */
-.rail {
-  position: fixed;
-  top: 12px;
-  left: 12px;
-  bottom: 12px;
-  width: var(--rail-width);
-  /* flat white — no blur, no dark glass */
-  background: #ffffff;
-  border: 1px solid var(--border-c);
-  border-radius: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  z-index: 100;
-  overflow: visible;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06), 0 4px 16px rgba(0, 0, 0, 0.04);
-}
-
-/* ── Logo slot ── */
-.logoSlot {
-  width: 100%;
+/* ── Logo ── */
+.logo {
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 20px 0 16px;
+  gap: 9px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin-right: 28px;
   flex-shrink: 0;
+  text-decoration: none;
 }
 
 .logoIcon {
-  width: 36px;
-  height: 36px;
-  border-radius: 11px;
-  /* flat solid — no gradient */
-  background: var(--purple);
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
+  color: var(--purple);
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.14);
+}
+
+.logoText {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 17px;
+  font-weight: 800;
   color: #fff;
-  flex-shrink: 0;
+  letter-spacing: -0.5px;
 }
 
-/* ── Divider ── */
-.hr {
-  width: 36px;
-  height: 1px;
-  background: var(--border-c);
-  flex-shrink: 0;
-  margin: 4px 0;
-}
-
-/* ── Nav ── */
-.nav {
-  flex: 1;
-  width: 100%;
+/* ── Nav links (centre) ── */
+.navLinks {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 8px 0;
-  overflow-y: auto;
-  overflow-x: visible;
-  scrollbar-width: none;
-  justify-content: center;
-  gap: 0;
-}
-.nav::-webkit-scrollbar { display: none; }
-
-.group {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
   align-items: center;
   gap: 2px;
-  padding: 0 8px;
+  flex: 1;
 }
 
-.groupDivider {
-  width: 32px;
-  height: 1px;
-  background: var(--border-c);
-  margin: 6px 0;
-}
-
-/* ── Item wrapper — needed for tooltip positioning ── */
-.itemWrap {
+.navLink {
   position: relative;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* ── Nav button ── */
-.navBtn {
-  position: relative;
-  width: 44px;
-  height: 44px;
-  border-radius: 13px;
+  background: none;
   border: 1px solid transparent;
-  background: transparent;
-  color: var(--text-muted);
+  border-radius: 10px;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background var(--transition), color var(--transition), border-color var(--transition);
+  padding: 0;
+  color: rgba(255, 255, 255, 0.78);
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
   flex-shrink: 0;
 }
 
-.navBtn:hover {
-  background: rgba(124, 58, 237, 0.07);
-  color: var(--purple);
+.navLink:hover {
+  background: rgba(255, 255, 255, 0.13);
+  color: #fff;
 }
 
-/* Active — flat tint + left indicator, no gradient */
-.navBtnActive {
-  background: rgba(124, 58, 237, 0.09) !important;
-  border-color: rgba(124, 58, 237, 0.16) !important;
-  color: var(--purple) !important;
+.navLinkActive {
+  background: rgba(255, 255, 255, 0.18) !important;
+  border-color: rgba(255, 255, 255, 0.28) !important;
+  color: #fff !important;
 }
 
-/* Active left-edge bar */
-.navBtnActive::before {
-  content: "";
-  position: absolute;
-  left: -9px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 3px;
-  height: 20px;
-  border-radius: 0 3px 3px 0;
-  background: var(--purple);
+.navLinkAdmin {
+  color: #ffd700;
 }
 
-.navBtnAdmin { color: var(--purple); }
-.navBtnAdmin:hover { background: rgba(124, 58, 237, 0.07); }
+.navLinkInner {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 14px;
+  position: relative;
+}
 
-/* ── Badge ── */
+.navLinkLabel {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 13.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ── Top bar badge ── */
 .badge {
-  position: absolute;
-  top: 7px;
-  right: 7px;
-  min-width: 15px;
-  height: 15px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
   border-radius: 20px;
-  /* flat solid red — no gradient */
   background: var(--red);
   color: #fff;
   font-size: 9px;
   font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   padding: 0 4px;
   font-family: 'DM Mono', monospace;
-  pointer-events: none;
-  border: 1.5px solid #ffffff;
+  line-height: 1;
 }
 
-/* ════════════════════════════════
-   TOOLTIP
-   ════════════════════════════════ */
-.tooltip {
-  /* Position: right of the button */
-  position: absolute;
-  left: calc(100% + 11px);
-  top: 50%;
-  transform: translateY(-50%) translateX(-5px);
-
-  /* Flat card — matches sidebar white surface */
-  background: #1a1825;
-  color: #ffffff;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: -0.1px;
-  white-space: nowrap;
-  padding: 6px 11px;
-  border-radius: 9px;
-
-  /* Hidden until hover */
-  opacity: 0;
-  pointer-events: none;
-  transition:
-    opacity 0.14s ease,
-    transform 0.14s ease;
-  z-index: 999;
-}
-
-/* Arrow pointing left toward the button */
-.tooltip::before {
-  content: "";
-  position: absolute;
-  right: 100%;
-  top: 50%;
-  transform: translateY(-50%);
-  border: 5px solid transparent;
-  border-right-color: #1a1825;
-}
-
-/* Show on hover */
-.itemWrap:hover .tooltip,
-.avatarWrap:hover .tooltip {
-  opacity: 1;
-  transform: translateY(-50%) translateX(0);
-}
-
-/* ── Bottom section ── */
-.bottom {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding-bottom: 14px;
-  gap: 10px;
+/* ── Avatar area (right) ── */
+.avatarArea {
+  position: relative;
+  margin-left: auto;
   flex-shrink: 0;
 }
 
-/* ── Avatar wrap ── */
-.avatarWrap {
-  position: relative;
+.avatarBtn {
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: 44px;
+  gap: 7px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 28px;
+  padding: 5px 12px 5px 5px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  color: #fff;
 }
 
-/* ── Avatar button — flat, no gradient bg ── */
-.avatarBtn {
-  position: relative;
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(124, 58, 237, 0.09);
-  outline: 2px solid rgba(124, 58, 237, 0.20);
-  outline-offset: 2px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  transition: outline-color var(--transition), background var(--transition);
-  padding: 0;
-}
 .avatarBtn:hover {
-  outline-color: var(--purple);
-  background: rgba(124, 58, 237, 0.13);
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.42);
 }
 
 .avatarImg {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
+  object-fit: cover;
   display: block;
+  border: 2px solid rgba(255,255,255,0.4);
 }
 
-/* Initials — flat solid color, no gradient */
 .avatarInitials {
-  width: 100%;
-  height: 100%;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  background: var(--purple);
+  background: rgba(255,255,255,0.22);
+  border: 2px solid rgba(255,255,255,0.5);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -330,62 +171,62 @@
   font-weight: 800;
   color: #fff;
   font-family: 'Plus Jakarta Sans', sans-serif;
-  letter-spacing: -0.2px;
 }
 
-.onlineDot {
-  position: absolute;
-  bottom: 1px;
-  right: 1px;
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: var(--green);
-  border: 2px solid #ffffff;
-  pointer-events: none;
+.chevron {
+  color: rgba(255,255,255,0.75);
+  transition: transform 0.2s;
 }
 
-/* ═══════════════════════════════
-   USER POPUP
-   ═══════════════════════════════ */
-.popup {
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+/* ─────────────────────────────────────────
+   DROPDOWN  (desktop user menu)
+───────────────────────────────────────── */
+.dropdown {
   position: absolute;
-  bottom: 0;
-  left: calc(100% + 12px);
-  width: 236px;
-  /* flat white card */
+  top: calc(100% + 10px);
+  right: 0;
+  width: 248px;
   background: #ffffff;
   border: 1px solid var(--border-c);
   border-radius: 16px;
-  padding: 12px;
+  padding: 10px;
   z-index: 500;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.10), 0 1px 4px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 12px 40px rgba(0, 80, 120, 0.16), 0 2px 8px rgba(0,0,0,0.08);
+  animation: dropIn 0.15s ease;
 }
 
-.popupProfile {
+@keyframes dropIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.dropProfile {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 4px 4px 12px;
+  gap: 10px;
+  padding: 6px 6px 10px;
 }
 
-.popupAvatarWrap {
+.dropAvatarWrap {
   position: relative;
   flex-shrink: 0;
 }
 
-.popupAvatarImg {
+.dropAvatarImg {
   width: 42px;
   height: 42px;
   border-radius: 50%;
   object-fit: cover;
   display: block;
-  outline: 2px solid rgba(124, 58, 237, 0.20);
+  outline: 2px solid rgba(0, 120, 173, 0.25);
   outline-offset: 2px;
 }
 
-/* Popup initials — flat solid color */
-.popupAvatarInitials {
+.dropAvatarInitials {
   width: 42px;
   height: 42px;
   border-radius: 50%;
@@ -399,18 +240,22 @@
   font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
-.popupOnlineDot {
+.dropOnlineDot {
   position: absolute;
   bottom: 1px;
   right: 1px;
-  width: 9px;
-  height: 9px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   background: var(--green);
-  border: 2px solid #ffffff;
+  border: 2px solid #fff;
 }
 
-.popupName {
+.dropProfileText {
+  min-width: 0;
+}
+
+.dropName {
   font-size: 13px;
   font-weight: 700;
   color: var(--text-primary);
@@ -420,10 +265,9 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 144px;
 }
 
-.popupEmail {
+.dropEmail {
   font-size: 10.5px;
   color: var(--text-muted);
   font-family: 'DM Mono', monospace;
@@ -431,36 +275,35 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 144px;
 }
 
 .rolePill {
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  font-size: 9.5px;
+  font-size: 9px;
   font-weight: 700;
-  padding: 2px 8px;
+  padding: 2px 7px;
   border-radius: 20px;
   text-transform: uppercase;
   letter-spacing: 0.4px;
   font-family: 'DM Mono', monospace;
 }
-.rolePillUser  { background: rgba(8,145,178,0.08);   color: var(--cyan);   border: 1px solid rgba(8,145,178,0.18); }
-.rolePillAdmin { background: rgba(124,58,237,0.08);  color: var(--purple); border: 1px solid rgba(124,58,237,0.18); }
+.rolePillUser  { background: rgba(8,145,178,0.08);  color: var(--cyan);   border: 1px solid rgba(8,145,178,0.18); }
+.rolePillAdmin { background: rgba(0,120,173,0.10); color: var(--purple); border: 1px solid rgba(0,120,173,0.22); }
 
-.popupDivider {
+.dropDivider {
   height: 1px;
   background: var(--border-c);
-  margin: 5px 0;
+  margin: 4px 0;
 }
 
-.popupItem {
+.dropItem {
   display: flex;
   align-items: center;
   gap: 9px;
   width: 100%;
-  padding: 9px 10px;
+  padding: 10px 10px;
   border: none;
   background: transparent;
   color: var(--text-secondary);
@@ -469,75 +312,235 @@
   border-radius: 9px;
   cursor: pointer;
   text-align: left;
-  transition: background var(--transition), color var(--transition);
+  transition: background 0.13s, color 0.13s;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  position: relative;
+}
+.dropItem:hover      { background: var(--surface-hover); color: var(--text-primary); }
+.dropItemActive      { color: var(--purple); background: rgba(0,120,173,0.07); }
+.dropItemAdmin       { color: var(--purple); }
+.dropItemAdmin:hover { background: rgba(0, 120, 173, 0.08); }
+.dropItemDanger      { color: var(--red); }
+.dropItemDanger:hover { background: rgba(225, 29, 72, 0.07); }
+
+/* Drop item badge (mobile sheet) */
+.dropBadge {
+  margin-left: auto;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 20px;
+  background: var(--red);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+  font-family: 'DM Mono', monospace;
+}
+
+/* ─────────────────────────────────────────
+   BOTTOM NAV  (mobile only, hidden desktop)
+───────────────────────────────────────── */
+.bottomNav {
+  display: none;
+
+  /* ✅ FIX: force fixed positioning so it never scrolls */
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  top: auto !important;
+
+  height: 66px;
+  background: var(--nav-bg);
+  border-top: 1px solid rgba(255,255,255,0.12);
+  z-index: 300;
+  padding: 0 4px;
+
+  /* ✅ FIX: account for iOS safe area (home indicator) */
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+
+  box-shadow: 0 -2px 16px rgba(0, 80, 120, 0.20);
+
+  /* ✅ FIX: prevent any transform/scroll context from parent affecting fixed */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: transform;
+}
+
+.bottomItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  flex: 1;
+  height: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: rgba(255,255,255,0.65);
+  padding: 8px 4px 4px;
+  transition: color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+
+  /* ✅ FIX: prevent tap delay on mobile */
+  touch-action: manipulation;
+}
+
+.bottomItem:active {
+  opacity: 0.7;
+}
+
+.bottomItemActive {
+  color: #fff;
+}
+
+.bottomIconWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+}
+
+.bottomLabel {
+  font-size: 9.5px;
+  font-weight: 600;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  white-space: nowrap;
+  letter-spacing: -0.1px;
+  line-height: 1;
+}
+
+/* Bottom nav badge */
+.bottomBadge {
+  position: absolute;
+  top: -3px;
+  right: -5px;
+  min-width: 14px;
+  height: 14px;
+  border-radius: 20px;
+  background: var(--red);
+  color: #fff;
+  font-size: 8px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+  font-family: 'DM Mono', monospace;
+  border: 1.5px solid var(--nav-bg);
+}
+
+/* Avatar in bottom nav */
+.bottomAvatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  border: 2px solid rgba(255,255,255,0.4);
+}
+
+.bottomAvatarInitials {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.22);
+  border: 2px solid rgba(255,255,255,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 800;
+  color: #fff;
   font-family: 'Plus Jakarta Sans', sans-serif;
 }
-.popupItem:hover        { background: var(--surface-hover); color: var(--text-primary); }
-.popupItemAdmin         { color: var(--purple); }
-.popupItemAdmin:hover   { background: rgba(124, 58, 237, 0.07); color: var(--purple); }
-.popupItemDanger        { color: var(--red); }
-.popupItemDanger:hover  { background: rgba(225, 29, 72, 0.07); color: var(--red); }
 
-/* ══════════════════
-   MOBILE
-   ══════════════════ */
-@media (max-width: 768px) {
-  .hamburger { display: flex; }
-  .closeBtn  { display: flex; }
+.bottomMoreWrap {
+  flex: 1;
+  display: flex;
+  align-items: stretch;
+  position: relative;
+}
 
-  .rail {
-    top: 0;
-    left: 0;
-    bottom: 0;
-    border-radius: 0 20px 20px 0;
-    width: 200px;
-    transform: translateX(-100%);
-    transition: transform var(--transition);
-    align-items: flex-start;
-    overflow-y: auto;
-    overflow-x: hidden;
+/* Bottom sheet (mobile user menu / more) */
+.bottomSheet {
+  position: fixed;
+  /* ✅ FIX: sits exactly above the bottom nav bar */
+  bottom: calc(66px + env(safe-area-inset-bottom, 0px));
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border: 1px solid var(--border-c);
+  border-radius: 20px 20px 0 0;
+  padding: 12px 12px 20px;
+  z-index: 500;
+  box-shadow: 0 -8px 40px rgba(0, 80, 120, 0.14);
+  animation: slideUp 0.2s ease;
+  max-height: 70vh;
+  overflow-y: auto;
+
+  /* ✅ FIX: smooth momentum scrolling inside sheet on iOS */
+  -webkit-overflow-scrolling: touch;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.bottomSheetHandle {
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border-c);
+  margin: 0 auto 14px;
+}
+
+/* Scrim behind mobile sheet */
+.mobileScrim {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 40, 70, 0.38);
+  z-index: 499;
+  /* ✅ FIX: ensure scrim covers everything including top header */
+  top: 0;
+}
+
+/* ─────────────────────────────────────────
+   MEDIA QUERIES
+───────────────────────────────────────── */
+
+/* Tablet: hide some labels to save space */
+@media (max-width: 960px) {
+  .navLinkLabel {
+    display: none;
+  }
+  .navLinkInner {
+    padding: 9px 11px;
+  }
+}
+
+/* Mobile: hide top bar, show bottom nav + add body padding */
+@media (max-width: 640px) {
+  .topBar {
+    display: none;
   }
 
-  .mobileOpen {
-    transform: translateX(0);
-    box-shadow: 6px 0 40px rgba(0, 0, 0, 0.12);
+  .bottomNav {
+    /* ✅ FIX: show as flex — not just 'display: flex' which would conflict
+       with the fixed positioning above */
+    display: flex !important;
+    align-items: stretch;
   }
 
-  /* Active bar: hide left-edge on mobile (clipped) */
-  .navBtnActive::before { display: none; }
-
-  .itemWrap {
-    justify-content: flex-start;
-    padding: 0 12px;
+  .mobileScrim {
+    display: block;
   }
-
-  .navBtn {
-    width: 40px;
-    height: 40px;
-    flex-shrink: 0;
-  }
-
-  /* On mobile: tooltip becomes an inline label */
-  .tooltip {
-    position: static;
-    transform: none !important;
-    opacity: 1;
-    pointer-events: auto;
-    background: transparent;
-    color: var(--text-secondary);
-    border: none;
-    box-shadow: none;
-    padding: 0 0 0 10px;
-    font-size: 13.5px;
-    font-weight: 500;
-    transition: none;
-  }
-  .tooltip::before { display: none; }
-
-  .group        { align-items: flex-start; padding: 0 8px; }
-  .groupDivider { width: calc(100% - 16px); }
-  .logoSlot     { justify-content: flex-start; padding-left: 18px; }
-  .bottom       { align-items: flex-start; padding-left: 18px; }
-  .avatarWrap   { width: auto; flex-direction: row; gap: 12px; }
-  .popup        { display: none; }
 }

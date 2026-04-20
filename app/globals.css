@@ -7,43 +7,45 @@
 }
 
 /* ═══════════════════════════════════════════════════
-   DESIGN TOKENS
+   DESIGN TOKENS  — JioMart-inspired teal/blue theme
    ═══════════════════════════════════════════════════ */
 
-/* ───────────────────────────────────────────────────
-   ✅ LIGHT THEME — ACTIVE
-   ─────────────────────────────────────────────────── */
 :root {
-  /* ── Brand accents ── */
-  --purple:       #8250df;
-  --purple-dark:  #5b21b6;
-  --purple-light: #a78bfa;
-  --pink:         #db2777;
-  --cyan:         #0891b2;
+  /* ── Brand: JioMart-like teal-blue palette ── */
+  --purple:       #0078ad;          /* primary teal-blue (replaces purple) */
+  --purple-dark:  #005580;
+  --purple-light: #33a8d4;
+  --pink:         #e63950;
+  --cyan:         #0099cc;
   --green:        #16a34a;
   --red:          #e11d48;
   --amber:        #d97706;
 
-  /* ── Gradient shorthands ── */
-  --grad:           linear-gradient(135deg, #7c3aed 0%, #db2777 100%);
-  --grad-wide:      linear-gradient(135deg, #7c3aed 0%, #db2777 50%, #0891b2 100%);
-  --active-bg:      linear-gradient(135deg, rgba(124,58,237,0.08) 0%, rgba(219,39,119,0.05) 100%);
+  /* ── Navbar specific ── */
+  --nav-bg:       #006699;          /* rich JioMart-style teal-blue */
+  --nav-bg-dark:  #004d73;
+  --nav-strip:    #005580;          /* secondary strip below nav */
 
-  /* ── Legacy gold aliases (mapped to purple) ── */
+  /* ── Gradient shorthands ── */
+  --grad:           linear-gradient(135deg, #0078ad 0%, #00b4d8 100%);
+  --grad-wide:      linear-gradient(135deg, #005580 0%, #0078ad 50%, #00b4d8 100%);
+  --active-bg:      linear-gradient(135deg, rgba(0,120,173,0.09) 0%, rgba(0,180,216,0.05) 100%);
+
+  /* ── Legacy gold aliases (mapped to teal-blue) ── */
   --gold:           var(--purple);
-  --gold-light:     #a78bfa;
+  --gold-light:     #33a8d4;
   --gold-dark:      var(--purple-dark);
-  --gold-dim:       rgba(124,58,237,0.07);
-  --gold-border:    rgba(124,58,237,0.18);
+  --gold-dim:       rgba(0,120,173,0.07);
+  --gold-border:    rgba(0,120,173,0.18);
 
   /* ── Page & rail backgrounds ── */
-  --bg-page:        #f5f4fa;
+  --bg-page:        #f0f6fa;
   --bg-rail:        #ffffff;
 
   /* ── Legacy aliases ── */
-  --black:          #f5f4fa;
-  --black-light:    #ededf7;
-  --black-mid:      #e4e3f2;
+  --black:          #f0f6fa;
+  --black-light:    #e4eef5;
+  --black-mid:      #d6e8f2;
 
   /* ── Surfaces ── */
   --surface:        rgba(0, 0, 0, 0.03);
@@ -56,13 +58,13 @@
   --border-light:   rgba(0, 0, 0, 0.045);
 
   /* ── Typography ── */
-  --text-primary:   #0f0e1a;
-  --text-secondary: rgba(15, 14, 26, 0.60);
-  --text-muted:     rgba(15, 14, 26, 0.38);
+  --text-primary:   #0a1929;
+  --text-secondary: rgba(10, 25, 41, 0.60);
+  --text-muted:     rgba(10, 25, 41, 0.38);
 
   /* ── Card surface ── */
-  --card-bg:        rgba(255, 255, 255, 0.90);
-  --card-shadow:    0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+  --card-bg:        rgba(255, 255, 255, 0.92);
+  --card-shadow:    0 1px 4px rgba(0,80,120,0.07), 0 4px 16px rgba(0,80,120,0.04);
 
   /* ── Semantic ── */
   --success:        #16a34a;
@@ -79,8 +81,8 @@
   --transition:     0.2s cubic-bezier(0.4, 0, 0.2, 1);
   --radius:         12px;
   --radius-lg:      16px;
-  --shadow:         0 2px 12px rgba(0,0,0,0.08);
-  --shadow-gold:    0 4px 18px rgba(124,58,237,0.18);
+  --shadow:         0 2px 12px rgba(0,80,120,0.10);
+  --shadow-gold:    0 4px 18px rgba(0,120,173,0.20);
 }
 
 /* ───────────────────────────────────────────────────
@@ -88,31 +90,35 @@
    ─────────────────────────────────────────────────── */
 /*
 :root {
-  --purple:       #a78bfa;
-  --purple-dark:  #7c3aed;
-  --purple-light: #c4b5fd;
+  --purple:       #33bbee;
+  --purple-dark:  #0099cc;
+  --purple-light: #66ccff;
   --pink:         #f472b6;
   --cyan:         #22d3ee;
   --green:        #4ade80;
   --red:          #fb7185;
   --amber:        #fbbf24;
 
-  --grad:           linear-gradient(135deg, #a78bfa 0%, #f472b6 100%);
-  --grad-wide:      linear-gradient(135deg, #a78bfa 0%, #f472b6 50%, #22d3ee 100%);
-  --active-bg:      linear-gradient(135deg, rgba(167,139,250,0.12) 0%, rgba(244,114,182,0.08) 100%);
+  --nav-bg:       #003d5c;
+  --nav-bg-dark:  #002840;
+  --nav-strip:    #002840;
+
+  --grad:           linear-gradient(135deg, #0099cc 0%, #33bbee 100%);
+  --grad-wide:      linear-gradient(135deg, #0099cc 0%, #33bbee 50%, #66ccff 100%);
+  --active-bg:      linear-gradient(135deg, rgba(51,187,238,0.12) 0%, rgba(102,204,255,0.08) 100%);
 
   --gold:           var(--purple);
-  --gold-light:     #c4b5fd;
+  --gold-light:     #66ccff;
   --gold-dark:      var(--purple-dark);
-  --gold-dim:       rgba(167,139,250,0.10);
-  --gold-border:    rgba(167,139,250,0.22);
+  --gold-dim:       rgba(51,187,238,0.10);
+  --gold-border:    rgba(51,187,238,0.22);
 
-  --bg-page:        #07070e;
+  --bg-page:        #07101a;
   --bg-rail:        rgba(255,255,255,0.04);
 
-  --black:          #07070e;
-  --black-light:    #0e0d1a;
-  --black-mid:      #141326;
+  --black:          #07101a;
+  --black-light:    #0d1f2d;
+  --black-mid:      #13293d;
 
   --surface:        rgba(255,255,255,0.04);
   --surface-2:      rgba(255,255,255,0.07);
@@ -122,9 +128,9 @@
   --border-c:       rgba(255,255,255,0.06);
   --border-light:   rgba(255,255,255,0.04);
 
-  --text-primary:   #f1f0fa;
-  --text-secondary: rgba(241,240,250,0.65);
-  --text-muted:     rgba(241,240,250,0.38);
+  --text-primary:   #e8f4fb;
+  --text-secondary: rgba(232,244,251,0.65);
+  --text-muted:     rgba(232,244,251,0.38);
 
   --card-bg:        rgba(255,255,255,0.04);
   --card-shadow:    none;
@@ -135,7 +141,7 @@
   --info:           #22d3ee;
 
   --shadow:         0 4px 24px rgba(0,0,0,0.45);
-  --shadow-gold:    0 4px 20px rgba(167,139,250,0.28);
+  --shadow-gold:    0 4px 20px rgba(51,187,238,0.28);
 }
 */
 
@@ -144,7 +150,6 @@
    ═══════════════════════════════════════════════════ */
 
 html { color-scheme: light; }
-/* 🌙 Dark: html { color-scheme: dark; } */
 
 body {
   background: var(--bg-page);
@@ -164,8 +169,8 @@ body {
 /* ── Scrollbar ── */
 ::-webkit-scrollbar         { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track   { background: transparent; }
-::-webkit-scrollbar-thumb   { background: rgba(124,58,237,0.20); border-radius: 99px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(124,58,237,0.38); }
+::-webkit-scrollbar-thumb   { background: rgba(0,120,173,0.22); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0,120,173,0.40); }
 
 /* ── Elements ── */
 button       { cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; }
@@ -189,14 +194,7 @@ select       { font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text-p
 .badge-success { background: rgba(22,163,74,0.08);         color: var(--green);  border: 1px solid rgba(22,163,74,0.18); }
 .badge-warning { background: rgba(217,119,6,0.08);         color: var(--amber);  border: 1px solid rgba(217,119,6,0.18); }
 .badge-danger  { background: rgba(225,29,72,0.08);         color: var(--red);    border: 1px solid rgba(225,29,72,0.18); }
-.badge-info    { background: rgba(8,145,178,0.08);         color: var(--cyan);   border: 1px solid rgba(8,145,178,0.18); }
-
-/* 🌙 Dark badge overrides:
-.badge-success { background: rgba(74,222,128,0.10);  color: #4ade80;  border: 1px solid rgba(74,222,128,0.22); }
-.badge-warning { background: rgba(251,191,36,0.10);  color: #fbbf24;  border: 1px solid rgba(251,191,36,0.22); }
-.badge-danger  { background: rgba(251,113,133,0.10); color: #fb7185;  border: 1px solid rgba(251,113,133,0.22); }
-.badge-info    { background: rgba(34,211,238,0.10);  color: #22d3ee;  border: 1px solid rgba(34,211,238,0.22); }
-*/
+.badge-info    { background: rgba(0,153,204,0.08);         color: var(--cyan);   border: 1px solid rgba(0,153,204,0.18); }
 
 /* ── Tag chip ── */
 .tag {
@@ -204,8 +202,8 @@ select       { font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text-p
   font-size: 11px;
   font-weight: 600;
   color: var(--cyan);
-  background: rgba(8, 145, 178, 0.07);
-  border: 1px solid rgba(8, 145, 178, 0.18);
+  background: rgba(0, 153, 204, 0.07);
+  border: 1px solid rgba(0, 153, 204, 0.18);
   padding: 3px 9px;
   border-radius: 99px;
 }
@@ -244,9 +242,9 @@ select       { font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text-p
 .formInput:focus,
 .formTextarea:focus,
 .formSelect:focus {
-  border-color: rgba(124, 58, 237, 0.40);
-  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.09);
-  background: rgba(124, 58, 237, 0.015);
+  border-color: rgba(0, 120, 173, 0.40);
+  box-shadow: 0 0 0 3px rgba(0, 120, 173, 0.10);
+  background: rgba(0, 120, 173, 0.015);
 }
 .formInput::placeholder,
 .formTextarea::placeholder { color: var(--text-muted); }
@@ -272,11 +270,11 @@ select       { font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text-p
 .btnGold {
   background: var(--grad);
   color: #fff;
-  box-shadow: 0 3px 14px rgba(124, 58, 237, 0.24);
+  box-shadow: 0 3px 14px rgba(0, 120, 173, 0.26);
 }
 .btnGold:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 5px 20px rgba(124, 58, 237, 0.34);
+  box-shadow: 0 5px 20px rgba(0, 120, 173, 0.36);
 }
 
 .btnOutline {
@@ -285,7 +283,7 @@ select       { font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text-p
   border: 1px solid var(--border);
 }
 .btnOutline:hover:not(:disabled) {
-  border-color: rgba(124, 58, 237, 0.30);
+  border-color: rgba(0, 120, 173, 0.30);
   color: var(--text-primary);
   background: var(--surface);
 }
@@ -439,4 +437,27 @@ select       { font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text-p
   background-size: 400px 100%;
   animation: shimmer 1.4s ease-in-out infinite;
   border-radius: var(--radius);
+}
+
+main, .pageContent {
+  padding-top: 72px;
+}
+ 
+/* Mobile: remove top padding (top bar is hidden), add bottom padding */
+@media (max-width: 640px) {
+  main, .pageContent {
+    padding-top: 0;
+    /* 66px nav height + iOS safe area inset */
+    padding-bottom: calc(66px + env(safe-area-inset-bottom, 0px));
+  }
+}
+ 
+/* ── CRITICAL: prevent parent transforms from breaking fixed positioning ──
+   If any parent of <Navbar> has transform, filter, or will-change set,
+   fixed children will be scoped to that element instead of the viewport.
+   Add this to any layout wrapper that might have those properties: */
+.layoutRoot {
+  transform: none !important;
+  filter: none !important;
+  will-change: auto !important;
 }
