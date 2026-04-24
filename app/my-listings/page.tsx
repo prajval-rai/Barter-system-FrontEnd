@@ -56,7 +56,6 @@ declare global {
 /* ─── API ── */
 const BASE = process.env.NEXT_PUBLIC_BACKEND_URL;
 
-// "All" → /products/user/   |   others → /products/user/?status=submitted etc.
 async function fetchByFilter(filter: Filter): Promise<UserProduct[]> {
   const url = filter === "All"
     ? `${BASE}products/products_by_status/`
@@ -106,13 +105,10 @@ const FILTERS: Filter[] = ["All", "Submitted", "Approved", "Rejected", "Closed"]
 ════════════════════════════ */
 export default function MyProducts({ onNavigate }: MyProductsProps) {
   const [filter, setFilter]             = useState<Filter>("All");
-
-  // Per-tab cache — null means not yet fetched for that tab
   const cache = useRef<Partial<Record<Filter, UserProduct[]>>>({});
-
   const [list, setList]                 = useState<UserProduct[]>([]);
-  const [loading, setLoading]           = useState(true);       // full-page spinner (first load only)
-  const [tabLoading, setTabLoading]     = useState(false);      // thin bar on tab switch
+  const [loading, setLoading]           = useState(true);
+  const [tabLoading, setTabLoading]     = useState(false);
   const [error, setError]               = useState<string | null>(null);
   const [deleting, setDeleting]         = useState<number | null>(null);
   const [confirmId, setConfirmId]       = useState<number | null>(null);
@@ -122,7 +118,6 @@ export default function MyProducts({ onNavigate }: MyProductsProps) {
   const [scanProduct, setScanProduct]   = useState<UserProduct | null>(null);
   const [tabCounts, setTabCounts]       = useState<Partial<Record<Filter, number>>>({});
 
-  /* Lock body scroll when modal open */
   useEffect(() => {
     document.body.style.overflow = (selectedId !== null || scanProduct !== null) ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
@@ -133,23 +128,18 @@ export default function MyProducts({ onNavigate }: MyProductsProps) {
     setTimeout(() => setToast(null), 3200);
   };
 
-  /* ── Core fetch — uses cache unless force=true ── */
   const fetchForFilter = useCallback(async (f: Filter, opts?: { force?: boolean }) => {
-    // Serve from cache instantly
     if (!opts?.force && cache.current[f] !== undefined) {
       setList(cache.current[f]!);
       setError(null);
       return;
     }
-
-    // First-ever load → full skeleton; subsequent → thin loading bar
     if (Object.keys(cache.current).length === 0) {
       setLoading(true);
     } else {
       setTabLoading(true);
     }
     setError(null);
-
     try {
       const raw  = await fetchByFilter(f);
       const data = raw.map(p => ({ ...p, status: normalizeStatus(p.status) }));
@@ -164,29 +154,25 @@ export default function MyProducts({ onNavigate }: MyProductsProps) {
     }
   }, []);
 
-  /* Initial load */
   useEffect(() => { fetchForFilter("All"); }, [fetchForFilter]);
 
-  /* Tab switch → API call (cached after first visit) */
   const handleFilterChange = (f: Filter) => {
     setFilter(f);
     fetchForFilter(f);
   };
 
-  /* Manual refresh — bust cache for current tab only */
   const handleRefresh = () => fetchForFilter(filter, { force: true });
 
-  /* Delete — bust whole cache so counts are accurate everywhere */
   const handleDelete = async (id: number) => {
     setConfirmId(null);
     setDeleting(id);
     try {
       await apiDelete(id);
-      cache.current = {};                                           // bust all tabs
-      setList(prev => prev.filter(x => x.id !== id));             // optimistic remove
+      cache.current = {};
+      setList(prev => prev.filter(x => x.id !== id));
       setBucket(b => { const nb = new Set(b); nb.delete(id); return nb; });
       showToast("Product deleted.", true);
-      await fetchForFilter(filter, { force: true });               // re-fetch current tab
+      await fetchForFilter(filter, { force: true });
     } catch (e: any) {
       showToast(e.message || "Delete failed.", false);
     } finally {
@@ -203,7 +189,6 @@ export default function MyProducts({ onNavigate }: MyProductsProps) {
     });
   };
 
-  // Count badge: prefer cached count; fall back to live list for active tab
   const count = (f: Filter) => {
     if (tabCounts[f] !== undefined) return tabCounts[f]!;
     if (f === filter) return list.length;
@@ -274,7 +259,7 @@ export default function MyProducts({ onNavigate }: MyProductsProps) {
       {confirmId !== null && (
         <div className={styles.overlay} onClick={() => setConfirmId(null)}>
           <div className={styles.dialog} onClick={e => e.stopPropagation()}>
-            <div className={styles.dialogIcon}><AlertTriangle size={30} color="var(--danger)" /></div>
+            <div className={styles.dialogIcon}><AlertTriangle size={28} color="#e11d48" /></div>
             <h3 className={styles.dialogTitle}>Delete this listing?</h3>
             <p className={styles.dialogMsg}>This will permanently remove it and cannot be undone.</p>
             <div className={styles.dialogActions}>
@@ -303,9 +288,10 @@ export default function MyProducts({ onNavigate }: MyProductsProps) {
 
       <div className={styles.shell}>
 
-        {/* Header */}
+        {/* ── Header ── */}
         <div className={styles.header}>
-          <div>
+          <div className={styles.headerMeta}>
+            <p className={styles.eyebrow}>Your Listings</p>
             <h1 className={styles.title}>My Products</h1>
             <p className={styles.subtitle}>
               {`${list.length} item${list.length !== 1 ? "s" : ""} · ${filter === "All" ? "All statuses" : filter}`}
@@ -326,7 +312,7 @@ export default function MyProducts({ onNavigate }: MyProductsProps) {
           </div>
         </div>
 
-        {/* Filter chips */}
+        {/* ── Filter chips ── */}
         <div className={styles.filters}>
           {FILTERS.map(f => {
             const meta   = f !== "All" ? STATUS_META[f as UserProduct["status"]] : null;
@@ -338,9 +324,9 @@ export default function MyProducts({ onNavigate }: MyProductsProps) {
                 onClick={() => handleFilterChange(f)}
                 className={`${styles.chip} ${active ? styles.chipActive : ""}`}
                 style={active ? {
-                  color: meta?.color ?? "var(--purple)",
-                  borderColor: meta?.color ?? "var(--purple)",
-                  background: meta?.bg ?? "var(--gold-dim)",
+                  color: meta?.color ?? "#2563eb",
+                  borderColor: meta?.color ?? "#2563eb",
+                  background: meta?.bg ?? "rgba(37,99,235,0.07)",
                 } as React.CSSProperties : {}}
               >
                 {f === "All" ? <Package size={12} /> : meta && <meta.Icon size={12} />}
@@ -348,7 +334,7 @@ export default function MyProducts({ onNavigate }: MyProductsProps) {
                 {c > 0 && (
                   <span
                     className={styles.chipBadge}
-                    style={active ? { background: meta?.color ?? "var(--purple)", color: "#fff" } as React.CSSProperties : {}}
+                    style={active ? { background: meta?.color ?? "#2563eb", color: "#fff" } as React.CSSProperties : {}}
                   >
                     {c}
                   </span>
@@ -358,7 +344,7 @@ export default function MyProducts({ onNavigate }: MyProductsProps) {
           })}
         </div>
 
-        {/* Thin loading bar on tab switch */}
+        {/* Tab loading bar */}
         {tabLoading && (
           <div className={styles.tabLoadingBar}>
             <div className={styles.tabLoadingFill} />
@@ -403,12 +389,13 @@ export default function MyProducts({ onNavigate }: MyProductsProps) {
                   className={`${styles.cardWrap} ${busy ? styles.cardBusy : ""}`}
                   style={{ animationDelay: `${i * 0.055}s` }}
                 >
+                  {/* ── Thin status bar — date only, status is on image badge ── */}
                   <div
                     className={styles.statusBar}
                     style={{ background: st.bg, borderBottomColor: st.border } as React.CSSProperties}
                   >
                     <span className={styles.statusLabel} style={{ color: st.color } as React.CSSProperties}>
-                      <st.Icon size={11} /> {st.label}
+                      <st.Icon size={10} /> {st.label}
                     </span>
                     <span className={styles.statusDate}>
                       <FileText size={9} /> {fmtDate(p.created_at)}

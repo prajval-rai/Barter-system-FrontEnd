@@ -51,7 +51,7 @@ interface MarketplaceProps {
 }
 
 /* ─── Constants ── */
-const BASE      = process.env.NEXT_PUBLIC_BACKEND_URL
+const BASE      = process.env.NEXT_PUBLIC_BACKEND_URL;
 const PAGE_SIZE = 12;
 
 /* ─── API ── */
@@ -104,8 +104,8 @@ export default function Marketplace({ onNavigate }: MarketplaceProps) {
   const [page, setPage]               = useState(1);
   const [hasNext, setHasNext]         = useState(false);
   const [total, setTotal]             = useState(0);
-  const [loading, setLoading]         = useState(true);    // initial full load
-  const [loadingMore, setLoadingMore] = useState(false);   // infinite scroll load
+  const [loading, setLoading]         = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError]             = useState<string | null>(null);
 
   const [search, setSearch]           = useState("");
@@ -127,9 +127,9 @@ export default function Marketplace({ onNavigate }: MarketplaceProps) {
   };
 
   /* ── Refs ── */
-  const sentinelRef   = useRef<HTMLDivElement>(null);   // bottom sentinel for IntersectionObserver
-  const searchTimer   = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isFetching    = useRef(false);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isFetching  = useRef(false);
 
   /* ── Lock scroll when detail open ── */
   useEffect(() => {
@@ -204,98 +204,85 @@ export default function Marketplace({ onNavigate }: MarketplaceProps) {
   };
 
   const activeFilters = [
-    search   && { key: "search",   label: `"${search}"`,                       clear: clearSearch },
+    search   && { key: "search",   label: `"${search}"`, clear: clearSearch },
     category && { key: "category", label: categories.find(c => String(c.id) === category)?.name ?? category, clear: () => setCategory("") },
     sort !== "newest" && { key: "sort", label: "Oldest first", clear: () => setSort("newest") },
   ].filter(Boolean) as { key: string; label: string; clear: () => void }[];
 
-  /* ── Empty / error skeletons ── */
   const showInitialSkeleton = loading && products.length === 0;
 
   return (
     <>
       <div className={styles.shell}>
 
-        {/* ══ Hero bar ══ */}
-        <div className={styles.hero}>
-          <div className={styles.heroLeft}>
-            <div className={styles.heroIcon}>
-              <ShoppingBag size={20} />
-            </div>
-            <div>
-              <h1 className={styles.heroTitle}>Marketplace</h1>
-              <p className={styles.heroSub}>
-                {total > 0
-                  ? <><span className={styles.heroCount}>{total}</span> items available for exchange</>
-                  : "Browse items available for exchange"
-                }
-              </p>
-            </div>
-          </div>
-
-          {/* Sort pill */}
-          <div className={styles.sortWrap}>
-            <TrendingUp size={12} />
-            <select
-              className={styles.sortSelect}
-              value={sort}
-              onChange={e => setSort(e.target.value as SortOption)}
-            >
-              <option value="newest">Newest first</option>
-              <option value="oldest">Oldest first</option>
-            </select>
-            <ChevronDown size={11} className={styles.sortChevron} />
-          </div>
-        </div>
-
-        {/* ══ Search + filter bar ══ */}
+        {/* ══ Search + filter toolbar (no hero, this is the top) ══ */}
         <div className={styles.toolbar}>
-          {/* Search */}
-          <div className={styles.searchWrap}>
-            <Search size={14} className={styles.searchIcon} />
-            <input
-              className={styles.searchInput}
-              placeholder="Search products…"
-              value={searchInput}
-              onChange={e => handleSearchInput(e.target.value)}
-            />
-            {searchInput && (
-              <button className={styles.searchClear} onClick={clearSearch}>
-                <X size={12} />
-              </button>
-            )}
-          </div>
+          <div className={styles.toolbarInner}>
 
-          {/* Filter toggle */}
-          <button
-            className={`${styles.filterBtn} ${filtersOpen ? styles.filterBtnActive : ""}`}
-            onClick={() => setFiltersOpen(v => !v)}
-          >
-            <SlidersHorizontal size={13} />
-            Filters
-            {activeFilters.length > 0 && (
-              <span className={styles.filterDot}>{activeFilters.length}</span>
-            )}
-          </button>
+            {/* Left: search */}
+            <div className={styles.searchWrap}>
+              <Search size={14} className={styles.searchIcon} />
+              <input
+                className={styles.searchInput}
+                placeholder="Search products…"
+                value={searchInput}
+                onChange={e => handleSearchInput(e.target.value)}
+              />
+              {searchInput && (
+                <button className={styles.searchClear} onClick={clearSearch}>
+                  <X size={12} />
+                </button>
+              )}
+            </div>
+
+            {/* Right: sort + filter */}
+            <div className={styles.toolbarRight}>
+              <div className={styles.sortWrap}>
+                <TrendingUp size={12} />
+                <select
+                  className={styles.sortSelect}
+                  value={sort}
+                  onChange={e => setSort(e.target.value as SortOption)}
+                >
+                  <option value="newest">Newest first</option>
+                  <option value="oldest">Oldest first</option>
+                </select>
+                <ChevronDown size={11} className={styles.sortChevron} />
+              </div>
+
+              <button
+                className={`${styles.filterBtn} ${filtersOpen ? styles.filterBtnActive : ""}`}
+                onClick={() => setFiltersOpen(v => !v)}
+              >
+                <SlidersHorizontal size={13} />
+                Filters
+                {activeFilters.length > 0 && (
+                  <span className={styles.filterDot}>{activeFilters.length}</span>
+                )}
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* ══ Expanded filters ══ */}
         {filtersOpen && (
           <div className={styles.filterPanel}>
-            <div className={styles.filterGroup}>
-              <span className={styles.filterLabel}><Layers size={11} /> Category</span>
-              <div className={styles.filterChips}>
-                <button
-                  className={`${styles.fChip} ${category === "" ? styles.fChipActive : ""}`}
-                  onClick={() => setCategory("")}
-                >All</button>
-                {categories.map(c => (
+            <div className={styles.filterPanelInner}>
+              <div className={styles.filterGroup}>
+                <span className={styles.filterLabel}><Layers size={11} /> Category</span>
+                <div className={styles.filterChips}>
                   <button
-                    key={c.id}
-                    className={`${styles.fChip} ${String(c.id) === category ? styles.fChipActive : ""}`}
-                    onClick={() => setCategory(String(c.id))}
-                  >{c.name}</button>
-                ))}
+                    className={`${styles.fChip} ${category === "" ? styles.fChipActive : ""}`}
+                    onClick={() => setCategory("")}
+                  >All</button>
+                  {categories.map(c => (
+                    <button
+                      key={c.id}
+                      className={`${styles.fChip} ${String(c.id) === category ? styles.fChipActive : ""}`}
+                      onClick={() => setCategory(String(c.id))}
+                    >{c.name}</button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -304,15 +291,17 @@ export default function Marketplace({ onNavigate }: MarketplaceProps) {
         {/* ══ Active filter tags ══ */}
         {activeFilters.length > 0 && (
           <div className={styles.activeTags}>
-            {activeFilters.map(f => (
-              <span key={f.key} className={styles.activeTag}>
-                {f.label}
-                <button onClick={f.clear}><X size={9} /></button>
-              </span>
-            ))}
-            <button className={styles.clearAll} onClick={() => {
-              clearSearch(); setCategory(""); setSort("newest");
-            }}>Clear all</button>
+            <div className={styles.activeTagsInner}>
+              {activeFilters.map(f => (
+                <span key={f.key} className={styles.activeTag}>
+                  {f.label}
+                  <button onClick={f.clear}><X size={9} /></button>
+                </span>
+              ))}
+              <button className={styles.clearAll} onClick={() => {
+                clearSearch(); setCategory(""); setSort("newest");
+              }}>Clear all</button>
+            </div>
           </div>
         )}
 
@@ -333,10 +322,14 @@ export default function Marketplace({ onNavigate }: MarketplaceProps) {
 
         {/* ══ Initial skeleton ══ */}
         {showInitialSkeleton && (
-          <div className={styles.grid}>
-            {Array.from({ length: PAGE_SIZE }).map((_, i) => (
-              <SkeletonCard key={i} delay={i * 0.04} />
-            ))}
+          <div className={styles.gridOuter}>
+            <div className={styles.gridInner}>
+              <div className={styles.grid}>
+                {Array.from({ length: PAGE_SIZE }).map((_, i) => (
+                  <SkeletonCard key={i} delay={i * 0.04} />
+                ))}
+              </div>
+            </div>
           </div>
         )}
 
@@ -368,53 +361,59 @@ export default function Marketplace({ onNavigate }: MarketplaceProps) {
 
         {/* ══ Product grid ══ */}
         {products.length > 0 && (
-          <div className={styles.grid}>
-            {products.map((p, i) => {
-              const replaceOpts: PreviewReplaceOption[] = p.replace_options
-                .filter(r => r.replace_type === "product" && r.title)
-                .map(r => ({ title: r.title }));
+          <div className={styles.gridOuter}>
+            <div className={styles.gridInner}>
+              <div className={styles.grid}>
+                {products.map((p, i) => {
+                  const replaceOpts: PreviewReplaceOption[] = p.replace_options
+                    .filter(r => r.replace_type === "product" && r.title)
+                    .map(r => ({ title: r.title }));
 
-              return (
-                <div
-                  key={p.id}
-                  className={styles.cardWrap}
-                  style={{ animationDelay: `${(i % PAGE_SIZE) * 0.05}s` }}
-                >
-                  {/* Owner label above card */}
-                  <div className={styles.ownerBar}>
-                    <div className={styles.ownerAvatar}>
-                      {p.owner_name.charAt(0).toUpperCase()}
+                  return (
+                    <div
+                      key={p.id}
+                      className={styles.cardWrap}
+                      style={{ animationDelay: `${(i % PAGE_SIZE) * 0.05}s` }}
+                    >
+                      <div className={styles.ownerBar}>
+                        <div className={styles.ownerAvatar}>
+                          {p.owner_name.charAt(0).toUpperCase()}
+                        </div>
+                        <span className={styles.ownerName}>{p.owner_name}</span>
+                        {p.purchase_year && (
+                          <span className={styles.ownerYear}>{p.purchase_year}</span>
+                        )}
+                      </div>
+                      <ProductPreviewCard
+                        title={p.title}
+                        categoryName={p.category_name}
+                        purchaseYear={p.purchase_year}
+                        imageUrls={p.thumbnail ? [p.thumbnail] : []}
+                        replaceOptions={replaceOpts}
+                        status="approved"
+                        showBucketBtn
+                        onAddToBucket={() => toggleWishlist(p.id)}
+                        bucketAdded={wishlist.has(p.id)}
+                        onView={() => setSelectedId(p.id)}
+                      />
                     </div>
-                    <span className={styles.ownerName}>{p.owner_name}</span>
-                    {p.purchase_year && (
-                      <span className={styles.ownerYear}>{p.purchase_year}</span>
-                    )}
-                  </div>
-
-                  <ProductPreviewCard
-                    title={p.title}
-                    categoryName={p.category_name}
-                    purchaseYear={p.purchase_year}
-                    imageUrls={p.thumbnail ? [p.thumbnail] : []}
-                    replaceOptions={replaceOpts}
-                    status="approved"
-                    showBucketBtn
-                    onAddToBucket={() => toggleWishlist(p.id)}
-                    bucketAdded={wishlist.has(p.id)}
-                    onView={() => setSelectedId(p.id)}
-                  />
-                </div>
-              );
-            })}
+                  );
+                })}
+              </div>
+            </div>
           </div>
         )}
 
-        {/* ══ Load-more skeleton (appending) ══ */}
+        {/* ══ Load-more skeleton ══ */}
         {loadingMore && (
-          <div className={styles.grid}>
-            {Array.from({ length: 4 }).map((_, i) => (
-              <SkeletonCard key={i} delay={i * 0.06} />
-            ))}
+          <div className={styles.gridOuter}>
+            <div className={styles.gridInner}>
+              <div className={styles.grid}>
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <SkeletonCard key={i} delay={i * 0.06} />
+                ))}
+              </div>
+            </div>
           </div>
         )}
 

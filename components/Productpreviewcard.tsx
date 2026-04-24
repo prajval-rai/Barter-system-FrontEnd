@@ -3,7 +3,7 @@
 import { useState } from "react";
 import {
   Camera, Calendar, Repeat2, Box, ImageIcon,
-  ShoppingBag, Check, Eye, Pencil, Trash2, Scan,
+  Heart, Check, Pencil, Trash2, Scan,
   ChevronDown, ChevronUp, TrendingUp, TrendingDown,
   AlertCircle,
 } from "lucide-react";
@@ -150,7 +150,6 @@ function ExchangeSection({ options }: { options: PreviewReplaceOption[] }) {
         Wants in exchange
       </div>
 
-      {/* Visible chips */}
       <div className={styles.exchangeChips}>
         {visible.map((o, i) => (
           <span key={i} className={styles.exChip}>
@@ -170,7 +169,6 @@ function ExchangeSection({ options }: { options: PreviewReplaceOption[] }) {
         )}
       </div>
 
-      {/* Expanded panel */}
       {expanded && (
         <div className={styles.expandPanel}>
           <div className={styles.expandHeader}>
@@ -233,7 +231,7 @@ export default function ProductPreviewCard({
   onClick,
 }: ProductPreviewCardProps) {
   const sc = getStatus(status);
-  const hasActions = !!(onView || onEdit || onDelete || onScan || onResubmit);
+  const hasActions = !!(onEdit || onDelete || onScan || onResubmit);
   const isRejected = status?.toLowerCase() === "rejected" || status?.toLowerCase() === "banned";
 
   const condLabel = condition?.toLowerCase() || "";
@@ -245,7 +243,10 @@ export default function ProductPreviewCard({
       onClick={onClick}
     >
       {/* ══ IMAGE ══ */}
-      <div className={styles.imgWrap}>
+      <div
+        className={`${styles.imgWrap} ${onView ? styles.imgClickable : ""}`}
+        onClick={onView ? (e) => { e.stopPropagation(); onView(); } : undefined}
+      >
         {imageUrls.length > 0
           ? <CardImage src={imageUrls[0]} alt={title || "product"} />
           : (
@@ -265,8 +266,21 @@ export default function ProductPreviewCard({
           </div>
         )}
 
-        {/* Image count — top right */}
-        {imageUrls.length > 1 && (
+        {/* Heart / bucket — top right */}
+        {showBucketBtn && (
+          <button
+            className={`${styles.heartBtn} ${bucketAdded ? styles.heartActive : ""}`}
+            onClick={e => { e.stopPropagation(); onAddToBucket?.(); }}
+            aria-label={bucketAdded ? "Saved" : "Save item"}
+          >
+            {bucketAdded
+              ? <Check size={13} strokeWidth={2.5} />
+              : <Heart size={13} strokeWidth={2} />}
+          </button>
+        )}
+
+        {/* Image count — top right (when no bucket btn) */}
+        {imageUrls.length > 1 && !showBucketBtn && (
           <span className={styles.imgCount}>
             <ImageIcon size={9} /> {imageUrls.length}
           </span>
@@ -288,33 +302,51 @@ export default function ProductPreviewCard({
 
         {/* Date — bottom right */}
         {date && <span className={styles.dateTag}>{date}</span>}
-
-        {/* Bucket CTA */}
-        {showBucketBtn && (
-          <button
-            className={`${styles.bucketCta} ${bucketAdded ? styles.bucketDone : ""}`}
-            onClick={e => { e.stopPropagation(); onAddToBucket?.(); }}
-          >
-            {bucketAdded
-              ? <><Check size={13} /> saved</>
-              : <><ShoppingBag size={13} /> want this</>}
-          </button>
-        )}
       </div>
 
       {/* ══ BODY ══ */}
       <div className={styles.body}>
-        {categoryName && (
-          <p className={styles.cat}>
-            <span className={styles.catDot} />
-            {CatIcon && <CatIcon size={9} />}
-            {categoryName}
-          </p>
-        )}
+        <div className={styles.bodyTopRow}>
+          <div className={styles.bodyLeft}>
+            {categoryName && (
+              <p className={styles.cat}>
+                <span className={styles.catDot} />
+                {CatIcon && <CatIcon size={9} />}
+                {categoryName}
+              </p>
+            )}
 
-        <h3 className={styles.title}>
-          {title || <em className={styles.noTitle}>untitled drop</em>}
-        </h3>
+            <h3 className={styles.title}>
+              {title || <em className={styles.noTitle}>untitled drop</em>}
+            </h3>
+          </div>
+
+          {/* Inline icon actions — edit / scan / resubmit / delete */}
+          {hasActions && (
+            <div className={styles.iconActions} onClick={e => e.stopPropagation()}>
+              {onScan && (
+                <button className={`${styles.iconBtn} ${styles.iconScan}`} onClick={onScan} title="Scan">
+                  <Scan size={13} />
+                </button>
+              )}
+              {onResubmit && (
+                <button className={`${styles.iconBtn} ${styles.iconResubmit}`} onClick={onResubmit} title="Resubmit">
+                  <Pencil size={13} />
+                </button>
+              )}
+              {onEdit && (
+                <button className={`${styles.iconBtn} ${styles.iconEdit}`} onClick={onEdit} title="Edit">
+                  <Pencil size={13} />
+                </button>
+              )}
+              {onDelete && (
+                <button className={`${styles.iconBtn} ${styles.iconDel}`} onClick={onDelete} title="Delete">
+                  <Trash2 size={13} />
+                </button>
+              )}
+            </div>
+          )}
+        </div>
 
         <div className={styles.metaRow}>
           {purchaseYear && (
@@ -341,37 +373,6 @@ export default function ProductPreviewCard({
 
       {/* ══ EXCHANGE ══ */}
       <ExchangeSection options={replaceOptions} />
-
-      {/* ══ ACTION BAR ══ */}
-      {hasActions && (
-        <div className={styles.actionBar} onClick={e => e.stopPropagation()}>
-          {onView && (
-            <button className={`${styles.actBtn} ${styles.actView}`} onClick={onView}>
-              <Eye size={12} /> View
-            </button>
-          )}
-          {onScan && (
-            <button className={`${styles.actBtn} ${styles.actScan}`} onClick={onScan}>
-              <Scan size={12} /> Scan
-            </button>
-          )}
-          {onEdit && (
-            <button className={`${styles.actBtn} ${styles.actEdit}`} onClick={onEdit}>
-              <Pencil size={12} /> Edit
-            </button>
-          )}
-          {onResubmit && (
-            <button className={`${styles.actBtn} ${styles.actResubmit}`} onClick={onResubmit}>
-              <Pencil size={12} /> Resubmit
-            </button>
-          )}
-          {onDelete && (
-            <button className={`${styles.actBtn} ${styles.actDel}`} onClick={onDelete}>
-              <Trash2 size={13} />
-            </button>
-          )}
-        </div>
-      )}
     </article>
   );
 }

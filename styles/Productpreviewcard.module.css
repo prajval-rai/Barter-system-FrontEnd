@@ -7,10 +7,11 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  background: var(--bg-page, #fff);
-  border: 1px solid var(--border);
-  border-radius: 16px;
+  background: #fff;
+  border: 1px solid #e8edf3;
+  border-radius: 20px;
   overflow: hidden;
+  padding-top: 10px;
   transition:
     transform 0.22s cubic-bezier(0.34,1.56,0.64,1),
     box-shadow 0.2s ease,
@@ -21,12 +22,11 @@
 
 .clickable:hover,
 .hasActions:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06), 0 16px 40px rgba(0,0,0,0.1);
-  border-color: rgba(124,58,237,0.2);
+  transform: translateY(-3px);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04), 0 12px 32px rgba(0,0,0,0.08);
+  border-color: rgba(56,189,248,0.3);
 }
 
-/* Rejected card gets a subtle red tint on border */
 .cardRejected {
   border-color: rgba(220,38,38,0.2);
 }
@@ -34,11 +34,21 @@
 /* ── Image wrapper ── */
 .imgWrap {
   position: relative;
-  width: 100%;
   aspect-ratio: 4 / 3;
   overflow: hidden;
-  background: var(--surface);
+  background: var(--surface, #f1f5f9);
   flex-shrink: 0;
+  border-radius: 12px;
+  margin: 10px 10px 0 10px;
+}
+
+/* Clickable image cursor */
+.imgClickable {
+  cursor: pointer;
+}
+
+.imgClickable:hover .img {
+  transform: scale(1.05);
 }
 
 .img {
@@ -50,21 +60,16 @@
   transition: transform 0.4s cubic-bezier(0.25,0.46,0.45,0.94);
 }
 
-.clickable:hover .img,
-.hasActions:hover .img {
-  transform: scale(1.04);
-}
-
 /* ── Gradient scrim ── */
 .scrim {
   position: absolute;
   inset: 0;
   background: linear-gradient(
     to bottom,
-    rgba(0,0,0,0.14) 0%,
-    transparent 30%,
-    transparent 55%,
-    rgba(0,0,0,0.28) 100%
+    rgba(0,0,0,0.08) 0%,
+    transparent 28%,
+    transparent 58%,
+    rgba(0,0,0,0.22) 100%
   );
   pointer-events: none;
 }
@@ -78,10 +83,10 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  color: var(--text-muted);
+  color: var(--text-muted, #94a3b8);
   font-size: 11px;
   font-family: 'DM Sans', sans-serif;
-  background: var(--surface);
+  background: var(--surface, #f1f5f9);
   padding: 16px;
   text-align: center;
 }
@@ -110,7 +115,7 @@
 .badge_live     { background: rgba(22,163,74,0.15);  color: #15803d; border-color: rgba(22,163,74,0.3); }
 .badge_review   { background: rgba(217,119,6,0.15);  color: #b45309; border-color: rgba(217,119,6,0.3); }
 .badge_rejected { background: rgba(220,38,38,0.14);  color: #dc2626; border-color: rgba(220,38,38,0.25); }
-.badge_default  { background: rgba(0,0,0,0.35);      color: #fff;    border-color: transparent; }
+.badge_default  { background: rgba(0,0,0,0.3);       color: #fff;    border-color: transparent; }
 
 .statusDot {
   width: 5px;
@@ -129,6 +134,41 @@
   50%       { opacity: 0.2; transform: scale(0.5); }
 }
 
+/* ── Heart / bucket button — top right ── */
+.heartBtn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 4;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.85);
+  border: 1px solid rgba(255,255,255,0.6);
+  color: #94a3b8;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.heartBtn:hover {
+  background: rgba(255,255,255,0.97);
+  color: #f43f5e;
+  transform: scale(1.12);
+  box-shadow: 0 4px 14px rgba(244,63,94,0.2);
+}
+
+.heartActive {
+  background: rgba(244,63,94,0.12) !important;
+  color: #f43f5e !important;
+  border-color: rgba(244,63,94,0.3) !important;
+}
+
 /* ── Image count — top right ── */
 .imgCount {
   position: absolute;
@@ -142,7 +182,7 @@
   font-weight: 700;
   padding: 3px 8px;
   border-radius: 99px;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0,0,0,0.45);
   color: rgba(255,255,255,0.92);
   backdrop-filter: blur(6px);
   font-family: 'DM Sans', sans-serif;
@@ -179,37 +219,10 @@
   font-weight: 600;
   padding: 3px 8px;
   border-radius: 99px;
-  background: rgba(0,0,0,0.42);
+  background: rgba(0,0,0,0.38);
   color: rgba(255,255,255,0.88);
   font-family: 'DM Sans', sans-serif;
 }
-
-/* ── Bucket CTA ── */
-.bucketCta {
-  position: absolute;
-  bottom: 0;
-  left: 0; right: 0;
-  z-index: 4;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 10px;
-  font-size: 12px;
-  font-weight: 700;
-  font-family: 'DM Sans', sans-serif;
-  text-transform: lowercase;
-  background: rgba(10,8,20,0.88);
-  color: #fff;
-  border: none;
-  cursor: pointer;
-  transform: translateY(100%);
-  transition: transform 0.22s cubic-bezier(0.34,1.56,0.64,1);
-  backdrop-filter: blur(10px);
-}
-
-.imgWrap:hover .bucketCta { transform: translateY(0); }
-.bucketDone { background: var(--success) !important; transform: translateY(0) !important; }
 
 /* ═══════════════════
    BODY
@@ -218,9 +231,80 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  padding: 12px 14px 10px;
+  padding: 8px 14px 12px;
 }
 
+/* Top row: title area + icon actions */
+.bodyTopRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.bodyLeft {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── Icon-only action buttons ── */
+.iconActions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.iconBtn {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: var(--text-muted, #94a3b8);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.iconBtn:active { transform: scale(0.92); }
+
+.iconEdit:hover {
+  background: rgba(8,145,178,0.08);
+  color: #0e7490;
+  border-color: rgba(8,145,178,0.3);
+}
+
+.iconScan:hover {
+  background: rgba(124,58,237,0.08);
+  color: #7c3aed;
+  border-color: rgba(124,58,237,0.3);
+}
+
+.iconResubmit {
+  color: #dc2626;
+  border-color: rgba(220,38,38,0.2);
+  background: rgba(220,38,38,0.04);
+}
+.iconResubmit:hover {
+  background: rgba(220,38,38,0.1);
+  border-color: rgba(220,38,38,0.35);
+}
+
+.iconDel:hover {
+  background: rgba(220,38,38,0.07);
+  color: #dc2626;
+  border-color: rgba(220,38,38,0.28);
+}
+
+/* ── Category ── */
 .cat {
   display: flex;
   align-items: center;
@@ -228,7 +312,7 @@
   font-size: 10px;
   font-weight: 700;
   font-family: 'DM Sans', sans-serif;
-  color: var(--text-muted);
+  color: var(--text-muted, #94a3b8);
   text-transform: uppercase;
   letter-spacing: 0.8px;
   margin: 0;
@@ -238,17 +322,17 @@
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: #7c3aed;
+  background: #38bdf8;
   flex-shrink: 0;
 }
 
 .title {
-  font-size: 15px;
-  font-weight: 800;
-  font-family: 'Syne', sans-serif;
-  color: var(--text-primary);
-  line-height: 1.22;
-  letter-spacing: -0.3px;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text-primary, #0f172a);
+  line-height: 1.25;
+  letter-spacing: -0.2px;
   margin: 0;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -256,7 +340,7 @@
   overflow: hidden;
 }
 
-.noTitle { color: var(--text-muted); font-style: italic; font-weight: 600; }
+.noTitle { color: var(--text-muted, #94a3b8); font-style: italic; font-weight: 600; }
 
 /* Meta chips row */
 .metaRow {
@@ -275,14 +359,14 @@
   font-family: 'DM Sans', sans-serif;
   padding: 3px 8px;
   border-radius: 99px;
-  background: var(--surface);
-  color: var(--text-muted);
-  border: 0.5px solid var(--border);
+  background: var(--surface, #f8fafc);
+  color: var(--text-muted, #94a3b8);
+  border: 0.5px solid var(--border, #e8edf3);
 }
 
 .valUp   { background: rgba(22,163,74,0.08);  color: #15803d; border-color: rgba(22,163,74,0.22);  }
 .valDown { background: rgba(220,38,38,0.07);  color: #dc2626; border-color: rgba(220,38,38,0.18);  }
-.valFlat { background: var(--surface);        color: var(--text-muted); border-color: var(--border); }
+.valFlat { background: var(--surface, #f8fafc); color: var(--text-muted, #94a3b8); border-color: var(--border, #e8edf3); }
 
 .rejectChip {
   display: inline-flex;
@@ -305,7 +389,7 @@
   font-size: 9px;
   font-weight: 700;
   font-family: 'DM Sans', sans-serif;
-  color: var(--cyan, #0891b2);
+  color: #0891b2;
   padding: 2px 7px;
   border-radius: 99px;
   background: rgba(8,145,178,0.07);
@@ -316,8 +400,8 @@
    EXCHANGE SECTION
 ═══════════════════ */
 .exchangeSection {
-  border-top: 0.5px solid var(--border);
-  padding: 10px 14px 11px;
+  border-top: 0.5px solid var(--border, #e8edf3);
+  padding: 10px 14px 12px;
 }
 
 .exchangeLabel {
@@ -328,7 +412,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.9px;
-  color: var(--text-muted);
+  color: var(--text-muted, #94a3b8);
   font-family: 'DM Mono', monospace;
   margin-bottom: 8px;
 }
@@ -340,7 +424,6 @@
   align-items: center;
 }
 
-/* Individual exchange chip */
 .exChip {
   display: inline-flex;
   align-items: center;
@@ -359,7 +442,6 @@
   font-family: 'DM Sans', sans-serif;
 }
 
-/* "More" button */
 .exMore {
   display: inline-flex;
   align-items: center;
@@ -368,9 +450,9 @@
   font-weight: 700;
   padding: 4px 9px;
   border-radius: 8px;
-  background: var(--surface);
-  color: var(--text-muted);
-  border: 0.5px dashed var(--border);
+  background: var(--surface, #f8fafc);
+  color: var(--text-muted, #94a3b8);
+  border: 0.5px dashed var(--border, #e8edf3);
   cursor: pointer;
   transition: all 0.15s;
   font-family: 'DM Sans', sans-serif;
@@ -383,16 +465,15 @@
   border-style: solid;
 }
 
-/* ── Expanded panel ── */
 .expandPanel {
   margin-top: 9px;
   display: flex;
   flex-direction: column;
   gap: 5px;
-  background: var(--surface);
+  background: var(--surface, #f8fafc);
   border-radius: 10px;
   padding: 10px;
-  border: 0.5px solid var(--border);
+  border: 0.5px solid var(--border, #e8edf3);
 }
 
 .expandHeader {
@@ -405,7 +486,7 @@
 .expandHeader > span {
   font-size: 10px;
   font-weight: 700;
-  color: var(--text-muted);
+  color: var(--text-muted, #94a3b8);
   font-family: 'DM Mono', monospace;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -436,11 +517,11 @@
   padding: 7px 10px;
   background: var(--bg-page, #fff);
   border-radius: 8px;
-  border: 0.5px solid var(--border);
+  border: 0.5px solid var(--border, #e8edf3);
   transition: border-color 0.15s;
 }
 
-.expandRow:hover { border-color: rgba(124,58,237,0.25); }
+.expandRow:hover { border-color: rgba(56,189,248,0.3); }
 
 .expandIcon {
   width: 30px;
@@ -459,7 +540,7 @@
 .expandTitle {
   font-size: 12px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text-primary, #0f172a);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -468,82 +549,10 @@
 
 .expandSub {
   font-size: 10px;
-  color: var(--text-muted);
+  color: var(--text-muted, #94a3b8);
   margin-top: 2px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   font-family: 'DM Sans', sans-serif;
-}
-
-/* ═══════════════════
-   ACTION BAR
-═══════════════════ */
-.actionBar {
-  display: flex;
-  gap: 5px;
-  padding: 9px 12px 11px;
-  border-top: 0.5px solid var(--border);
-}
-
-.actBtn {
-  flex: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  padding: 7px 10px;
-  border-radius: 8px;
-  border: 0.5px solid var(--border);
-  background: var(--surface);
-  font-size: 11px;
-  font-weight: 700;
-  font-family: 'DM Sans', sans-serif;
-  text-transform: lowercase;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: all 0.14s;
-  white-space: nowrap;
-}
-
-.actBtn:active { transform: scale(0.96); }
-
-.actView:hover {
-  background: #EEEDFE;
-  color: #3C3489;
-  border-color: #AFA9EC;
-}
-
-.actScan:hover {
-  background: rgba(124,58,237,0.1);
-  color: #7c3aed;
-  border-color: rgba(124,58,237,0.3);
-}
-
-.actEdit:hover {
-  background: rgba(8,145,178,0.08);
-  color: #0e7490;
-  border-color: rgba(8,145,178,0.3);
-}
-
-.actResubmit {
-  color: #dc2626;
-  border-color: rgba(220,38,38,0.25);
-  background: rgba(220,38,38,0.06);
-}
-.actResubmit:hover {
-  background: rgba(220,38,38,0.12);
-  border-color: rgba(220,38,38,0.35);
-}
-
-/* Delete — icon only, fixed width */
-.actDel {
-  flex: 0 0 36px;
-  padding: 7px;
-}
-
-.actDel:hover {
-  background: rgba(220,38,38,0.07);
-  color: #dc2626;
-  border-color: rgba(220,38,38,0.28);
 }

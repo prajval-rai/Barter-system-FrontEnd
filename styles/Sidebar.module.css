@@ -1,133 +1,153 @@
 /* ═══════════════════════════════════════════
    Navbar.module.css
-   Top bar (desktop) + Bottom nav (mobile)
+   Light-theme top bar — colors from globals.css
    ═══════════════════════════════════════════ */
 
 /* ─────────────────────────────────────────
-   TOP BAR  (hidden on mobile)
+   TOP BAR
 ───────────────────────────────────────── */
 .topBar {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  height: 72px;
-  background: var(--nav-bg);
-  border-bottom: none;
+  height: 62px;
+  background: var(--bg-rail);           /* white from globals */
+  border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
-  gap: 0;
-  padding: 0 28px;
+  padding: 0 24px;
   z-index: 200;
-  box-shadow: 0 2px 12px rgba(0, 80, 120, 0.18);
+  box-shadow: var(--card-shadow);
+}
+
+/* ── Mobile hamburger ── */
+.mobileMenuBtn {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: 6px;
+  border-radius: 8px;
+  margin-right: 8px;
+  transition: background var(--transition), color var(--transition);
+}
+.mobileMenuBtn:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
 }
 
 /* ── Logo ── */
 .logo {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 8px;
   background: none;
   border: none;
   cursor: pointer;
   padding: 0;
-  margin-right: 28px;
+  margin-right: 20px;
   flex-shrink: 0;
-  text-decoration: none;
 }
 
 .logoIcon {
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  background: #fff;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: var(--purple);            /* primary teal-blue */
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--purple);
+  color: #fff;
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.14);
 }
 
 .logoText {
   font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 800;
-  color: #fff;
-  letter-spacing: -0.5px;
-}
-
-/* ── Nav links (centre) ── */
-.navLinks {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  flex: 1;
-}
-
-.navLink {
-  position: relative;
-  background: none;
-  border: 1px solid transparent;
-  border-radius: 10px;
-  cursor: pointer;
-  padding: 0;
-  color: rgba(255, 255, 255, 0.78);
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
-  flex-shrink: 0;
-}
-
-.navLink:hover {
-  background: rgba(255, 255, 255, 0.13);
-  color: #fff;
-}
-
-.navLinkActive {
-  background: rgba(255, 255, 255, 0.18) !important;
-  border-color: rgba(255, 255, 255, 0.28) !important;
-  color: #fff !important;
-}
-
-.navLinkAdmin {
-  color: #ffd700;
-}
-
-.navLinkInner {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  padding: 9px 14px;
-  position: relative;
-}
-
-.navLinkLabel {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 13.5px;
-  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.4px;
   white-space: nowrap;
 }
 
-/* ── Top bar badge ── */
-.badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 18px;
-  height: 18px;
-  border-radius: 20px;
-  background: var(--red);
-  color: #fff;
-  font-size: 9px;
+.logoDot {
+  color: var(--purple);
   font-weight: 700;
-  padding: 0 4px;
-  font-family: 'DM Mono', monospace;
-  line-height: 1;
 }
 
-/* ── Avatar area (right) ── */
+/* ── Search bar (centre) ── */
+.searchWrap {
+  flex: 1;
+  max-width: 560px;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 14px;
+  color: var(--text-muted);
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+.searchInput {
+  width: 100%;
+  height: 40px;
+  padding: 0 16px 0 40px;
+  background: var(--surface);
+  border: 1px solid transparent;
+  border-radius: 22px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 13.5px;
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color var(--transition), background var(--transition),
+              box-shadow var(--transition);
+}
+.searchInput::placeholder {
+  color: var(--text-muted);
+}
+.searchInput:focus {
+  background: var(--bg-rail);
+  border-color: var(--gold-border);
+  box-shadow: 0 0 0 3px var(--gold-dim);
+}
+
+/* ── Right actions ── */
+.rightActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* ── Icon button ── */
+.iconBtn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: background var(--transition), color var(--transition);
+}
+.iconBtn:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+/* ── Avatar area ── */
 .avatarArea {
   position: relative;
-  margin-left: auto;
   flex-shrink: 0;
 }
 
@@ -135,67 +155,66 @@
   display: flex;
   align-items: center;
   gap: 7px;
-  background: rgba(255, 255, 255, 0.14);
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  border-radius: 28px;
+  background: var(--grad);
+  border: none;
+  border-radius: 22px;
   padding: 5px 12px 5px 5px;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
   color: #fff;
+  box-shadow: var(--shadow-gold);
+  transition: opacity var(--transition), box-shadow var(--transition);
 }
-
 .avatarBtn:hover {
-  background: rgba(255, 255, 255, 0.22);
-  border-color: rgba(255, 255, 255, 0.42);
+  opacity: 0.90;
+  box-shadow: 0 6px 20px rgba(0, 120, 173, 0.32);
 }
 
 .avatarImg {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   object-fit: cover;
   display: block;
-  border: 2px solid rgba(255,255,255,0.4);
+  border: 2px solid rgba(255, 255, 255, 0.45);
 }
 
 .avatarInitials {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  background: rgba(255,255,255,0.22);
-  border: 2px solid rgba(255,255,255,0.5);
+  background: rgba(255, 255, 255, 0.22);
+  border: 2px solid rgba(255, 255, 255, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
   color: #fff;
   font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
 .chevron {
-  color: rgba(255,255,255,0.75);
+  color: rgba(255, 255, 255, 0.80);
   transition: transform 0.2s;
 }
-
 .chevronOpen {
   transform: rotate(180deg);
 }
 
 /* ─────────────────────────────────────────
-   DROPDOWN  (desktop user menu)
+   DROPDOWN
 ───────────────────────────────────────── */
 .dropdown {
   position: absolute;
-  top: calc(100% + 10px);
+  top: calc(100% + 8px);
   right: 0;
-  width: 248px;
-  background: #ffffff;
+  width: 242px;
+  background: var(--bg-rail);
   border: 1px solid var(--border-c);
-  border-radius: 16px;
-  padding: 10px;
+  border-radius: var(--radius-lg);
+  padding: 8px;
   z-index: 500;
-  box-shadow: 0 12px 40px rgba(0, 80, 120, 0.16), 0 2px 8px rgba(0,0,0,0.08);
+  box-shadow: 0 8px 32px rgba(0, 80, 120, 0.13), 0 2px 6px rgba(0, 0, 0, 0.06);
   animation: dropIn 0.15s ease;
 }
 
@@ -217,18 +236,18 @@
 }
 
 .dropAvatarImg {
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   object-fit: cover;
   display: block;
-  outline: 2px solid rgba(0, 120, 173, 0.25);
+  outline: 2px solid var(--gold-border);
   outline-offset: 2px;
 }
 
 .dropAvatarInitials {
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   background: var(--purple);
   display: flex;
@@ -244,11 +263,11 @@
   position: absolute;
   bottom: 1px;
   right: 1px;
-  width: 10px;
-  height: 10px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
-  background: var(--green);
-  border: 2px solid #fff;
+  background: var(--success);
+  border: 2px solid var(--bg-rail);
 }
 
 .dropProfileText {
@@ -289,8 +308,16 @@
   letter-spacing: 0.4px;
   font-family: 'DM Mono', monospace;
 }
-.rolePillUser  { background: rgba(8,145,178,0.08);  color: var(--cyan);   border: 1px solid rgba(8,145,178,0.18); }
-.rolePillAdmin { background: rgba(0,120,173,0.10); color: var(--purple); border: 1px solid rgba(0,120,173,0.22); }
+.rolePillUser  {
+  background: var(--gold-dim);
+  color: var(--cyan);
+  border: 1px solid var(--gold-border);
+}
+.rolePillAdmin {
+  background: var(--gold-dim);
+  color: var(--purple);
+  border: 1px solid var(--gold-border);
+}
 
 .dropDivider {
   height: 1px;
@@ -303,33 +330,31 @@
   align-items: center;
   gap: 9px;
   width: 100%;
-  padding: 10px 10px;
+  padding: 9px 10px;
   border: none;
   background: transparent;
   color: var(--text-secondary);
   font-size: 13px;
   font-weight: 500;
-  border-radius: 9px;
+  border-radius: 8px;
   cursor: pointer;
   text-align: left;
-  transition: background 0.13s, color 0.13s;
+  transition: background var(--transition), color var(--transition);
   font-family: 'Plus Jakarta Sans', sans-serif;
-  position: relative;
 }
-.dropItem:hover      { background: var(--surface-hover); color: var(--text-primary); }
-.dropItemActive      { color: var(--purple); background: rgba(0,120,173,0.07); }
-.dropItemAdmin       { color: var(--purple); }
-.dropItemAdmin:hover { background: rgba(0, 120, 173, 0.08); }
-.dropItemDanger      { color: var(--red); }
-.dropItemDanger:hover { background: rgba(225, 29, 72, 0.07); }
+.dropItem:hover       { background: var(--surface-hover); color: var(--text-primary); }
+.dropItemActive       { color: var(--purple); background: var(--gold-dim); }
+.dropItemAdmin        { color: var(--purple); }
+.dropItemAdmin:hover  { background: var(--gold-dim); }
+.dropItemDanger       { color: var(--danger); }
+.dropItemDanger:hover { background: rgba(225, 29, 72, 0.06); }
 
-/* Drop item badge (mobile sheet) */
 .dropBadge {
   margin-left: auto;
   min-width: 18px;
   height: 18px;
   border-radius: 20px;
-  background: var(--red);
+  background: var(--danger);
   color: #fff;
   font-size: 9px;
   font-weight: 700;
@@ -341,206 +366,59 @@
 }
 
 /* ─────────────────────────────────────────
-   BOTTOM NAV  (mobile only, hidden desktop)
+   MOBILE SHEET
 ───────────────────────────────────────── */
-.bottomNav {
-  display: none;
-
-  /* ✅ FIX: force fixed positioning so it never scrolls */
-  position: fixed !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  top: auto !important;
-
-  height: 66px;
-  background: var(--nav-bg);
-  border-top: 1px solid rgba(255,255,255,0.12);
-  z-index: 300;
-  padding: 0 4px;
-
-  /* ✅ FIX: account for iOS safe area (home indicator) */
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-
-  box-shadow: 0 -2px 16px rgba(0, 80, 120, 0.20);
-
-  /* ✅ FIX: prevent any transform/scroll context from parent affecting fixed */
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
-  will-change: transform;
-}
-
-.bottomItem {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  flex: 1;
-  height: 100%;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: rgba(255,255,255,0.65);
-  padding: 8px 4px 4px;
-  transition: color 0.15s;
-  -webkit-tap-highlight-color: transparent;
-
-  /* ✅ FIX: prevent tap delay on mobile */
-  touch-action: manipulation;
-}
-
-.bottomItem:active {
-  opacity: 0.7;
-}
-
-.bottomItemActive {
-  color: #fff;
-}
-
-.bottomIconWrap {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-}
-
-.bottomLabel {
-  font-size: 9.5px;
-  font-weight: 600;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  white-space: nowrap;
-  letter-spacing: -0.1px;
-  line-height: 1;
-}
-
-/* Bottom nav badge */
-.bottomBadge {
-  position: absolute;
-  top: -3px;
-  right: -5px;
-  min-width: 14px;
-  height: 14px;
-  border-radius: 20px;
-  background: var(--red);
-  color: #fff;
-  font-size: 8px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 3px;
-  font-family: 'DM Mono', monospace;
-  border: 1.5px solid var(--nav-bg);
-}
-
-/* Avatar in bottom nav */
-.bottomAvatar {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  object-fit: cover;
-  display: block;
-  border: 2px solid rgba(255,255,255,0.4);
-}
-
-.bottomAvatarInitials {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.22);
-  border: 2px solid rgba(255,255,255,0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 9px;
-  font-weight: 800;
-  color: #fff;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-}
-
-.bottomMoreWrap {
-  flex: 1;
-  display: flex;
-  align-items: stretch;
-  position: relative;
-}
-
-/* Bottom sheet (mobile user menu / more) */
-.bottomSheet {
+.mobileSheet {
   position: fixed;
-  /* ✅ FIX: sits exactly above the bottom nav bar */
-  bottom: calc(66px + env(safe-area-inset-bottom, 0px));
+  top: 62px;
   left: 0;
   right: 0;
-  background: #ffffff;
-  border: 1px solid var(--border-c);
-  border-radius: 20px 20px 0 0;
-  padding: 12px 12px 20px;
-  z-index: 500;
-  box-shadow: 0 -8px 40px rgba(0, 80, 120, 0.14);
-  animation: slideUp 0.2s ease;
-  max-height: 70vh;
-  overflow-y: auto;
-
-  /* ✅ FIX: smooth momentum scrolling inside sheet on iOS */
-  -webkit-overflow-scrolling: touch;
+  background: var(--bg-rail);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 16px 14px;
+  z-index: 400;
+  box-shadow: var(--shadow);
+  animation: dropIn 0.15s ease;
 }
 
-@keyframes slideUp {
-  from { transform: translateY(20px); opacity: 0; }
-  to   { transform: translateY(0);    opacity: 1; }
+.mobileSearch {
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
-.bottomSheetHandle {
-  width: 36px;
-  height: 4px;
-  border-radius: 2px;
-  background: var(--border-c);
-  margin: 0 auto 14px;
-}
-
-/* Scrim behind mobile sheet */
+/* Scrim */
 .mobileScrim {
-  display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0, 40, 70, 0.38);
-  z-index: 499;
-  /* ✅ FIX: ensure scrim covers everything including top header */
-  top: 0;
+  background: rgba(0, 40, 70, 0.22);
+  z-index: 399;
 }
 
 /* ─────────────────────────────────────────
-   MEDIA QUERIES
+   RESPONSIVE
 ───────────────────────────────────────── */
-
-/* Tablet: hide some labels to save space */
-@media (max-width: 960px) {
-  .navLinkLabel {
+@media (max-width: 640px) {
+  .topBar {
+    padding: 0 12px;
+    gap: 6px;
+  }
+  .mobileMenuBtn {
+    display: flex;
+  }
+  .searchWrap {
     display: none;
   }
-  .navLinkInner {
-    padding: 9px 11px;
+  .logo {
+    margin-right: 0;
+  }
+  .logoDot {
+    display: none;
   }
 }
 
-/* Mobile: hide top bar, show bottom nav + add body padding */
-@media (max-width: 640px) {
-  .topBar {
-    display: none;
-  }
-
-  .bottomNav {
-    /* ✅ FIX: show as flex — not just 'display: flex' which would conflict
-       with the fixed positioning above */
-    display: flex !important;
-    align-items: stretch;
-  }
-
-  .mobileScrim {
-    display: block;
+@media (min-width: 641px) and (max-width: 900px) {
+  .searchWrap {
+    max-width: 340px;
   }
 }
