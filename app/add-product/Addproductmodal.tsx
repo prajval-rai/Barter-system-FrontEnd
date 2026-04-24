@@ -49,7 +49,6 @@ interface AddProductModalProps {
   open: boolean;
   onClose: () => void;
   onProductCreated?: (productId: number) => void;
-  authToken: string;
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -105,7 +104,6 @@ export default function AddProductModal({
   open,
   onClose,
   onProductCreated,
-  authToken,
 }: AddProductModalProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [step, setStep] = useState<Step>("title");
@@ -456,7 +454,7 @@ export default function AddProductModal({
     } finally {
       setLoading(false);
     }
-  }, [form, replaceOptions, authToken, sendBotMessage, onProductCreated]);
+  }, [form, replaceOptions, sendBotMessage, onProductCreated]);
 
   // ── Keyboard ──────────────────────────────────────────────────────────────────
   const handleKeyDown = (e: React.KeyboardEvent) => {
