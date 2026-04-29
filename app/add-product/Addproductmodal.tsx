@@ -139,11 +139,12 @@ export default function AddProductModal({
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const initialized = useRef(false);
+  const base_url = process.env.NEXT_PUBLIC_BACKEND_URL
 
   // ── Fetch categories ─────────────────────────────────────────────────────────
   useEffect(() => {
     if (!open) return;
-    fetch("http://localhost:8000/products/categories/")
+    fetch(`${base_url}/products/categories/`)
       .then((r) => r.json())
       .then((data) => setCategories(Array.isArray(data) ? data : data.results ?? []))
       .catch(() => {});
@@ -398,7 +399,7 @@ export default function AddProductModal({
       if (form.purchase_year) fd.append("purchase_year", form.purchase_year);
       form.images.forEach((img) => fd.append("images", img));
 
-      const productRes = await fetch("http://localhost:8000/products/create_product/", {
+      const productRes = await fetch(`${base_url}/products/create_product/`, {
         method: "POST",
         credentials: "include",
         body: fd,
@@ -431,7 +432,7 @@ export default function AddProductModal({
         }));
 
         const replaceRes = await fetch(
-          `http://localhost:8000/products/add_replace_options/${productId}/`,
+          `${base_url}/products/add_replace_options/${productId}/`,
           {
             method: "POST",
             credentials: "include",
