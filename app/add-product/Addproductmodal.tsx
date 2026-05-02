@@ -144,7 +144,7 @@ export default function AddProductModal({
   // ── Fetch categories ─────────────────────────────────────────────────────────
   useEffect(() => {
     if (!open) return;
-    fetch(`${base_url}/products/categories/`)
+    fetch(`${base_url}products/categories/`)
       .then((r) => r.json())
       .then((data) => setCategories(Array.isArray(data) ? data : data.results ?? []))
       .catch(() => {});
