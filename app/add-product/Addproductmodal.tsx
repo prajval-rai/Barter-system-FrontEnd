@@ -399,7 +399,7 @@ export default function AddProductModal({
       if (form.purchase_year) fd.append("purchase_year", form.purchase_year);
       form.images.forEach((img) => fd.append("images", img));
 
-      const productRes = await fetch(`${base_url}/products/create_product/`, {
+      const productRes = await fetch(`${base_url}products/create_product/`, {
         method: "POST",
         credentials: "include",
         body: fd,
