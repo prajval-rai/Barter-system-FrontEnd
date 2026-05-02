@@ -16,28 +16,37 @@ export default function FCMListener() {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
-    const messaging = getMessaging(app);
+    try {
+      const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+      const messaging = getMessaging(app);
 
-    const unsubscribe = onMessage(messaging, async (payload) => {
-  const title = payload.notification?.title || "Notification";
-  const body = payload.notification?.body || "";
+      const unsubscribe = onMessage(messaging, async (payload) => {
+        console.log("🔔 Foreground notification:", payload);
 
-  // ✅ Play beep sound
-  const audio = new Audio("/beep.wav");  // add beep.mp3 to public folder
-  audio.play();
+        // ✅ null checks
+        const title = payload?.notification?.title ?? "Notification";
+        const body = payload?.notification?.body ?? "";
 
-  const registration = await navigator.serviceWorker.ready;
-  registration.showNotification(title, {
-    body: body,
-    icon: "/danger.png",
-    tag: Date.now().toString(),
-    requireInteraction: true,
-    silent: false,
-  });
-});
+        try {
+          const registration = await navigator.serviceWorker.ready;
+          await registration.showNotification(title, {
+            body,
+            icon: "/logo.png",
+            tag: Date.now().toString(),
+            requireInteraction: true,
+          });
+        } catch (err) {
+          console.error("showNotification error:", err);
+          // fallback
+          new Notification(title, { body });
+        }
+      });
 
-    return () => unsubscribe();
+      return () => unsubscribe();
+
+    } catch (err) {
+      console.error("FCMListener init error:", err);
+    }
   }, []);
 
   return null;

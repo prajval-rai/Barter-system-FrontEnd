@@ -1,5 +1,7 @@
-// next.config.js or next.config.ts
-const nextConfig = {
+// next.config.ts
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
   async headers() {
     return [
       {
@@ -7,7 +9,7 @@ const nextConfig = {
         headers: [
           {
             key: "Cross-Origin-Opener-Policy",
-            value: "same-origin-allow-popups",  // ✅ fixes COOP issue
+            value: "same-origin-allow-popups",
           },
           {
             key: "Cross-Origin-Embedder-Policy",
