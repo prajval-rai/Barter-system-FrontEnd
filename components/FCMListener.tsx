@@ -30,19 +30,27 @@ export default function FCMListener() {
         const messaging = getMessaging(app);
 
         const unsubscribe = onMessage(messaging, async (payload) => {
-          console.log("🔔 Foreground notification:", payload);
+  console.log("🔔 Foreground notification:", payload);
 
-          const title = payload?.notification?.title ?? "Notification";
-          const body = payload?.notification?.body ?? "";
+  const title = payload?.notification?.title ?? "Notification";
+  const body = payload?.notification?.body ?? "";
 
-          // ✅ Use the root scope registration
-          await registration.showNotification(title, {
-            body,
-            icon: "/logo.png",
-            tag: Date.now().toString(),
-            requireInteraction: true,
-          });
-        });
+  // ✅ Play beep sound
+  try {
+    const audio = new Audio("/beep.wav");
+    audio.volume = 1.0;
+    await audio.play();
+  } catch (err) {
+    console.log("Audio error:", err);
+  }
+
+  await registration.showNotification(title, {
+    body,
+    icon: "/logo.png",
+    tag: Date.now().toString(),
+    requireInteraction: true,
+  });
+});
 
         return () => unsubscribe();
 
