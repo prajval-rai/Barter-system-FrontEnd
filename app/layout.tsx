@@ -2,6 +2,7 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import Providers from "@/app/Providers";
+import FCMListener from "@/components/FCMListener"; // ✅ add this
 
 export const metadata: Metadata = {
   title: "ExchangeIt – Trade · Exchange · Deal",
@@ -18,6 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <Providers>
+          <FCMListener />  {/* ✅ add this */}
           <main className="appMain">
             {children}
           </main>

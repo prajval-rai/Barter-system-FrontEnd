@@ -4,6 +4,8 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import s from "@/styles/Login.module.css";
+import { initializeApp, getApps } from "firebase/app";
+import { getMessaging, getToken } from "firebase/messaging";
 
 /* Extend Window to include Google's GSI types */
 declare global {
@@ -19,6 +21,16 @@ declare global {
     };
   }
 }
+
+// Firebase config
+const firebaseConfig = {
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+};
 
 export default function LoginPage() {
   const { user, loading, login } = useAuth();
@@ -52,7 +64,6 @@ export default function LoginPage() {
         cancel_on_tap_outside: true,
       });
 
-      // Render the official Google button inside our styled wrapper
       if (btnRef.current) {
         window.google.accounts.id.renderButton(btnRef.current, {
           theme: "outline",
@@ -65,7 +76,6 @@ export default function LoginPage() {
       }
     };
 
-    // GSI script may already be loaded or may still be loading
     if (window.google) {
       initGoogle();
     } else {
@@ -79,12 +89,61 @@ export default function LoginPage() {
     }
   }, [loading, user]);
 
+  /* Send Hi notification after login */
+  const sendHiNotification = async () => {
+    try {
+      // 1. Ask permission
+      const permission = await Notification.requestPermission();
+      if (permission !== "granted") {
+        console.log("Notification permission denied");
+        return;
+      }
+
+      // 2. Init Firebase & get FCM token
+      const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+      const messaging = getMessaging(app);
+
+      const fcmToken = await getToken(messaging, {
+        vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
+      });
+
+      if (!fcmToken) {
+        console.log("No FCM token received");
+        return;
+      }
+
+      console.log("FCM Token:", fcmToken); // ✅ visible in console
+
+      // 3. Call Django API to send "Hi" notification instantly
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}accounts/notifications/send-notification/`,
+        {
+          method: "POST",credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token: fcmToken }),
+        }
+      );
+
+      const data = await response.json();
+      console.log("Notification sent ✅", data);
+
+    } catch (err) {
+      console.error("FCM Error:", err); // don't block login if this fails
+    }
+  };
+
   /* Called by Google with the id_token */
   const handleCredentialResponse = async (response: { credential: string }) => {
     setSigningIn(true);
     setError("");
     try {
-      await login(response.credential); // sends token to Django
+      // 1. Login to Django
+      await login(response.credential);
+
+      // 2. Send "Hi" notification instantly 🔔
+      await sendHiNotification();
+
+      // 3. Redirect
       router.replace("/");
     } catch (err: any) {
       setError(err.message || "Sign-in failed. Please try again.");
@@ -109,13 +168,11 @@ export default function LoginPage() {
   return (
     <div className={s.page}>
       <div className={s.card}>
-        {/* Corner sparkles */}
         <span className={s.sparkle}>✦</span>
         <span className={s.sparkle}>✦</span>
         <span className={s.sparkle}>✦</span>
         <span className={s.sparkle}>✦</span>
 
-        {/* Logo */}
         <div className={s.logoWrap}>
           <div className={s.logoIcon}>⚖️</div>
           <div className={s.logoTitle}>ExchangeIt</div>
@@ -124,7 +181,6 @@ export default function LoginPage() {
 
         <div className={s.divider} />
 
-        {/* Heading */}
         <div className={s.heading}>
           <div className={s.headingTitle}>Welcome back</div>
           <div className={s.headingSubtitle}>
@@ -132,10 +188,8 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Error */}
         {error && <div className={s.errorBox}>⚠ {error}</div>}
 
-        {/* Signing-in overlay */}
         {signingIn ? (
           <div className={s.googleBtnWrap} style={{ justifyContent: "center", gap: 12 }}>
             <div className={s.spinner} />
@@ -144,13 +198,11 @@ export default function LoginPage() {
             </span>
           </div>
         ) : (
-          /* Google renders its official button into this div */
           <div className={s.googleBtnWrap}>
             <div ref={btnRef} style={{ width: "100%" }} />
           </div>
         )}
 
-        {/* Feature list */}
         <div className={s.features}>
           {[
             "Browse thousands of items to trade",
