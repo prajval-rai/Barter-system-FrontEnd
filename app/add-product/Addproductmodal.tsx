@@ -432,7 +432,7 @@ export default function AddProductModal({
         }));
 
         const replaceRes = await fetch(
-          `${base_url}/products/add_replace_options/${productId}/`,
+          `${base_url}products/add_replace_options/${productId}/`,
           {
             method: "POST",
             credentials: "include",
