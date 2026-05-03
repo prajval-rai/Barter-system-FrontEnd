@@ -1,0 +1,219 @@
+/* ============================================================
+   NavBar.module.css — ExchangeIt
+   ============================================================ */
+
+/* ── Bar ── */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(210, 225, 240, 0.7);
+  transition: box-shadow 0.25s ease;
+}
+
+/* Shadow kicks in once user scrolls */
+.scrolled {
+  box-shadow: 0 4px 24px rgba(15, 23, 42, 0.08);
+  border-bottom-color: rgba(210, 225, 240, 0.9);
+}
+
+/* ── Inner layout ── */
+.inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 68px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 48px;
+}
+
+/* ── Logo ── */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 19px;
+  font-weight: 800;
+  color: #0c1b35;
+  text-decoration: none;
+  letter-spacing: -0.4px;
+  flex-shrink: 0;
+}
+
+.logoIcon {
+  color: var(--color-primary);
+}
+
+.logoAccent {
+  color: var(--color-primary);
+}
+
+/* ── Desktop nav ── */
+.nav { flex: 1; display: flex; justify-content: center; }
+
+.navList {
+  display: flex;
+  align-items: center;
+  gap: 4px;               /* tight gap; padding on links gives the visual spacing */
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.navLink {
+  display: inline-block;
+  padding: 6px 12px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #4e6278;
+  text-decoration: none;
+  border-radius: 8px;
+  transition: color 0.18s ease, background 0.18s ease;
+  white-space: nowrap;
+}
+
+.navLink:hover {
+  color: var(--color-primary);
+  background: #f0f6ff;
+}
+
+/* Active link — current section */
+.active {
+  color: var(--color-primary) !important;
+  background: #EBF2FF !important;
+}
+
+/* ── CTA Buttons ── */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.loginBtn {
+  padding: 8px 20px;
+  background: transparent;
+  border: 1.5px solid #d0dcea;
+  border-radius: 9px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #334155;
+  cursor: pointer;
+  transition: border-color 0.18s ease, color 0.18s ease, background 0.18s ease;
+  white-space: nowrap;
+}
+.loginBtn:hover {
+  border-color: #93b8f1;
+  color: var(--color-primary);
+  background: #f0f6ff;
+}
+
+/* FIX: solid color instead of broken CSS var gradient */
+.signupBtn {
+  padding: 8px 20px;
+  background: var(--color-primary);
+  border: none;
+  border-radius: 9px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 3px 14px rgba(26, 86, 219, 0.32);
+  transition: background 0.18s ease, transform 0.15s ease, box-shadow 0.18s ease;
+  white-space: nowrap;
+}
+.signupBtn:hover {
+  background: #1447c0;
+  transform: translateY(-1px);
+  box-shadow: 0 5px 20px rgba(26, 86, 219, 0.40);
+}
+.signupBtn:active { transform: translateY(0); }
+
+/* ── Hamburger (mobile) ── */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: background 0.15s;
+}
+.hamburger:hover { background: #f0f6ff; }
+
+.hamburger span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: #334155;
+  border-radius: 2px;
+  transition: transform 0.22s ease, opacity 0.22s ease;
+  transform-origin: center;
+}
+
+/* Animate to X when open */
+.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* ── Mobile dropdown ── */
+.mobileMenu {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 24px 20px;
+  background: rgba(255, 255, 255, 0.98);
+  border-top: 1px solid rgba(210, 225, 240, 0.8);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.10);
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.mobileLink {
+  padding: 11px 4px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: #4e6278;
+  text-decoration: none;
+  border-bottom: 1px solid #f0f5fb;
+  transition: color 0.15s;
+}
+.mobileLink:last-of-type { border-bottom: none; }
+.mobileLink:hover { color: var(--color-primary); }
+
+.mobileActive { color: var(--color-primary) !important; }
+
+.mobileCtas {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+.mobileCtas .loginBtn,
+.mobileCtas .signupBtn { flex: 1; text-align: center; }
+
+/* ── Responsive ── */
+@media (max-width: 960px) {
+  .inner { padding: 0 24px; }
+  .nav, .actions { display: none; }
+  .hamburger { display: flex; }
+}
+
+@media (max-width: 480px) {
+  .inner { padding: 0 16px; }
+}

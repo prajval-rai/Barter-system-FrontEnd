@@ -13,7 +13,7 @@ function NavbarWrapper() {
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <AuthProvider>
-      <NavbarWrapper />
+      {/* <NavbarWrapper /> */}
       {children}
     </AuthProvider>
   );

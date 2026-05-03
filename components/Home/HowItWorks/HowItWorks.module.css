@@ -1,0 +1,178 @@
+/* ===== Section ===== */
+.section {
+  padding: var(--space-20) 0;
+  background: var(--color-white);
+}
+
+.inner {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 0 var(--container-pad);
+}
+
+/* ===== Heading ===== */
+.heading {
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);
+  font-weight: var(--font-extrabold);
+  color: var(--color-text-heading);
+  letter-spacing: -0.5px;
+  margin-bottom: var(--space-16);
+}
+
+/* ===== Outer steps row — single horizontal flex ===== */
+.stepsRow {
+  display: flex;
+  flex-direction: row;         /* ← X axis */
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+/*
+  Each stepWrapper = [stepContent] [arrow]
+  stepContent = icon on top, title + desc below
+*/
+.stepWrapper {
+  display: flex;
+  flex-direction: row;         /* icon-col + arrow side by side */
+  align-items: flex-start;
+  flex: 1;
+}
+
+.stepWrapper:last-child {
+  flex: none;                  /* last step has no arrow, don't over-stretch */
+}
+
+/* ===== Step content: icon above, text below ===== */
+.stepContent {
+  display: flex;
+  flex-direction: column;      /* icon on top, text below */
+  align-items: flex-start;
+  min-width: 140px;
+}
+
+/* ===== Icon circle ===== */
+.iconWrap {
+  position: relative;
+  width: 76px;
+  height: 76px;
+  margin-bottom: var(--space-5);
+}
+
+.iconCircle {
+  width: 76px;
+  height: 76px;
+  border-radius: var(--radius-full);
+  background: var(--color-primary-light);
+  border: 1.5px solid #BFDBFE;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary);
+  transition:
+    background var(--duration-normal) var(--ease-smooth),
+    box-shadow  var(--duration-normal) var(--ease-smooth),
+    transform   var(--duration-normal) var(--ease-smooth);
+}
+
+.stepContent:hover .iconCircle {
+  background: var(--color-primary);
+  color: var(--color-white);
+  border-color: transparent;
+  box-shadow: var(--shadow-lg);
+  transform: scale(1.06);
+}
+
+/* ===== Number badge ===== */
+.badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  color: var(--color-white);
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: var(--font-bold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--color-white);
+  box-shadow: var(--shadow-md);
+  line-height: 1;
+}
+
+/* ===== Arrow connector ===== */
+.arrow {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  /* 
+    paddingTop = half icon height (76px / 2 = 38px) 
+    so arrow vertically aligns with icon center
+  */
+  padding-top: 31px;
+  padding-left: var(--space-2);
+  padding-right: var(--space-2);
+  min-width: 40px;
+}
+
+.arrow svg {
+  width: 100%;
+  height: 14px;
+}
+
+/* ===== Step text ===== */
+.stepTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  font-weight: var(--font-bold);
+  color: var(--color-text-heading);
+  margin: 0 0 var(--space-2);
+  letter-spacing: -0.2px;
+}
+
+.stepDesc {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-text-body);
+  line-height: var(--leading-relaxed);
+  margin: 0;
+  padding-right: var(--space-6);
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .stepsRow {
+    flex-direction: column;
+    gap: var(--space-8);
+  }
+
+  .stepWrapper {
+    flex: none;
+    width: 100%;
+  }
+
+  .arrow {
+    display: none;
+  }
+
+  .stepContent {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: var(--space-4);
+    min-width: 0;
+  }
+
+  .iconWrap {
+    flex-shrink: 0;
+    margin-bottom: 0;
+  }
+
+  .stepDesc {
+    padding-right: 0;
+  }
+}
