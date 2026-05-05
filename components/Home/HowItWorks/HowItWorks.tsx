@@ -1,3 +1,5 @@
+import React from 'react';
+
 const STEPS = [
   {
     number: 1,
@@ -85,10 +87,9 @@ export default function HowItWorks() {
           boxSizing: 'border-box',
         }}>
           {STEPS.map((step, i) => (
-            <>
+            <React.Fragment key={step.number}>
               {/* ── Step column ── */}
               <div
-                key={step.number}
                 style={{
                   flex: 1,
                   minWidth: 0,
@@ -182,7 +183,7 @@ export default function HowItWorks() {
                   flexShrink: 0,
                   display: 'flex',
                   alignItems: 'center',
-                  paddingTop: 33,   /* (80 / 2) - (14 / 2) = centers on icon */
+                  paddingTop: 33,
                 }}>
                   <svg width="80" height="14" viewBox="0 0 80 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <line x1="0" y1="7" x2="65" y2="7" stroke="#93C5FD" strokeWidth="1.5" strokeDasharray="5 4" />
@@ -190,7 +191,7 @@ export default function HowItWorks() {
                   </svg>
                 </div>
               )}
-            </>
+            </React.Fragment>
           ))}
         </div>
 

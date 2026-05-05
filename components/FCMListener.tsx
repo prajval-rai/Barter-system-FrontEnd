@@ -36,13 +36,7 @@ export default function FCMListener() {
   const body = payload?.notification?.body ?? "";
 
   // ✅ Play beep sound
-  try {
-    const audio = new Audio("/beep.wav");
-    audio.volume = 1.0;
-    await audio.play();
-  } catch (err) {
-    console.log("Audio error:", err);
-  }
+  
 
   await registration.showNotification(title, {
     body,

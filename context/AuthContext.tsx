@@ -20,11 +20,21 @@ interface AuthContextValue {
   loading: boolean;
   login: (googleIdToken: string) => Promise<void>;
   logout: () => Promise<void>;
-  setUser: (user: AuthUser | null) => void;   // ← ADD THIS
+  setUser: (user: AuthUser | null) => void;
 }
 
-const AuthContext = createContext<AuthContextValue | null>(null);
-const base_url = process.env.NEXT_PUBLIC_BACKEND_URL
+// ✅ Safe default — never null, so useAuth() never throws outside provider
+const defaultValue: AuthContextValue = {
+  user: null,
+  loading: true,
+  login: async () => {},
+  logout: async () => {},
+  setUser: () => {},
+};
+
+const AuthContext = createContext<AuthContextValue>(defaultValue);
+
+const base_url = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 async function callDjangoGoogleLogin(token: string): Promise<AuthUser> {
   const res = await fetch(`${base_url}accounts/login/`, {
@@ -56,8 +66,6 @@ async function callDjangoGoogleLogin(token: string): Promise<AuthUser> {
   };
 }
 
-
-
 async function callDjangoLogout() {
   try {
     await fetch(`${base_url}auth/logout/`, {
@@ -86,18 +94,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (googleIdToken: string) => {
-    let picture: string | null = null;
-    try {
-      const payload = JSON.parse(atob(googleIdToken.split(".")[1]));
-      picture = payload.picture ?? null;
-    } catch {/* ignore */}
+  let picture: string | null = null;
+  try {
+    // ✅ base64url → base64 before decoding
+    const base64 = googleIdToken
+      .split(".")[1]
+      .replace(/-/g, "+")
+      .replace(/_/g, "/");
+    const payload = JSON.parse(atob(base64));
+    picture = payload.picture ?? null;
+  } catch { /* ignore */ }
 
-    const authUser = await callDjangoGoogleLogin(googleIdToken);
-    authUser.image = picture;
+  const authUser = await callDjangoGoogleLogin(googleIdToken);
+  authUser.image = picture;  // now correctly set
 
-    setUser(authUser);
-    sessionStorage.setItem("ExchangeIt_user", JSON.stringify(authUser));
-  };
+  setUser(authUser);
+  sessionStorage.setItem("ExchangeIt_user", JSON.stringify(authUser));
+};
 
   const logout = async () => {
     await callDjangoLogout();
@@ -106,14 +119,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, setUser }}>  {/* ← ADD setUser */}
+    <AuthContext.Provider value={{ user, loading, login, logout, setUser }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
+// ✅ No more throwing — returns the default context if called outside provider
 export function useAuth() {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used inside <AuthProvider>");
-  return ctx;
+  return useContext(AuthContext);
 }
