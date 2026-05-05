@@ -1,10 +1,16 @@
-import styles from './Hero.module.css';
+"use client";
+
+import { useState } from "react";
+import styles from "./Hero.module.css";
+import LoginModal from "@/app/login/LoginModal";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
 
 const MESSAGES = [
-  { name: 'Riya Sharma',  type: 'Camera Exchange',   time: '2m',  color: '#6366F1', initial: 'R' },
-  { name: 'Aman Verma',   type: 'Book Exchange',      time: '15m', color: '#0EA5E9', initial: 'A' },
-  { name: 'Neha Patel',   type: 'Headphones Swap',    time: '1h',  color: '#22C55E', initial: 'N' },
-  { name: 'Karan Singh',  type: 'Furniture Exchange', time: '2h',  color: '#F59E0B', initial: 'K' },
+  { name: "Riya Sharma",  type: "Camera Exchange",   time: "2m",  color: "#6366F1", initial: "R" },
+  { name: "Aman Verma",   type: "Book Exchange",      time: "15m", color: "#0EA5E9", initial: "A" },
+  { name: "Neha Patel",   type: "Headphones Swap",    time: "1h",  color: "#22C55E", initial: "N" },
+  { name: "Karan Singh",  type: "Furniture Exchange", time: "2h",  color: "#F59E0B", initial: "K" },
 ];
 
 function IconElectronics() {
@@ -79,15 +85,28 @@ function HeadphonesIllustration() {
 }
 
 const CATEGORIES = [
-  { Icon: IconElectronics, label: 'Electronics', bg: '#EFF6FF', border: '#BFDBFE' },
-  { Icon: IconBooks,       label: 'Books',       bg: '#F0FDF4', border: '#BBF7D0' },
-  { Icon: IconFurniture,   label: 'Furniture',   bg: '#FFFBEB', border: '#FDE68A' },
-  { Icon: IconClothing,    label: 'Clothing',    bg: '#FDF2F8', border: '#FBCFE8' },
-  { Icon: IconSports,      label: 'Sports',      bg: '#FFF7ED', border: '#FED7AA' },
-  { Icon: IconGaming,      label: 'Gaming',      bg: '#F5F3FF', border: '#DDD6FE' },
+  { Icon: IconElectronics, label: "Electronics", bg: "#EFF6FF", border: "#BFDBFE" },
+  { Icon: IconBooks,       label: "Books",       bg: "#F0FDF4", border: "#BBF7D0" },
+  { Icon: IconFurniture,   label: "Furniture",   bg: "#FFFBEB", border: "#FDE68A" },
+  { Icon: IconClothing,    label: "Clothing",    bg: "#FDF2F8", border: "#FBCFE8" },
+  { Icon: IconSports,      label: "Sports",      bg: "#FFF7ED", border: "#FED7AA" },
+  { Icon: IconGaming,      label: "Gaming",      bg: "#F5F3FF", border: "#DDD6FE" },
 ];
 
 export default function Hero() {
+  const { user } = useAuth();
+  const router = useRouter();
+  const [loginOpen, setLoginOpen] = useState(false);
+
+  /** If already logged in go to app, otherwise open login modal */
+  const handleProtectedAction = () => {
+    if (user) {
+      router.push("/swap");   // change to your actual protected route
+    } else {
+      setLoginOpen(true);
+    }
+  };
+
   return (
     <section className={styles.hero} id="home">
       <div className={styles.inner}>
@@ -109,7 +128,12 @@ export default function Hero() {
           </p>
 
           <div className={styles.actions}>
-            <button className={styles.primaryBtn} type="button">
+            {/* ✅ Opens login modal */}
+            <button
+              className={styles.primaryBtn}
+              type="button"
+              onClick={handleProtectedAction}
+            >
               Start Swapping Now &nbsp;→
             </button>
             <button className={styles.outlineBtn} type="button">
@@ -163,8 +187,8 @@ export default function Hero() {
               <p className={styles.sectionLabel}>Popular Near You</p>
               <div className={styles.popGrid}>
                 {[
-                  { emoji: '📱', name: 'iPhone 13',    loc: '@ Mumbai' },
-                  { emoji: '🪑', name: 'Office Chair', loc: '@ Pune' },
+                  { emoji: "📱", name: "iPhone 13",    loc: "@ Mumbai" },
+                  { emoji: "🪑", name: "Office Chair", loc: "@ Pune" },
                 ].map((p) => (
                   <div key={p.name} className={styles.popItem}>
                     <div className={styles.popImg}>{p.emoji}</div>
@@ -178,7 +202,7 @@ export default function Hero() {
             </div>
           </div>
 
-          {/* Match Found Card — centre, elevated */}
+          {/* Match Found Card */}
           <div className={styles.matchCard}>
             <p className={styles.matchTitle}>Match Found! 🎉</p>
             <p className={styles.matchSub}>Great match for you</p>
@@ -209,7 +233,12 @@ export default function Hero() {
               </div>
             </div>
 
-            <button className={styles.startBtn} type="button">
+            {/* ✅ Opens login modal */}
+            <button
+              className={styles.startBtn}
+              type="button"
+              onClick={handleProtectedAction}
+            >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M7 16L3 12M3 12L7 8M3 12H15M17 8L21 12M21 12L17 16M21 12H9"/>
               </svg>
@@ -218,9 +247,9 @@ export default function Hero() {
 
             <div className={styles.successRow}>
               <div className={styles.avatarGroup}>
-                <div className={styles.av} style={{ background: '#6366f1' }}>A</div>
-                <div className={styles.av} style={{ background: '#1A56DB' }}>B</div>
-                <div className={styles.av} style={{ background: '#22c55e' }}>C</div>
+                <div className={styles.av} style={{ background: "#6366f1" }}>A</div>
+                <div className={styles.av} style={{ background: "#1A56DB" }}>B</div>
+                <div className={styles.av} style={{ background: "#22c55e" }}>C</div>
               </div>
               <span className={styles.successText}>24K+ successful exchanges</span>
             </div>
@@ -245,6 +274,16 @@ export default function Hero() {
 
         </div>
       </div>
+
+      {/* ✅ Login Modal */}
+      <LoginModal
+        isOpen={loginOpen}
+        onClose={() => setLoginOpen(false)}
+        onSuccess={() => {
+          setLoginOpen(false);
+          router.push("/swap"); // change to your actual protected route
+        }}
+      />
     </section>
   );
 }

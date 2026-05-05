@@ -1,0 +1,286 @@
+/* ---------- Overlay ---------- */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(12, 27, 53, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: overlayIn 0.25s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@keyframes overlayIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ---------- Modal ---------- */
+.modal {
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow:
+    0 8px 40px rgba(26, 86, 219, 0.15),
+    0 2px 12px rgba(15, 23, 42, 0.08);
+  width: 100%;
+  max-width: 420px;
+  max-height: 90vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+  animation: modalIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  scrollbar-width: none;
+}
+
+.modal::-webkit-scrollbar {
+  display: none;
+}
+
+@keyframes modalIn {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ---------- Close Button ---------- */
+.closeBtn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 10;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(4px);
+}
+
+.closeBtn:hover {
+  background: rgba(255, 255, 255, 0.28);
+  border-color: rgba(255, 255, 255, 0.5);
+  color: #ffffff;
+  transform: scale(1.08);
+}
+
+.closeBtn:active {
+  transform: scale(0.95);
+}
+
+/* ---------- Header ---------- */
+.header {
+  background: linear-gradient(135deg, #1A56DB 0%, #1447C0 100%);
+  padding: 2rem 2rem 2.5rem;
+  text-align: center;
+  position: relative;
+}
+
+.header::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 20px;
+  background: #ffffff;
+  border-radius: 20px 20px 0 0;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 9999px;
+  padding: 4px 12px;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  margin-bottom: 1rem;
+}
+
+.badgeStar {
+  font-size: 9px;
+  opacity: 0.8;
+}
+
+.logoRing {
+  width: 58px;
+  height: 58px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 0.75rem;
+  backdrop-filter: blur(8px);
+}
+
+.logoIcon {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.brand {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 800;
+  font-size: 1.35rem;
+  color: #ffffff;
+  letter-spacing: -0.3px;
+  margin-bottom: 4px;
+}
+
+.tagline {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.65);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+/* ---------- Body ---------- */
+.body {
+  padding: 1.75rem 2rem 2rem;
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* ---------- Welcome ---------- */
+.welcome {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.welcomeTitle {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #0C1B35;
+  margin: 0 0 5px;
+  letter-spacing: -0.3px;
+}
+
+.welcomeSub {
+  font-size: 0.875rem;
+  color: #475569;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ---------- Divider ---------- */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #E2E8F0;
+}
+
+.dividerText {
+  font-size: 0.75rem;
+  color: #94A3B8;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* ---------- Google Button ---------- */
+.googleBtnWrap {
+  width: 100%;
+  margin-bottom: 1.25rem;
+  display: flex;
+  justify-content: center;
+}
+
+/* ---------- Features ---------- */
+.features {
+  background: #F8FAFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.featureItem {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 0.8125rem;
+  color: #475569;
+  line-height: 1.4;
+}
+
+.featureDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #1A56DB;
+  flex-shrink: 0;
+}
+
+/* ---------- Footer ---------- */
+.footerNote {
+  text-align: center;
+  font-size: 0.75rem;
+  color: #94A3B8;
+  line-height: 1.7;
+  margin: 0;
+}
+
+.footerLink {
+  color: #1A56DB;
+  text-decoration: none;
+  font-weight: 500;
+  transition: opacity 0.2s ease;
+}
+
+.footerLink:hover {
+  opacity: 0.75;
+  text-decoration: underline;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 480px) {
+  .modal {
+    border-radius: 16px;
+    max-height: 95vh;
+  }
+
+  .header {
+    padding: 1.5rem 1.25rem 2rem;
+  }
+
+  .body {
+    padding: 1.5rem 1.25rem 1.75rem;
+  }
+
+  .closeBtn {
+    top: 10px;
+    right: 10px;
+  }
+}
