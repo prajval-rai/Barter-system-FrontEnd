@@ -4,12 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import styles from "./Appshell.module.css";
-import { useAuth } from "@/context/AuthContext"; // adjust path if different
+import { useAuth } from "@/context/AuthContext";
 import Image from "next/image";
 
-/* ─────────────────────────────────────────
-   Inline SVG icon primitive
-───────────────────────────────────────── */
 function Icon({ paths, size = 20 }: { paths: string[]; size?: number }) {
   return (
     <svg
@@ -30,9 +27,6 @@ function Icon({ paths, size = 20 }: { paths: string[]; size?: number }) {
   );
 }
 
-/* ─────────────────────────────────────────
-   Avatar helper — shows image or initials
-───────────────────────────────────────── */
 function Avatar({ image, name, size = 32 }: { image: string | null; name: string; size?: number }) {
   const initials = name
     .split(" ")
@@ -61,9 +55,6 @@ function Avatar({ image, name, size = 32 }: { image: string | null; name: string
   );
 }
 
-/* ─────────────────────────────────────────
-   Nav items
-───────────────────────────────────────── */
 const NAV_ITEMS = [
   {
     label: "Dashboard",
@@ -157,6 +148,24 @@ const NAV_ITEMS = [
 ];
 
 /* ─────────────────────────────────────────
+   NAV SECTION GROUPS
+───────────────────────────────────────── */
+const NAV_SECTIONS = [
+  {
+    label: "Main",
+    items: ["Dashboard", "Marketplace", "My Listings", "My Swaps"],
+  },
+  {
+    label: "Activity",
+    items: ["Messages", "Offers", "Bookmarks", "Notifications"],
+  },
+  {
+    label: "Account",
+    items: ["Profile", "Settings"],
+  },
+];
+
+/* ─────────────────────────────────────────
    DESKTOP SIDEBAR
 ───────────────────────────────────────── */
 function Sidebar({
@@ -169,6 +178,9 @@ function Sidebar({
   const pathname = usePathname();
   const { user, logout } = useAuth();
 
+  const getNavItem = (label: string) =>
+    NAV_ITEMS.find((i) => i.label === label)!;
+
   return (
     <aside
       className={`${styles.sidebar} ${collapsed ? styles.sidebarCollapsed : ""}`}
@@ -177,7 +189,7 @@ function Sidebar({
       <div className={styles.logoRow}>
         <Link href="/dashboard" className={styles.logoLink}>
           <span className={styles.logoIcon}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
               <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               <path d="M2 17l10 5 10-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               <path d="M2 12l10 5 10-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -191,89 +203,101 @@ function Sidebar({
           onClick={onToggle}
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             {collapsed ? <path d="M9 18l6-6-6-6" /> : <path d="M15 18l-6-6 6-6" />}
           </svg>
         </button>
       </div>
 
-      {/* Add New Item */}
+      {/* Add New Item CTA */}
       <div className={styles.ctaWrap}>
-        <Link href="/listings/new" className={styles.ctaBtn}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+        <Link href="/add" className={styles.ctaBtn}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
             <path d="M12 5v14M5 12h14" />
           </svg>
           {!collapsed && <span>Add New Item</span>}
         </Link>
       </div>
 
-      {/* Nav */}
+      {/* Nav with sections */}
       <nav className={styles.nav} aria-label="Main navigation">
-        {NAV_ITEMS.map((item) => {
-          const isActive =
-            pathname === item.href || pathname.startsWith(item.href + "/");
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`${styles.navItem} ${isActive ? styles.navItemActive : ""}`}
-              title={collapsed ? item.label : undefined}
-            >
-              <span className={styles.navIcon}>
-                <Icon paths={item.icon} size={18} />
-              </span>
-              {!collapsed && (
-                <span className={styles.navLabel}>{item.label}</span>
-              )}
-              {item.badge !== null && (
-                <span
-                  className={`${styles.badge} ${collapsed ? styles.badgeCollapsed : ""}`}
+        {collapsed
+          ? NAV_ITEMS.map((item) => {
+              const isActive =
+                pathname === item.href || pathname.startsWith(item.href + "/");
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`${styles.navItem} ${isActive ? styles.navItemActive : ""}`}
+                  title={item.label}
                 >
-                  {item.badge}
-                </span>
-              )}
-            </Link>
-          );
-        })}
+                  <span className={styles.navIcon}>
+                    <Icon paths={item.icon} size={18} />
+                  </span>
+                  {item.badge !== null && (
+                    <span className={`${styles.badge} ${styles.badgeCollapsed}`}>
+                      {item.badge}
+                    </span>
+                  )}
+                </Link>
+              );
+            })
+          : NAV_SECTIONS.map((section, si) => (
+              <div key={section.label} className={`${styles.navSection} ${si > 0 ? styles.navSectionBordered : ""}`}>
+                <span className={styles.navSectionLabel}>{section.label}</span>
+                {section.items.map((label) => {
+                  const item = getNavItem(label);
+                  const isActive =
+                    pathname === item.href || pathname.startsWith(item.href + "/");
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={`${styles.navItem} ${isActive ? styles.navItemActive : ""}`}
+                    >
+                      <span className={styles.navIcon}>
+                        <Icon paths={item.icon} size={17} />
+                      </span>
+                      <span className={styles.navLabel}>{item.label}</span>
+                      {item.badge !== null && (
+                        <span className={styles.badge}>{item.badge}</span>
+                      )}
+                    </Link>
+                  );
+                })}
+              </div>
+            ))}
       </nav>
 
       {/* Upgrade Banner */}
-      {!collapsed && (
-        <div className={styles.upgradeBanner}>
-          <div className={styles.upgradeHeader}>
-            <span className={styles.upgradeCrown}>👑</span>
-            <span className={styles.upgradeTitle}>Upgrade to Premium</span>
-          </div>
-          <p className={styles.upgradeDesc}>
-            Get more visibility, priority matches and exclusive benefits.
-          </p>
-          <Link href="/upgrade" className={styles.upgradeBtn}>
-            Upgrade Now
-          </Link>
-        </div>
-      )}
 
-      {/* User + Logout at bottom */}
-      {!collapsed && user && (
-        <div className={styles.sidebarUser}>
+
+      {/* User + Logout */}
+      {user && (
+        <div className={`${styles.sidebarUser} ${collapsed ? styles.sidebarUserCollapsed : ""}`}>
           <div className={styles.avatarRing}>
-            <Avatar image={user.image} name={user.name} size={30} />
+            <Avatar image={user.image} name={user.name} size={28} />
           </div>
-          <div className={styles.sidebarUserInfo}>
-            <span className={styles.sidebarUserName}>{user.name}</span>
-            <span className={styles.sidebarUserEmail}>{user.email}</span>
-          </div>
-          <button
-            className={styles.logoutBtn}
-            onClick={logout}
-            aria-label="Logout"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
-              <polyline points="16 17 21 12 16 7" />
-              <line x1="21" y1="12" x2="9" y2="12" />
-            </svg>
-          </button>
+          {!collapsed && (
+            <div className={styles.sidebarUserInfo}>
+              <span className={styles.sidebarUserName}>{user.name}</span>
+              <span className={styles.sidebarUserEmail}>{user.email}</span>
+            </div>
+          )}
+          {!collapsed && (
+            <button
+              className={styles.logoutBtn}
+              onClick={logout}
+              aria-label="Logout"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
+            </button>
+          )}
         </div>
       )}
 
@@ -288,84 +312,16 @@ function Sidebar({
 }
 
 /* ─────────────────────────────────────────
-   DESKTOP TOPBAR
-───────────────────────────────────────── */
-function TopBar() {
-  const { user, logout } = useAuth();
-
-  return (
-    <header className={styles.topbar}>
-      {/* Search */}
-      <div className={styles.searchWrap}>
-        <svg className={styles.searchIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="11" cy="11" r="8" />
-          <path d="M21 21l-4.35-4.35" />
-        </svg>
-        <input
-          type="text"
-          placeholder="Search for items, categories or users..."
-          className={styles.searchInput}
-        />
-      </div>
-
-      <div className={styles.topbarRight}>
-        {/* Location from user context */}
-        <button className={styles.locationBtn}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z" />
-            <circle cx="12" cy="10" r="3" />
-          </svg>
-          <span>{user?.address ?? "Location"}</span>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-            <path d="M6 9l6 6 6-6" />
-          </svg>
-        </button>
-
-        <div className={styles.topbarDivider} />
-
-        {/* Messages */}
-        <Link href="/messages" className={styles.iconBtn} aria-label="Messages">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-          </svg>
-        </Link>
-
-        {/* Notifications */}
-        <Link href="/notifications" className={styles.iconBtn} aria-label="Notifications">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
-            <path d="M13.73 21a2 2 0 01-3.46 0" />
-          </svg>
-          <span className={styles.notifBadge}>3</span>
-        </Link>
-
-        {/* Avatar — from AuthContext */}
-        <Link href="/profile" className={styles.avatarBtn} aria-label="Profile">
-          <div className={styles.avatarRing}>
-            <Avatar image={user?.image ?? null} name={user?.name ?? "U"} size={30} />
-          </div>
-          <span className={styles.avatarName}>{user?.name ?? "Account"}</span>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-            <path d="M6 9l6 6 6-6" />
-          </svg>
-        </Link>
-      </div>
-    </header>
-  );
-}
-
-/* ─────────────────────────────────────────
-   MOBILE TOP BAR (header only)
+   MOBILE TOP BAR
 ───────────────────────────────────────── */
 function MobileTopBar() {
   const { user } = useAuth();
 
   return (
     <header className={styles.mobileTopbar}>
-      {/* Logo left */}
       <Link href="/dashboard" className={styles.mobileLogoLink}>
         <span className={styles.logoIcon} style={{ width: 30, height: 30 }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
             <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             <path d="M2 17l10 5 10-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             <path d="M2 12l10 5 10-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -374,9 +330,7 @@ function MobileTopBar() {
         <span className={styles.logoText}>Exchangeit</span>
       </Link>
 
-      {/* Right actions */}
       <div className={styles.mobileTopbarRight}>
-        {/* Search icon */}
         <Link href="/search" className={styles.iconBtn} aria-label="Search">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="11" cy="11" r="8" />
@@ -384,7 +338,6 @@ function MobileTopBar() {
           </svg>
         </Link>
 
-        {/* Notifications */}
         <Link href="/notifications" className={styles.iconBtn} aria-label="Notifications">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
@@ -393,7 +346,6 @@ function MobileTopBar() {
           <span className={styles.notifBadge}>3</span>
         </Link>
 
-        {/* Avatar */}
         <Link href="/profile" className={styles.mobileAvatarBtn} aria-label="Profile">
           <div className={styles.avatarRing} style={{ width: 34, height: 34 }}>
             <Avatar image={user?.image ?? null} name={user?.name ?? "U"} size={28} />
@@ -405,9 +357,7 @@ function MobileTopBar() {
 }
 
 /* ─────────────────────────────────────────
-   MOBILE BOTTOM NAV (Android-style)
-   Only shows items with showInBottom: true
-   + FAB for Add New Item
+   MOBILE BOTTOM NAV
 ───────────────────────────────────────── */
 function MobileBottomNav() {
   const pathname = usePathname();
@@ -435,9 +385,8 @@ function MobileBottomNav() {
         );
       })}
 
-      {/* FAB — Add New Item — sits in the center */}
-      <Link href="/listings/new" className={styles.mobileFab} aria-label="Add New Item">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+      <Link href="/add" className={styles.mobileFab} aria-label="Add New Item">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
           <path d="M12 5v14M5 12h14" />
         </svg>
       </Link>
@@ -446,28 +395,22 @@ function MobileBottomNav() {
 }
 
 /* ─────────────────────────────────────────
-   APP SHELL — root wrapper
+   APP SHELL
 ───────────────────────────────────────── */
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
 
   return (
     <>
-      {/* ── DESKTOP layout ── */}
-      <div
-        className={`${styles.shell} ${collapsed ? styles.shellCollapsed : ""}`}
-      >
-        <Sidebar
-          collapsed={collapsed}
-          onToggle={() => setCollapsed((v) => !v)}
-        />
-        <div className={styles.main}>
-          <TopBar />
-          <main className={styles.content}>{children}</main>
-        </div>
+      {/* DESKTOP: sidebar-only layout, no topbar */}
+      <div className={`${styles.shell} ${collapsed ? styles.shellCollapsed : ""}`}>
+        <Sidebar collapsed={collapsed} onToggle={() => setCollapsed((v) => !v)} />
+        <main className={styles.content}>
+          {children}
+        </main>
       </div>
 
-      {/* ── MOBILE layout ── */}
+      {/* MOBILE */}
       <div className={styles.mobileShell}>
         <MobileTopBar />
         <main className={styles.mobileContent}>{children}</main>
