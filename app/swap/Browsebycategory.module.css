@@ -1,0 +1,62 @@
+/* components/home/BrowseByCategory.module.css */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-6) 0 var(--space-2); /* adds top + bottom gap */
+}
+
+.heading {
+  margin: 0 0 var(--space-4);
+  font-family: var(--font-display);
+  font-weight: var(--font-bold);
+  font-size: var(--text-lg);
+  color: var(--color-text-heading);
+}
+
+.chipRow {
+  display: flex;
+  flex-wrap: nowrap;          /* was wrap — caused line breaks */
+  gap: var(--space-2);
+  overflow-x: auto;
+  scrollbar-width: none;      /* hide scrollbar on Firefox */
+  padding-bottom: var(--space-1); /* prevents clipping of box-shadow */
+}
+
+
+.chipRow::-webkit-scrollbar {
+  display: none;              /* hide scrollbar on Chrome/Safari */
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  border: 1.5px solid var(--color-border);
+  background: var(--color-white);
+  font-family: var(--font-body);
+  font-weight: var(--font-medium);
+  font-size: var(--text-sm);
+  color: var(--color-text-body);
+  cursor: pointer;
+  transition:
+    background var(--duration-fast) var(--ease-smooth),
+    color var(--duration-fast) var(--ease-smooth),
+    border-color var(--duration-fast) var(--ease-smooth),
+    box-shadow var(--duration-fast) var(--ease-smooth);
+}
+
+.chip:hover,
+.chipActive {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.chipEmoji {
+  font-size: 0.95rem;
+  line-height: 1;
+}
