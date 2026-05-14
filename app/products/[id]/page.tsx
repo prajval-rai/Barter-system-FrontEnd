@@ -21,7 +21,7 @@ async function getAuthHeaders(): Promise<HeadersInit> {
 async function fetchProduct(id: string): Promise<Product | null> {
   try {
     const headers = await getAuthHeaders();
-    const res = await fetch(`http://localhost:8000/products/${id}/`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}products/${id}/`, {
       headers,
       next: { revalidate: 60 },
     });
@@ -36,7 +36,7 @@ async function fetchSimilarProducts(categoryId: number, excludeId: number): Prom
   try {
     const headers = await getAuthHeaders();
     const res = await fetch(
-      `http://localhost:8000/products/?category=${categoryId}&limit=6`,
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}products/?category=${categoryId}&limit=6`,
       {
         headers,
         next: { revalidate: 60 },
