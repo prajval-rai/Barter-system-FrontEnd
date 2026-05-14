@@ -21,7 +21,7 @@ async function fetchMyProducts(): Promise<Product[]> {
     const cookieStore = await cookies();
     const cookieHeader = cookieStore.toString();
 
-    const res = await fetch('http://localhost:8000/products/my_product/', {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}products/my_product/`, {
       headers: {
         Cookie: cookieHeader,
         'Content-Type': 'application/json',
