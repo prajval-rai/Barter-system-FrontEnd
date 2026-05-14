@@ -21,15 +21,16 @@ async function fetchMyProducts(): Promise<Product[]> {
     const cookieStore = await cookies();
     const cookieHeader = cookieStore.toString();
 
-    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}products/my_product/`, {
-      headers: {
-        Cookie: cookieHeader,
-        'Content-Type': 'application/json',
-        'cre
-      },
-      credentials: 'include',
-      cache: 'no-store', // always fresh — user's own listings
-    });
+    const res = await fetch(
+  `${process.env.NEXT_PUBLIC_BACKEND_URL}products/my_product/`,
+  {
+    headers: {
+      Cookie: cookieHeader,
+      'Content-Type': 'application/json',
+    },
+    cache: 'no-store',
+  }
+);
 
     if (res.status === 401) redirect('/login');
     if (!res.ok) return [];
