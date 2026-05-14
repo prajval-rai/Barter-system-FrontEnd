@@ -57,8 +57,8 @@ function Avatar({ image, name, size = 32 }: { image: string | null; name: string
 
 const NAV_ITEMS = [
   {
-    label: "Dashboard",
-    href: "/dashboard",
+    label: "Home",
+    href: "/swap",
     badge: null,
     showInBottom: false,
     icon: ["M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z", "M9 22V12h6v10"],
@@ -152,8 +152,8 @@ const NAV_ITEMS = [
 ───────────────────────────────────────── */
 const NAV_SECTIONS = [
   {
-    label: "Main",
-    items: ["Dashboard", "Marketplace", "My Listings", "My Swaps"],
+    label: "Home",
+    items: ["Home", "Marketplace", "My Listings", "My Swaps"],
   },
   {
     label: "Activity",
