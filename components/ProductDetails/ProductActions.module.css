@@ -1,0 +1,87 @@
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* ── Base button ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-lg);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  transition:
+    background var(--duration-fast) var(--ease-smooth),
+    box-shadow var(--duration-fast) var(--ease-smooth),
+    transform var(--duration-fast) var(--ease-smooth),
+    color var(--duration-fast) var(--ease-smooth);
+  cursor: pointer;
+  border: none;
+  white-space: nowrap;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+/* ── Primary ── */
+.btnPrimary {
+  background: var(--color-primary);
+  color: var(--color-white);
+  box-shadow: 0 4px 14px var(--color-primary-shadow);
+  width: 100%;
+  padding: var(--space-4) var(--space-6);
+  font-size: var(--text-lg);
+}
+
+.btnPrimary:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+  box-shadow: 0 6px 20px var(--color-primary-shadow);
+}
+
+.btnPrimary:disabled {
+  cursor: not-allowed;
+  opacity: 0.85;
+}
+
+.btnRequested {
+  background: var(--color-success) !important;
+  box-shadow: 0 4px 14px rgba(34, 197, 94, 0.3) !important;
+}
+
+/* ── Secondary row ── */
+.secondaryRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.btnSecondary {
+  background: var(--color-white);
+  color: var(--color-text-body);
+  border: 1.5px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+  flex: 1;
+}
+
+.btnSecondary:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  box-shadow: var(--shadow-md);
+}
+
+.btnSaved {
+  border-color: #FDA4AF;
+  color: #E11D48;
+  background: #FFF1F2;
+}
+
+.btnSaved:hover {
+  border-color: #E11D48 !important;
+  color: #E11D48 !important;
+}

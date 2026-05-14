@@ -85,7 +85,7 @@ function ListingCard({ listing }: { listing: Listing }) {
   };
 
   return (
-    <Link href={`/listings/${listing.id}`} className={styles.cardLink}>
+    <Link href={`/products/${listing.id}`} className={styles.cardLink}>
       <div className={styles.card}>
 
         {/* Thumbnail */}

@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./Addlistingpage.module.css";
-
+import { Icon } from "@iconify/react";
+import AppShellDetail from "@/components/AppShell/Appshelldetail";
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface Category { id: number; name: string; }
@@ -21,6 +22,7 @@ interface ReplaceOptionDraft {
   description: string;
   category: number | null;
   categoryName: string;
+  icon: string;   // ← add this
 }
 
 interface ProductForm {
@@ -128,6 +130,59 @@ async function validateWithAI(step: Step, value: string): Promise<{ ok: boolean;
   }
 }
 
+// ─── AI Icon Suggester ────────────────────────────────────────────────────────
+
+async function getIconForItem(title: string, categoryName: string): Promise<string> {
+  try {
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.NEXT_PUBLIC_OPENAI_KEY}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        temperature: 0,
+        max_tokens: 30,
+        messages: [
+          {
+            role: "system",
+            content: `You suggest a single Iconify icon string for a barter marketplace item.
+Return ONLY a valid Iconify icon string like "noto:mobile-phone" or "noto:laptop".
+Rules:
+- Always use the "noto" prefix (noto:xxx) for colorful emoji-style icons
+- Use kebab-case for the icon name
+- Return ONLY the icon string, nothing else, no quotes, no explanation
+Examples:
+- iPhone, mobile → noto:mobile-phone
+- Laptop, MacBook → noto:laptop
+- Cycle, Bicycle → noto:bicycle
+- Book, Novel → noto:books
+- Camera → noto:camera
+- Headphones → noto:headphone
+- Watch → noto:watch
+- TV → noto:television
+- Shoes → noto:running-shoe
+- Clothes, Shirt → noto:t-shirt
+- Guitar → noto:guitar
+- Bag, Backpack → noto:backpack`,
+          },
+          {
+            role: "user",
+            content: `Item: "${title}", Category: "${categoryName}"`,
+          },
+        ],
+      }),
+    });
+    const data = await res.json();
+    const icon = data.choices?.[0]?.message?.content?.trim() ?? "noto:package";
+    // Validate format: must match "prefix:name"
+    return /^[\w-]+:[\w-]+$/.test(icon) ? icon : "noto:package";
+  } catch {
+    return "noto:package";
+  }
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function AddListingPage() {
@@ -150,6 +205,7 @@ export default function AddListingPage() {
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [error, setError]                 = useState("");
   const [loading, setLoading]             = useState(false);
+  const [iconLoading, setIconLoading] = useState(false);
 
   const bottomRef   = useRef<HTMLDivElement>(null);
   const inputRef    = useRef<HTMLInputElement>(null);
@@ -272,16 +328,24 @@ export default function AddListingPage() {
     }
   }, [sendBot]);
 
-  const handleAddReplace = () => {
-    if (!replaceForm.title.trim()) return showError("Item ka naam toh bata! 📝");
-    if (!replaceForm.category)     return showError("Category bhi choose kar bhai 🏷️");
-    setReplaceOptions(prev => [...prev, {
-      id: uid(), title: replaceForm.title.trim(),
-      description: replaceForm.description.trim(),
-      category: replaceForm.category, categoryName: replaceForm.categoryName,
-    }]);
-    setReplaceForm({ title: "", description: "", category: null, categoryName: "" });
-  };
+const handleAddReplace = async () => {
+  if (!replaceForm.title.trim()) return showError("Item ka naam toh bata! 📝");
+  if (!replaceForm.category)     return showError("Category bhi choose kar bhai 🏷️");
+
+  setIconLoading(true);
+  const icon = await getIconForItem(replaceForm.title.trim(), replaceForm.categoryName);
+  setIconLoading(false);
+
+  setReplaceOptions(prev => [...prev, {
+    id: uid(),
+    title: replaceForm.title.trim(),
+    description: replaceForm.description.trim(),
+    category: replaceForm.category,
+    categoryName: replaceForm.categoryName,
+    icon,
+  }]);
+  setReplaceForm({ title: "", description: "", category: null, categoryName: "" });
+};
 
   const handleReplaceDone = useCallback(async () => {
     if (replaceOptions.length === 0) return showError("Kam se kam ek item toh add kar! 🙏");
@@ -290,48 +354,51 @@ export default function AddListingPage() {
     await sendBot("confirm");
   }, [replaceOptions, sendBot]);
 
-  const handleConfirm = useCallback(async () => {
-    setLoading(true);
-    try {
-      const fd = new FormData();
-      fd.append("title", form.title);
-      fd.append("description", form.description);
-      fd.append("category_id", String(form.category));
-      fd.append("condition", form.condition);
-      if (form.purchase_year) fd.append("purchase_year", form.purchase_year);
-      form.images.forEach(img => fd.append("images", img));
+ const handleConfirm = useCallback(async () => {
+  setLoading(true);
+  try {
+    const fd = new FormData();
+    fd.append("title", form.title);
+    fd.append("description", form.description);
+    fd.append("category_id", String(form.category));
+    fd.append("condition", form.condition);
+    if (form.purchase_year) fd.append("purchase_year", form.purchase_year);
+    form.images.forEach(img => fd.append("images", img));
 
-      const res  = await fetch(`${base_url}products/create_product/`, {
-        method: "POST", credentials: "include", body: fd,
+    const res  = await fetch(`${base_url}products/create_product/`, {
+      method: "POST", credentials: "include", body: fd,
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || data.detail || "Something went wrong");
+
+    const productId: number = data.product_id;
+
+    if (replaceOptions.length > 0) {
+      const rRes = await fetch(`${base_url}products/add_replace_options/${productId}/`, {
+        method: "POST", credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          replace_options: replaceOptions.map(o => ({
+            title: o.title,
+            description: o.description,
+            category_id: o.category,
+            replace_type: "product",
+            icon: o.icon,           // ← added
+          })),
+        }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || data.detail || "Something went wrong");
-
-      const productId: number = data.product_id;
-
-      if (replaceOptions.length > 0) {
-        const rRes = await fetch(`${base_url}products/add_replace_options/${productId}/`, {
-          method: "POST", credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            replace_options: replaceOptions.map(o => ({
-              title: o.title, description: o.description,
-              category_id: o.category, replace_type: "product",
-            })),
-          }),
-        });
-        const rData = await rRes.json();
-        if (!rRes.ok) throw new Error(rData.error || "Failed to save exchange options");
-      }
-
-      setStep("done");
-      await sendBot("done");
-    } catch (err: any) {
-      showError(err.message ?? "Failed to post 😬");
-    } finally {
-      setLoading(false);
+      const rData = await rRes.json();
+      if (!rRes.ok) throw new Error(rData.error || "Failed to save exchange options");
     }
-  }, [form, replaceOptions, sendBot]);
+
+    setStep("done");
+    await sendBot("done");
+  } catch (err: any) {
+    showError(err.message ?? "Failed to post 😬");
+  } finally {
+    setLoading(false);
+  }
+}, [form, replaceOptions, sendBot]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
@@ -341,28 +408,44 @@ export default function AddListingPage() {
   const progressPct   = Math.round((STEP_ORDER.indexOf(step) / (STEP_ORDER.length - 1)) * 100);
 
   return (
-    <div className={styles.pageWrapper}>
+    <AppShellDetail>
+      <div className={styles.pageWrapper}>
     <div className={styles.page}>
 
-      {/* ── Top bar ── */}
-      <div className={styles.topBar}>
-        <button className={styles.backBtn} onClick={() => router.back()}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-            <path d="M19 12H5M12 5l-7 7 7 7"/>
-          </svg>
-        </button>
-        <div className={styles.topBarCenter}>
-          <div className={styles.botAvatar}>LB</div>
-          <div>
-            <div className={styles.botName}>ListingBot</div>
-            <div className={styles.botStatus}>
-              <span className={styles.statusDot} />
-              {botTyping ? "typing..." : aiValidating ? "thinking... 🧠" : "online"}
-            </div>
-          </div>
-        </div>
-        <div className={styles.progressPill}>{progressPct}%</div>
+{/* ── Chat Header ── */}
+<div className={styles.chatHeader}>
+  <div className={styles.chatHeaderLeft}>
+    <button className={styles.backBtn} onClick={() => router.back()}>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+        <path d="M19 12H5M12 5l-7 7 7 7"/>
+      </svg>
+    </button>
+    <div className={styles.botChip}>
+      <div className={styles.botChipAvatar}>LB</div>
+      <div className={styles.botChipInfo}>
+        <span className={styles.botChipName}>ListingBot</span>
+        <span className={styles.botChipStatus}>
+          <span className={styles.statusDot} />
+          {botTyping ? "typing..." : aiValidating ? "thinking... 🧠" : "online"}
+        </span>
       </div>
+    </div>
+  </div>
+
+  <div className={styles.chatHeaderRight}>
+    <div className={styles.progressPill}>
+      <div className={styles.progressPillBar}>
+        <div className={styles.progressPillFill} style={{ width: `${progressPct}%` }} />
+      </div>
+      <span className={styles.progressPillText}>{progressPct}%</span>
+    </div>
+  </div>
+</div>
+
+{/* ── Progress track (keep this thin line below header) ── */}
+<div className={styles.progressTrack}>
+  <div className={styles.progressBar} style={{ width: `${progressPct}%` }} />
+</div>
 
       {/* ── Progress bar ── */}
       <div className={styles.progressTrack}>
@@ -465,51 +548,77 @@ export default function AddListingPage() {
         )}
 
         {/* Replace options */}
-        {step === "replace_options" && !botTyping && (
-          <div className={styles.actionsArea}>
-            {replaceOptions.length > 0 && (
-              <div className={styles.replaceList}>
-                {replaceOptions.map(opt => (
-                  <div key={opt.id} className={styles.replaceCard}>
-                    <div>
-                      <div className={styles.replaceTitle}>{opt.title}</div>
-                      <div className={styles.replaceMeta}>
-                        {opt.categoryName}{opt.description ? ` · ${opt.description.slice(0, 40)}` : ""}
-                      </div>
-                    </div>
-                    <button className={styles.removeBtn}
-                      onClick={() => setReplaceOptions(p => p.filter(o => o.id !== opt.id))}>
-                      ×
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-            <div className={styles.replaceForm}>
-              <input className={styles.replaceInput} placeholder="Item ka naam (e.g. iPhone 13)"
-                value={replaceForm.title}
-                onChange={e => setReplaceForm(f => ({ ...f, title: e.target.value }))} />
-              <input className={styles.replaceInput} placeholder="Description (optional)"
-                value={replaceForm.description}
-                onChange={e => setReplaceForm(f => ({ ...f, description: e.target.value }))} />
-              <select className={styles.replaceSelect} value={replaceForm.category ?? ""}
-                onChange={e => {
-                  const cat = categories.find(c => c.id === Number(e.target.value));
-                  setReplaceForm(f => ({ ...f, category: cat?.id ?? null, categoryName: cat?.name ?? "" }));
-                }}>
-                <option value="">Category choose karo…</option>
-                {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
-              <button className={styles.addBtn} onClick={handleAddReplace}>+ Option Add Karo</button>
-            </div>
-            <div className={styles.replaceActions}>
-              <button className={styles.primaryBtn} onClick={handleReplaceDone}
-                disabled={replaceOptions.length === 0}>
-                Done ✓
-              </button>
-            </div>
-          </div>
-        )}
+{step === "replace_options" && !botTyping && (
+  <div className={styles.actionsArea}>
+    {replaceOptions.length > 0 && (
+      <div className={styles.replaceList}>
+        {replaceOptions.map(opt => (
+  <div key={opt.id} className={styles.replaceCard}>
+    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+      <Icon icon={opt.icon ?? "noto:package"} width={24} height={24} style={{ flexShrink: 0 }} />
+      <div>
+        <div className={styles.replaceTitle}>{opt.title}</div>
+        <div className={styles.replaceMeta}>
+          {opt.categoryName}{opt.description ? ` · ${opt.description.slice(0, 40)}` : ""}
+        </div>
+      </div>
+    </div>
+    <button
+      className={styles.removeBtn}
+      onClick={() => setReplaceOptions(p => p.filter(o => o.id !== opt.id))}
+    >
+      ×
+    </button>
+  </div>
+))}
+      </div>
+    )}
+
+    <div className={styles.replaceForm}>
+      <input
+        className={styles.replaceInput}
+        placeholder="Item ka naam (e.g. iPhone 13)"
+        value={replaceForm.title}
+        onChange={e => setReplaceForm(f => ({ ...f, title: e.target.value }))}
+      />
+      <input
+        className={styles.replaceInput}
+        placeholder="Description (optional)"
+        value={replaceForm.description}
+        onChange={e => setReplaceForm(f => ({ ...f, description: e.target.value }))}
+      />
+      <select
+        className={styles.replaceSelect}
+        value={replaceForm.category ?? ""}
+        onChange={e => {
+          const cat = categories.find(c => c.id === Number(e.target.value));
+          setReplaceForm(f => ({ ...f, category: cat?.id ?? null, categoryName: cat?.name ?? "" }));
+        }}
+      >
+        <option value="">Category choose karo…</option>
+        {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+      </select>
+
+      <button
+        className={styles.addBtn}
+        onClick={handleAddReplace}
+        disabled={iconLoading}
+      >
+        {iconLoading ? "⏳ Adding..." : "+ Option Add Karo"}
+      </button>
+    </div>
+
+    <div className={styles.replaceActions}>
+      <button
+        className={styles.primaryBtn}
+        onClick={handleReplaceDone}
+        disabled={replaceOptions.length === 0}
+      >
+        Done ✓
+      </button>
+    </div>
+  </div>
+)}
 
         {/* Confirm */}
         {step === "confirm" && !botTyping && (
@@ -580,6 +689,9 @@ export default function AddListingPage() {
       )}
     </div>
     </div>
+
+    </AppShellDetail>
+    
   );
 }
 

@@ -11,17 +11,170 @@
   from { opacity: 0; }
   to   { opacity: 1; }
 }
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.5; }
+
+
+
+/* ─── Chat Header ─────────────────────────────────────────────────────────── */
+.chatHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: var(--color-white);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
 }
 
-/* ─── Page Wrapper (fills parent layout slot) ─────────────────────────────── */
-.pageWrapper {
+.chatHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.backBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-full);
+  border: none;
+  background: var(--color-surface);
+  color: var(--color-text-subtle);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all var(--duration-fast) var(--ease-smooth);
+}
+
+.backBtn:hover {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+.botChip {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.botChipAvatar {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-navy));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: var(--font-bold);
+  color: var(--color-white);
+  font-family: var(--font-display);
+  flex-shrink: 0;
+  border: 2px solid var(--color-primary-light);
+}
+
+.botChipInfo {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 0px);
+  gap: 1px;
+}
+
+.botChipName {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-heading);
+  font-family: var(--font-display);
+  line-height: 1;
+}
+
+.botChipStatus {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--color-text-muted);
+  font-family: var(--font-body);
+}
+
+.statusDot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: var(--color-success);
+  flex-shrink: 0;
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.25);
+}
+
+/* ─── Progress pill + bar ─────────────────────────────────────────────────── */
+.chatHeaderRight {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.progressPill {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--color-primary-light);
+  border: 1px solid rgba(26, 86, 219, 0.15);
+  border-radius: var(--radius-full);
+  padding: 4px 12px 4px 8px;
+}
+
+.progressPillBar {
+  width: 48px;
+  height: 4px;
+  background: var(--color-border);
+  border-radius: var(--radius-full);
   overflow: hidden;
+}
+
+.progressPillFill {
+  height: 100%;
+  background: var(--color-primary);
+  border-radius: var(--radius-full);
+  transition: width 0.5s var(--ease-smooth);
+}
+
+.progressPillText {
+  font-size: 11px;
+  font-weight: var(--font-bold);
+  color: var(--color-primary);
+  font-family: monospace;
+  min-width: 24px;
+}
+
+/* ─── Page Wrapper ────────────────────────────────────────────────────────── */
+/* Fills the AppShellDetail content area exactly — no outer scroll */
+.pageWrapper {
+  position: fixed;
+  top: 60px;        /* height of your top nav */
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  /* Remove all the negative margin hacks */
+  margin: 0;
+}
+.content {
+  flex: 1;
+  padding: var(--space-6) var(--space-8);
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  overflow: hidden;        /* ← add this */
+  display: flex;           /* ← add this */
+  flex-direction: column;  /* ← add this */
+}
+
+@media (max-width: 768px) {
+  .pageWrapper {
+    height: calc(100vh - 60px);
+    margin: calc(-1 * var(--space-4));
+  }
 }
 
 /* ─── Page ────────────────────────────────────────────────────────────────── */
@@ -29,14 +182,14 @@
   display: flex;
   flex-direction: column;
   flex: 1;
-  min-height: 0;
+  min-height: 0;        /* ← critical: allows flex shrink */
+  overflow: hidden;     /* ← contain everything inside */
   background: var(--color-surface);
   font-family: var(--font-body);
   position: relative;
-  overflow: hidden;
 }
 
-/* ─── Top Bar ─────────────────────────────────────────────────────────────── */
+/* ─── Top Bar (ListingBot header) ─────────────────────────────────────────── */
 .topBar {
   display: flex;
   align-items: center;
@@ -60,9 +213,7 @@
   transition: background var(--duration-fast) var(--ease-smooth);
 }
 
-.backBtn:hover {
-  background: rgba(255, 255, 255, 0.25);
-}
+.backBtn:hover { background: rgba(255, 255, 255, 0.25); }
 
 .topBarCenter {
   display: flex;
@@ -127,7 +278,7 @@
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* ─── Progress ────────────────────────────────────────────────────────────── */
+/* ─── Progress Bar ────────────────────────────────────────────────────────── */
 .progressTrack {
   height: 3px;
   background: rgba(26, 86, 219, 0.12);
@@ -141,20 +292,26 @@
 }
 
 /* ─── Chat Body ───────────────────────────────────────────────────────────── */
+/* This is the ONLY scrollable element */
 .chatBody {
   flex: 1;
-  min-height: 0;
+  min-height: 0;           /* ← critical */
   overflow-y: auto;
-  padding: 16px 12px 24px;
+  overflow-x: hidden;
+  padding: 16px 16px 24px;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
   gap: 8px;
   background-color: var(--color-surface);
   background-image: radial-gradient(circle, rgba(26, 86, 219, 0.06) 1px, transparent 1px);
   background-size: 28px 28px;
   scroll-behavior: smooth;
 }
+
+/* Thin scrollbar */
+.chatBody::-webkit-scrollbar       { width: 4px; }
+.chatBody::-webkit-scrollbar-track { background: transparent; }
+.chatBody::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 99px; }
 
 /* ─── Date Chip ───────────────────────────────────────────────────────────── */
 .dateChip {
@@ -202,7 +359,7 @@
 
 /* ─── Bubbles ─────────────────────────────────────────────────────────────── */
 .botBubble {
-  max-width: 75%;
+  max-width: 72%;
   background: var(--color-white);
   border-radius: 4px 14px 14px 14px;
   padding: 10px 14px 6px;
@@ -211,7 +368,7 @@
 }
 
 .userBubble {
-  max-width: 75%;
+  max-width: 72%;
   background: var(--color-primary);
   border-radius: 14px 4px 14px 14px;
   padding: 10px 14px 6px;
@@ -225,9 +382,7 @@
   font-family: var(--font-body);
 }
 
-.userBubble .bubbleText {
-  color: #fff;
-}
+.userBubble .bubbleText { color: #fff; }
 
 .timeBot {
   font-size: 10px;
@@ -275,7 +430,7 @@
   flex-wrap: wrap;
   gap: 8px;
   padding-left: 36px;
-  padding-bottom: 8px;
+  padding-bottom: 4px;
   animation: fadeIn 0.3s ease both;
 }
 
@@ -306,7 +461,7 @@
   flex-direction: column;
   gap: 10px;
   padding-left: 36px;
-  padding-bottom: 8px;
+  padding-bottom: 4px;
   animation: fadeIn 0.3s ease both;
 }
 
@@ -345,7 +500,7 @@
   box-shadow: var(--shadow-sm);
 }
 
-/* ─── Primary Button (replaces greenBtn) ──────────────────────────────────── */
+/* ─── Primary Button ──────────────────────────────────────────────────────── */
 .primaryBtn {
   align-self: flex-start;
   padding: 9px 20px;
@@ -358,14 +513,11 @@
   cursor: pointer;
   box-shadow: 0 2px 8px var(--color-primary-shadow);
   font-family: var(--font-body);
-  transition: opacity var(--duration-fast) var(--ease-smooth), transform var(--duration-fast) var(--ease-smooth);
+  transition: opacity var(--duration-fast) var(--ease-smooth),
+              transform var(--duration-fast) var(--ease-smooth);
 }
 
-.primaryBtn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
+.primaryBtn:disabled { opacity: 0.4; cursor: not-allowed; }
 .primaryBtn:hover:not(:disabled) {
   opacity: 0.9;
   transform: translateY(-1px);
@@ -373,12 +525,7 @@
 }
 
 /* ─── Replace Options ─────────────────────────────────────────────────────── */
-.replaceList {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 4px;
-}
+.replaceList { display: flex; flex-direction: column; gap: 8px; margin-bottom: 4px; }
 
 .replaceCard {
   background: var(--color-white);
@@ -424,9 +571,7 @@
   line-height: 1;
 }
 
-.removeBtn:hover {
-  background: rgba(239, 68, 68, 0.15);
-}
+.removeBtn:hover { background: rgba(239, 68, 68, 0.15); }
 
 .replaceForm {
   display: flex;
@@ -450,7 +595,8 @@
   box-sizing: border-box;
   font-family: var(--font-body);
   color: var(--color-text-heading);
-  transition: border-color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth);
+  transition: border-color var(--duration-fast) var(--ease-smooth),
+              box-shadow var(--duration-fast) var(--ease-smooth);
 }
 
 .replaceInput:focus {
@@ -458,9 +604,7 @@
   box-shadow: 0 0 0 3px rgba(26, 86, 219, 0.1);
 }
 
-.replaceInput::placeholder {
-  color: var(--color-text-muted);
-}
+.replaceInput::placeholder { color: var(--color-text-muted); }
 
 .replaceSelect {
   width: 100%;
@@ -474,7 +618,8 @@
   cursor: pointer;
   font-family: var(--font-body);
   color: var(--color-text-heading);
-  transition: border-color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth);
+  transition: border-color var(--duration-fast) var(--ease-smooth),
+              box-shadow var(--duration-fast) var(--ease-smooth);
 }
 
 .replaceSelect:focus {
@@ -495,16 +640,10 @@
   transition: opacity var(--duration-fast) var(--ease-smooth);
 }
 
-.addBtn:hover {
-  opacity: 0.85;
-}
+.addBtn:hover { opacity: 0.85; }
+.addBtn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.replaceActions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  align-items: center;
-}
+.replaceActions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 
 /* ─── Summary Card ────────────────────────────────────────────────────────── */
 .summaryCard {
@@ -547,11 +686,7 @@
   font-family: var(--font-body);
 }
 
-.divider {
-  height: 1px;
-  background: var(--color-border);
-  margin: 2px 0;
-}
+.divider { height: 1px; background: var(--color-border); margin: 2px 0; }
 
 .confirmBtn {
   padding: 13px 0;
@@ -563,16 +698,13 @@
   font-weight: 700;
   cursor: pointer;
   box-shadow: 0 4px 14px var(--color-primary-shadow);
-  transition: opacity var(--duration-fast) var(--ease-smooth), transform var(--duration-fast) var(--ease-smooth);
+  transition: opacity var(--duration-fast) var(--ease-smooth),
+              transform var(--duration-fast) var(--ease-smooth);
   font-family: var(--font-display);
   letter-spacing: -0.2px;
 }
 
-.confirmBtn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
+.confirmBtn:disabled { opacity: 0.6; cursor: not-allowed; }
 .confirmBtn:hover:not(:disabled) {
   opacity: 0.9;
   transform: translateY(-1px);
@@ -602,11 +734,12 @@
 .inputBar {
   display: flex;
   gap: 8px;
-  padding: 10px 12px 12px;
+  padding: 10px 16px 12px;
   background: var(--color-white);
   border-top: 1px solid var(--color-border);
-  flex-shrink: 0;
+  flex-shrink: 0;          /* ← never shrink, always visible at bottom */
   align-items: center;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .textInput {
@@ -619,7 +752,8 @@
   outline: none;
   font-family: var(--font-body);
   color: var(--color-text-heading);
-  transition: border-color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth);
+  transition: border-color var(--duration-fast) var(--ease-smooth),
+              box-shadow var(--duration-fast) var(--ease-smooth);
 }
 
 .textInput:focus {
@@ -627,9 +761,7 @@
   box-shadow: 0 0 0 3px rgba(26, 86, 219, 0.12);
 }
 
-.textInput::placeholder {
-  color: var(--color-text-muted);
-}
+.textInput::placeholder { color: var(--color-text-muted); }
 
 .sendBtn {
   width: 44px;
@@ -644,16 +776,9 @@
   cursor: pointer;
   flex-shrink: 0;
   box-shadow: 0 2px 8px var(--color-primary-shadow);
-  transition: opacity var(--duration-fast) var(--ease-smooth), transform var(--duration-fast) var(--ease-smooth);
+  transition: opacity var(--duration-fast) var(--ease-smooth),
+              transform var(--duration-fast) var(--ease-smooth);
 }
 
-.sendBtn:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.sendBtn:hover:not(:disabled) {
-  opacity: 0.9;
-  transform: scale(1.05);
-}
+.sendBtn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+.sendBtn:hover:not(:disabled) { opacity: 0.9; transform: scale(1.05); }
