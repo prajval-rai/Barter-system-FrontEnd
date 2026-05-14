@@ -25,7 +25,9 @@ async function fetchMyProducts(): Promise<Product[]> {
       headers: {
         Cookie: cookieHeader,
         'Content-Type': 'application/json',
+        'cre
       },
+      credentials: 'include',
       cache: 'no-store', // always fresh — user's own listings
     });
 
