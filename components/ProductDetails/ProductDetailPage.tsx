@@ -39,7 +39,7 @@ export default function ProductDetailPage({ product, similarProducts = [] }: Pro
 
             <div className={styles.divider} />
 
-            <ProductActions productId={product.id} productTitle={product.title} />
+            <ProductActions productId={product.id} productTitle={product.title} IsBookMarked={product.is_bookmarked} />
 
             <div className={styles.divider} />
 
