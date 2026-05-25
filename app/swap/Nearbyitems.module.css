@@ -1,5 +1,3 @@
-/* components/home/NearbyItems.module.css */
-
 .section {
   display: flex;
   flex-direction: column;
@@ -18,7 +16,7 @@
   margin: 0;
   font-family: var(--font-display);
   font-weight: var(--font-bold);
-  font-size: var(--text-lg);
+  font-size: var(--text-xl);
   color: var(--color-text-heading);
 }
 
@@ -59,7 +57,7 @@
 /* ── Card ── */
 .cardLink {
   text-decoration: none;
-  display: block;       /* critical — without this grid ignores it */
+  display: block;
   height: 100%;
 }
 
@@ -130,7 +128,7 @@
   flex-direction: row;
   align-items: center;
   gap: var(--space-2);
-  margin-top: auto;     /* pushes meta to bottom of card */
+  margin-top: auto;
 }
 
 .distance {
@@ -200,20 +198,22 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: var(--space-8) var(--space-4);
+  padding: var(--space-10) var(--space-4);
   gap: var(--space-2);
   text-align: center;
 }
 
 .emptyEmoji {
-  font-size: 2.5rem;
+  font-size: 3rem;
+  line-height: 1;
+  margin-bottom: var(--space-1);
 }
 
 .emptyTitle {
   margin: 0;
   font-family: var(--font-display);
-  font-weight: var(--font-semibold);
-  font-size: var(--text-base);
+  font-weight: var(--font-bold);
+  font-size: var(--text-lg);
   color: var(--color-text-heading);
 }
 
@@ -222,21 +222,31 @@
   font-family: var(--font-body);
   font-size: var(--text-sm);
   color: var(--color-text-muted);
-  max-width: 260px;
+  max-width: 280px;
+  line-height: var(--leading-relaxed);
 }
 
+/* Pill button — matches the blue rounded button in screenshot */
 .emptyAction {
-  margin-top: var(--space-2);
-  padding: var(--space-2) var(--space-4);
+  margin-top: var(--space-3);
+  padding: 12px 28px;
   background: var(--color-primary);
   color: var(--color-white);
   border-radius: var(--radius-full);
+  font-family: var(--font-display);
   font-size: var(--text-sm);
-  font-weight: var(--font-medium);
+  font-weight: var(--font-semibold);
   text-decoration: none;
-  transition: opacity var(--duration-fast) var(--ease-smooth);
+  transition:
+    background var(--duration-fast) var(--ease-smooth),
+    transform var(--duration-fast) var(--ease-smooth);
 }
 
 .emptyAction:hover {
-  opacity: 0.85;
+  background: var(--color-primary-dark, #1648c0);
+  transform: translateY(-1px);
+}
+
+.emptyAction:active {
+  transform: translateY(0);
 }

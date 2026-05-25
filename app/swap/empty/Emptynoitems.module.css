@@ -1,0 +1,109 @@
+/* Horizontal card — image left, content right */
+.card {
+  background: var(--color-white);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-5) var(--space-6);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-5);
+  box-shadow: var(--shadow-card);
+  position: relative;
+  overflow: hidden;
+  height: 100%;          /* ← fills the grid cell */
+  box-sizing: border-box;
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-sky));
+}
+
+/* Image side */
+.illustrationSlot {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 160px;
+}
+
+.illustration {
+  width: 160px;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}
+
+/* Text + button side */
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  flex: 1;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--color-text-heading);
+  margin: 0;
+  line-height: var(--leading-tight);
+}
+
+.desc {
+  font-size: var(--text-sm);
+  color: var(--color-text-body);
+  margin: 0;
+  line-height: var(--leading-relaxed);
+}
+
+.addBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  padding: 10px 22px;
+  background: var(--color-primary);
+  color: var(--color-white);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  transition: background var(--duration-normal) var(--ease-smooth),
+              transform var(--duration-normal) var(--ease-smooth);
+}
+
+.addBtn:hover {
+  background: var(--color-primary-dark, #1648c0);
+  transform: translateY(-1px);
+}
+
+.addBtn:active {
+  transform: translateY(0);
+}
+
+/* Stack on small screens */
+@media (max-width: 540px) {
+  .card {
+    flex-direction: column;
+    align-items: flex-start;
+    min-height: unset;
+  }
+
+  .illustrationSlot {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .illustration {
+    width: 120px;
+  }
+}

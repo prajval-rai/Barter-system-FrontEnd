@@ -1,0 +1,108 @@
+.hero {
+  background: var(--color-white);
+  border-radius: var(--radius-2xl);
+  margin: var(--space-5) var(--space-6);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+  border: 1.5px solid var(--color-border);
+}
+
+.inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  min-height: 280px;
+  padding: var(--space-10) var(--space-10);
+  gap: var(--space-8);
+}
+
+/* Left */
+.left {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.heading {
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);
+  font-weight: var(--font-extrabold);
+  color: var(--color-text-heading);
+  margin: 0;
+  line-height: var(--leading-tight);
+}
+
+.brand {
+  color: var(--color-primary);
+}
+
+.sub {
+  font-size: var(--text-base);
+  color: var(--color-text-body);
+  margin: 0;
+  line-height: var(--leading-relaxed);
+}
+
+.ctaBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-6);
+  background: var(--color-primary);
+  color: var(--color-white);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-base);
+  font-weight: var(--font-bold);
+  text-decoration: none;
+  width: fit-content;
+  box-shadow: 0 4px 20px var(--color-primary-shadow);
+  transition: background var(--duration-fast) var(--ease-smooth),
+              transform var(--duration-fast) var(--ease-smooth),
+              box-shadow var(--duration-fast) var(--ease-smooth);
+}
+
+.ctaBtn:hover {
+  background: var(--color-primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px var(--color-primary-shadow);
+}
+
+.trust {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+/* Right */
+.right {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.illustration {
+  width: 100%;
+  max-width: 420px;
+  height: auto;
+  display: block;
+  object-fit: contain;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .inner {
+    grid-template-columns: 1fr;
+    padding: var(--space-8) var(--space-6);
+  }
+
+  .right {
+    display: none;
+  }
+
+  .heading {
+    font-size: var(--text-2xl);
+  }
+}

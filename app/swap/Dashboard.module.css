@@ -1,3 +1,7 @@
+/* ─────────────────────────────────────────
+   NORMAL DASHBOARD (has products)
+───────────────────────────────────────── */
+
 .page {
   min-height: 100%;
   display: flex;
@@ -19,7 +23,6 @@
   overflow: hidden;
 }
 
-/* Subtle radial glow behind the content */
 .heroBg::before {
   content: "";
   position: absolute;
@@ -46,4 +49,66 @@
 .pageBody {
   flex: 1;
   padding: var(--space-6);
+}
+
+
+/* ─────────────────────────────────────────
+   EMPTY STATE (no products yet)
+───────────────────────────────────────── */
+
+.emptyPage {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface);
+}
+
+/* ── Side-by-side: EmptyNoItems + EmptyWhyUs ── */
+.emptyBottomGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-6);
+  padding: 0 var(--space-6) var(--space-6);
+  align-items: stretch;   /* ← was "start", this forces equal height */
+}
+
+/* ─────────────────────────────────────────
+   LOADING STATE
+───────────────────────────────────────── */
+
+.loadingScreen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loadingSpinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(26, 86, 219, 0.15);
+  border-top-color: #1a56db;
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* ─────────────────────────────────────────
+   RESPONSIVE
+───────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .emptyBottomGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .pageBody {
+    padding: var(--space-4);
+  }
 }
