@@ -23,7 +23,6 @@ interface AuthContextValue {
   setUser: (user: AuthUser | null) => void;
 }
 
-// ✅ Safe default — never null, so useAuth() never throws outside provider
 const defaultValue: AuthContextValue = {
   user: null,
   loading: true,
@@ -34,10 +33,9 @@ const defaultValue: AuthContextValue = {
 
 const AuthContext = createContext<AuthContextValue>(defaultValue);
 
-const base_url = process.env.NEXT_PUBLIC_BACKEND_URL;
-
+// ✅ Now calls Next.js proxy instead of Django directly
 async function callDjangoGoogleLogin(token: string): Promise<AuthUser> {
-  const res = await fetch(`${base_url}accounts/login/`, {
+  const res = await fetch(`/api/auth/login/`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -53,27 +51,23 @@ async function callDjangoGoogleLogin(token: string): Promise<AuthUser> {
   const { id, firstName, lastName, email, role, address, lat, long } = data.user;
 
   return {
-    id,
-    email,
+    id, email,
     firstName: firstName ?? "",
     lastName: lastName ?? "",
     name: `${firstName ?? ""} ${lastName ?? ""}`.trim(),
     image: null,
-    role,
-    address,
-    lat,
-    long,
+    role, address, lat, long,
   };
 }
 
 async function callDjangoLogout() {
   try {
-    await fetch(`${base_url}auth/logout/`, {
+    await fetch(`/api/auth/logout/`, {
       method: "POST",
       credentials: "include",
     });
   } catch {
-    // ignore — clear local state regardless
+    // ignore
   }
 }
 
@@ -94,23 +88,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (googleIdToken: string) => {
-  let picture: string | null = null;
-  try {
-    // ✅ base64url → base64 before decoding
-    const base64 = googleIdToken
-      .split(".")[1]
-      .replace(/-/g, "+")
-      .replace(/_/g, "/");
-    const payload = JSON.parse(atob(base64));
-    picture = payload.picture ?? null;
-  } catch { /* ignore */ }
+    let picture: string | null = null;
+    try {
+      const base64 = googleIdToken
+        .split(".")[1]
+        .replace(/-/g, "+")
+        .replace(/_/g, "/");
+      const payload = JSON.parse(atob(base64));
+      picture = payload.picture ?? null;
+    } catch { /* ignore */ }
 
-  const authUser = await callDjangoGoogleLogin(googleIdToken);
-  authUser.image = picture;  // now correctly set
+    const authUser = await callDjangoGoogleLogin(googleIdToken);
+    authUser.image = picture;
 
-  setUser(authUser);
-  sessionStorage.setItem("ExchangeIt_user", JSON.stringify(authUser));
-};
+    setUser(authUser);
+    sessionStorage.setItem("ExchangeIt_user", JSON.stringify(authUser));
+  };
 
   const logout = async () => {
     await callDjangoLogout();
@@ -125,7 +118,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
-// ✅ No more throwing — returns the default context if called outside provider
 export function useAuth() {
   return useContext(AuthContext);
 }
