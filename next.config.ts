@@ -12,6 +12,10 @@ const nextConfig: NextConfig = {
         hostname: "storage.googleapis.com",
         pathname: "/barter-system-images/**",
       },
+      {
+        protocol: "https",
+        hostname: "api.iconify.design",
+      },
     ],
   },
 

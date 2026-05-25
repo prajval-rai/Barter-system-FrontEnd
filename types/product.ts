@@ -40,4 +40,5 @@ export interface Product {
   purchase_year: number;
   purchase_bill: string | null;
   owner: ProductOwner;
+  is_bookmarked:boolean
 }
