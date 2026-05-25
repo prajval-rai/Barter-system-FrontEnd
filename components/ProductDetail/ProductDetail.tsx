@@ -240,6 +240,7 @@ const handleRequestSent = () => {
               requestSent={requestSent}
               bookmarked={bookmarked}
               productId={product.id}
+              productTitle = {product.title}
               createdAt={product.created_at}
               hasBill={hasBill}
               onSendRequest={() => {
