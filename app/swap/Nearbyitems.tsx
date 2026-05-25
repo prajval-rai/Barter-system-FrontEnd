@@ -1,4 +1,3 @@
-// components/home/NearbyItems.tsx
 "use client"
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
@@ -22,12 +21,12 @@ export default function NearbyItems({ onSeeAll }: NearbyItemsProps) {
   const [items, setItems]     = useState<ApiItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState<string | null>(null);
-  const base_url = process.env.NEXT_PUBLIC_BACKEND_URL
 
   useEffect(() => {
     const fetchNearby = async () => {
       try {
-        const res = await fetch(`${base_url}scan/nearby_products/`, {
+        // ✅ Now calls Next.js proxy instead of Django directly
+        const res = await fetch(`/api/nearby_products/`, {
           credentials: "include",
         });
         if (!res.ok) throw new Error(`${res.status}: ${res.statusText}`);
@@ -68,9 +67,9 @@ export default function NearbyItems({ onSeeAll }: NearbyItemsProps) {
                 </div>
                 <p className={styles.cardTitle}>{item.title}</p>
                 <div className={styles.meta}>
-<span className={styles.distance}>
-  📍 {item.distance_km} km
-</span>
+                  <span className={styles.distance}>
+                    📍 {item.distance_km} km
+                  </span>
                   <span className={styles.category}>{item.category_name ?? "General"}</span>
                 </div>
               </div>
@@ -82,7 +81,6 @@ export default function NearbyItems({ onSeeAll }: NearbyItemsProps) {
   );
 }
 
-/* ── Loading skeleton ── */
 function LoadingSkeleton() {
   return (
     <div className={styles.grid}>
@@ -97,7 +95,6 @@ function LoadingSkeleton() {
   );
 }
 
-/* ── Error state ── */
 function ErrorState({ message }: { message: string }) {
   return (
     <div className={styles.emptyState}>
@@ -108,7 +105,6 @@ function ErrorState({ message }: { message: string }) {
   );
 }
 
-/* ── Empty state ── */
 function EmptyState() {
   return (
     <div className={styles.emptyState}>
