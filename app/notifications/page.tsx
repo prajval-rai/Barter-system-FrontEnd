@@ -17,10 +17,11 @@ export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading]             = useState(true);
   const [error, setError]                 = useState<string | null>(null);
+  const base_url    = process.env.NEXT_PUBLIC_BACKEND_URL;
 
   const fetchNotifications = async () => {
     try {
-      const res = await fetch("http://localhost:8000/accounts/notifications/", {
+      const res = await fetch(`${base_url}accounts/notifications/`, {
         credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to fetch notifications.");

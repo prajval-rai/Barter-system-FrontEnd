@@ -25,11 +25,12 @@ export default function BookmarksPage() {
   const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const base_url    = process.env.NEXT_PUBLIC_BACKEND_URL;
 
   useEffect(() => {
     const fetchBookmarks = async () => {
       try {
-        const res = await fetch("http://localhost:8000/products/bookmarks/", {
+        const res = await fetch(`${base_url}products/bookmarks/`, {
           credentials: "include",
         });
 

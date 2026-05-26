@@ -16,6 +16,7 @@ export default function ProductActions({ productId, productTitle, IsBookMarked }
   const [copied,       setCopied    ] = useState(false);
   const [showModal,    setShowModal ] = useState(false);
   const [bookmarking,  setBookmarking] = useState(false);        // ← loading state
+  const base_url    = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 const handleSave = async () => {
     if (bookmarking) return;
@@ -23,8 +24,8 @@ const handleSave = async () => {
 
     try {
       const url = saved
-        ? `http://localhost:8000/products/bookmark/${productId}/remove/`  // ← DELETE if saved
-        : `http://localhost:8000/products/bookmark/${productId}/`;         // ← POST if not saved
+        ? `${base_url}products/bookmark/${productId}/remove/`  // ← DELETE if saved
+        : `${base_url}products/bookmark/${productId}/`;         // ← POST if not saved
 
       const res = await fetch(url, {
         method: saved ? 'DELETE' : 'POST',

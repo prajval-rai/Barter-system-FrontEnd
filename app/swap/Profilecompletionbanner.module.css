@@ -71,18 +71,33 @@
   color: var(--color-white);
 }
 
-/* ── Progress bar — outside flex row, margin keeps it off card edges ── */
-.progressTrack {
-  height: 4px;
-  background: #FDE68A;
+/* ── Progress bar ── */
+.progressWrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   margin: 0 var(--space-5) var(--space-4);
-  border-radius: var(--radius-full);
+}
+
+.progressTrack {
+  flex: 1;
+  height: 6px;
+  background: #FDE68A;
+  border-radius: 999px;
   overflow: hidden;
 }
 
 .progressFill {
   height: 100%;
-  border-radius: var(--radius-full);
   background: #F59E0B;
-  transition: width var(--duration-slow) var(--ease-smooth);
+  border-radius: 999px;
+  transition: width 0.6s ease;
+}
+
+.progressLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #92400E;
+  min-width: 36px;
+  text-align: right;
 }

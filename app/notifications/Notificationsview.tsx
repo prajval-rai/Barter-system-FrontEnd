@@ -58,12 +58,13 @@ function NotificationCard({
 }) {
   const [markingRead, setMarkingRead] = useState(false);
   const [deleting,    setDeleting]    = useState(false);
+  const base_url    = process.env.NEXT_PUBLIC_BACKEND_URL;
 
   const handleMarkRead = async () => {
     if (item.staus || markingRead) return;
     setMarkingRead(true);
     try {
-      await fetch(`http://localhost:8000/accounts/notifications/${item.id}/read/`, {
+      await fetch(`${base_url}accounts/notifications/${item.id}/read/`, {
         method: "PATCH",
         credentials: "include",
       });
@@ -76,10 +77,11 @@ function NotificationCard({
   };
 
   const handleDelete = async () => {
+    const base_url    = process.env.NEXT_PUBLIC_BACKEND_URL;
     if (deleting) return;
     setDeleting(true);
     try {
-      await fetch(`http://localhost:8000/accounts/notifications/${item.id}/`, {
+      await fetch(`${base_url}accounts/notifications/${item.id}/`, {
         method: "DELETE",
         credentials: "include",
       });
@@ -195,10 +197,11 @@ export default function NotificationsView({
   });
 
   const handleMarkAllRead = async () => {
+    const base_url    = process.env.NEXT_PUBLIC_BACKEND_URL;
     if (markingAll || unreadCount === 0) return;
     setMarkingAll(true);
     try {
-      await fetch("http://localhost:8000/notifications/notifications/read-all/", {
+      await fetch(`${base_url}notifications/notifications/read-all/`, {
         method: "PATCH",
         credentials: "include",
       });

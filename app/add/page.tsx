@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import styles from "./Addlistingpage.module.css";
 import { Icon } from "@iconify/react";
 import AppShellDetail from "@/components/AppShell/Appshelldetail";
+import ProfileCompleteModal from "../../components/ProfileCompleteModal/ProfileCompleteModal";
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface Category { id: number; name: string; }
@@ -22,7 +24,7 @@ interface ReplaceOptionDraft {
   description: string;
   category: number | null;
   categoryName: string;
-  icon: string;   // ← add this
+  icon: string;
 }
 
 interface ProductForm {
@@ -66,6 +68,8 @@ const STEP_ORDER: Step[] = [
   "purchase_year","images","ask_replace","replace_options","confirm","done",
 ];
 
+const REQUIRED_PROFILE_FIELDS = ["latitude", "longitude", "address", "city", "pincode", "contact_number"];
+
 function uid() { return Math.random().toString(36).slice(2); }
 function sleep(ms: number) { return new Promise(r => setTimeout(r, ms)); }
 function formatTime(d: Date) {
@@ -78,7 +82,6 @@ async function validateWithAI(step: Step, value: string): Promise<{ ok: boolean;
   const prompts: Partial<Record<Step, string>> = {
     title: `Tu ek Indian barter marketplace ka funny aur bindaas assistant hai jiska naam SwapBot hai. Hinglish mein baat kar — matlab Hindi + English mix, jaise desi log normally bolte hain.
       User ne yeh product name daala hai listing ke liye: "${value}".
-      
       Rules:
       - Agar real product name lagta hai (mobile, laptop, book, kapde, cycle, etc.) → ok: true, message: ""
       - Agar "hi", "hello", "hey" jaisa greeting hai → ok: false, e.g. "bhai 'hi' bol ke kya bechega? 😂 product ka naam likh na!"
@@ -86,12 +89,10 @@ async function validateWithAI(step: Step, value: string): Promise<{ ok: boolean;
       - Agar question hai jaise "kya bechun?" → ok: false, e.g. "mujhse pooch raha hai?? tera saman tu hi jaanta hai bhai 😂"
       - Agar single random word hai jo product nahi lagta → ok: false, e.g. "bhai yeh naam hai ya joke? thoda aur specific ho ja 😅"
       - Message 12 words se kam rakho, 1 emoji max, Hinglish mein rakho, roast funny ho mean nahi
-      
       Sirf JSON return karo (no markdown): {"ok": true/false, "message": "..."}`,
 
     description: `Tu ek Indian barter marketplace ka funny aur bindaas assistant hai jiska naam SwapBot hai. Hinglish mein baat kar — matlab Hindi + English mix, jaise desi log normally bolte hain.
       User ne yeh product description daali hai: "${value}".
-      
       Rules:
       - Agar actual description hai — condition, features, kyun bech raha hai → ok: true, message: ""
       - Agar 10 characters se kam hai → ok: false, e.g. "itni choti description?? WhatsApp status bhi isse lamba hota hai 😂"
@@ -100,7 +101,6 @@ async function validateWithAI(step: Step, value: string): Promise<{ ok: boolean;
       - Agar gibberish hai → ok: false, e.g. "bhai keyboard pe haath maar ke description likh di? 💀 dobara try kar!"
       - Agar question hai → ok: false, e.g. "description mein sawaal?? SwapBot ka dimaag mat kha 😭 item describe kar!"
       - Message 14 words se kam, 1 emoji max, pure Hinglish tone
-      
       Sirf JSON return karo (no markdown): {"ok": true/false, "message": "..."}`,
   };
   const prompt = prompts[step];
@@ -176,7 +176,6 @@ Examples:
     });
     const data = await res.json();
     const icon = data.choices?.[0]?.message?.content?.trim() ?? "noto:package";
-    // Validate format: must match "prefix:name"
     return /^[\w-]+:[\w-]+$/.test(icon) ? icon : "noto:package";
   } catch {
     return "noto:package";
@@ -188,24 +187,30 @@ Examples:
 export default function AddListingPage() {
   const router = useRouter();
 
-  const [messages, setMessages]           = useState<ChatMessage[]>([]);
-  const [step, setStep]                   = useState<Step>("title");
-  const [form, setForm]                   = useState<ProductForm>({
+  const [messages, setMessages]               = useState<ChatMessage[]>([]);
+  const [step, setStep]                       = useState<Step>("title");
+  const [form, setForm]                       = useState<ProductForm>({
     title: "", description: "", category: null,
     categoryName: "", condition: "", purchase_year: "", images: [],
   });
-  const [replaceOptions, setReplaceOptions] = useState<ReplaceOptionDraft[]>([]);
-  const [replaceForm, setReplaceForm]     = useState({
+  const [replaceOptions, setReplaceOptions]   = useState<ReplaceOptionDraft[]>([]);
+  const [replaceForm, setReplaceForm]         = useState({
     title: "", description: "", category: null as number | null, categoryName: "",
   });
-  const [input, setInput]                 = useState("");
-  const [categories, setCategories]       = useState<Category[]>([]);
-  const [botTyping, setBotTyping]         = useState(false);
-  const [aiValidating, setAiValidating]   = useState(false);
-  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
-  const [error, setError]                 = useState("");
-  const [loading, setLoading]             = useState(false);
-  const [iconLoading, setIconLoading] = useState(false);
+  const [input, setInput]                     = useState("");
+  const [categories, setCategories]           = useState<Category[]>([]);
+  const [botTyping, setBotTyping]             = useState(false);
+  const [aiValidating, setAiValidating]       = useState(false);
+  const [imagePreviews, setImagePreviews]     = useState<string[]>([]);
+  const [error, setError]                     = useState("");
+  const [loading, setLoading]                 = useState(false);
+  const [iconLoading, setIconLoading]         = useState(false);
+
+  // ── Profile gate ──
+  const [profileChecking, setProfileChecking]   = useState(true);
+  const [profileBlocked, setProfileBlocked]     = useState(false);
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const [incompleteFields, setIncompleteFields] = useState<string[]>([]);
 
   const bottomRef   = useRef<HTMLDivElement>(null);
   const inputRef    = useRef<HTMLInputElement>(null);
@@ -213,17 +218,12 @@ export default function AddListingPage() {
   const initialized = useRef(false);
   const base_url    = process.env.NEXT_PUBLIC_BACKEND_URL;
 
+  // ── Fetch categories ──
   useEffect(() => {
     fetch(`${base_url}products/categories/`)
       .then(r => r.json())
       .then(d => setCategories(Array.isArray(d) ? d : d.results ?? []))
       .catch(() => {});
-  }, []);
-
-  useEffect(() => {
-    if (initialized.current) return;
-    initialized.current = true;
-    sendBot("title");
   }, []);
 
   useEffect(() => {
@@ -238,6 +238,73 @@ export default function AddListingPage() {
     setMessages(prev => [...prev, { id: uid(), role: "bot", text: STEP_QUESTIONS[s], timestamp: new Date() }]);
     setTimeout(() => inputRef.current?.focus(), 100);
   }, []);
+
+  // ── Profile check + bot init ──
+  useEffect(() => {
+    if (initialized.current) return;
+    initialized.current = true;
+
+    const init = async () => {
+      try {
+        const res  = await fetch(`${base_url}accounts/completion/`, {
+          credentials: "include",
+        });
+        const data = await res.json();
+
+        const missing = (data.incomplete_fields ?? []).filter((f: string) =>
+          REQUIRED_PROFILE_FIELDS.includes(f)
+        );
+
+        if (missing.length > 0) {
+          setIncompleteFields(missing);
+          setProfileBlocked(true);
+          setProfileModalOpen(true);
+          setProfileChecking(false);
+        } else {
+          setProfileBlocked(false);
+          setProfileChecking(false);
+          sendBot("title");
+        }
+      } catch {
+        // On error, let them through
+        setProfileBlocked(false);
+        setProfileChecking(false);
+        sendBot("title");
+      }
+    };
+
+    init();
+  }, [sendBot]);
+
+  // Called when user saves profile from modal
+  const handleProfileSaved = useCallback(async () => {
+    setProfileModalOpen(false);
+    try {
+      const res  = await fetch(`${base_url}accounts/completion/`, {
+        credentials: "include",
+      });
+      const data = await res.json();
+
+      const missing = (data.incomplete_fields ?? []).filter((f: string) =>
+        REQUIRED_PROFILE_FIELDS.includes(f)
+      );
+
+      if (missing.length > 0) {
+        // Still incomplete — keep blocked, reopen modal with remaining fields
+        setIncompleteFields(missing);
+        setProfileBlocked(true);
+        setProfileModalOpen(true);
+      } else {
+        // All good — start the bot
+        setIncompleteFields([]);
+        setProfileBlocked(false);
+        sendBot("title");
+      }
+    } catch {
+      setProfileBlocked(false);
+      sendBot("title");
+    }
+  }, [sendBot, base_url]);
 
   const addUser = (text: string) =>
     setMessages(prev => [...prev, { id: uid(), role: "user", text, timestamp: new Date() }]);
@@ -328,24 +395,22 @@ export default function AddListingPage() {
     }
   }, [sendBot]);
 
-const handleAddReplace = async () => {
-  if (!replaceForm.title.trim()) return showError("Item ka naam toh bata! 📝");
-  if (!replaceForm.category)     return showError("Category bhi choose kar bhai 🏷️");
-
-  setIconLoading(true);
-  const icon = await getIconForItem(replaceForm.title.trim(), replaceForm.categoryName);
-  setIconLoading(false);
-
-  setReplaceOptions(prev => [...prev, {
-    id: uid(),
-    title: replaceForm.title.trim(),
-    description: replaceForm.description.trim(),
-    category: replaceForm.category,
-    categoryName: replaceForm.categoryName,
-    icon,
-  }]);
-  setReplaceForm({ title: "", description: "", category: null, categoryName: "" });
-};
+  const handleAddReplace = async () => {
+    if (!replaceForm.title.trim()) return showError("Item ka naam toh bata! 📝");
+    if (!replaceForm.category)     return showError("Category bhi choose kar bhai 🏷️");
+    setIconLoading(true);
+    const icon = await getIconForItem(replaceForm.title.trim(), replaceForm.categoryName);
+    setIconLoading(false);
+    setReplaceOptions(prev => [...prev, {
+      id: uid(),
+      title: replaceForm.title.trim(),
+      description: replaceForm.description.trim(),
+      category: replaceForm.category,
+      categoryName: replaceForm.categoryName,
+      icon,
+    }]);
+    setReplaceForm({ title: "", description: "", category: null, categoryName: "" });
+  };
 
   const handleReplaceDone = useCallback(async () => {
     if (replaceOptions.length === 0) return showError("Kam se kam ek item toh add kar! 🙏");
@@ -354,344 +419,391 @@ const handleAddReplace = async () => {
     await sendBot("confirm");
   }, [replaceOptions, sendBot]);
 
- const handleConfirm = useCallback(async () => {
-  setLoading(true);
-  try {
-    const fd = new FormData();
-    fd.append("title", form.title);
-    fd.append("description", form.description);
-    fd.append("category_id", String(form.category));
-    fd.append("condition", form.condition);
-    if (form.purchase_year) fd.append("purchase_year", form.purchase_year);
-    form.images.forEach(img => fd.append("images", img));
+  const handleConfirm = useCallback(async () => {
+    setLoading(true);
+    try {
+      const fd = new FormData();
+      fd.append("title", form.title);
+      fd.append("description", form.description);
+      fd.append("category_id", String(form.category));
+      fd.append("condition", form.condition);
+      if (form.purchase_year) fd.append("purchase_year", form.purchase_year);
+      form.images.forEach(img => fd.append("images", img));
 
-    const res  = await fetch(`${base_url}products/create_product/`, {
-      method: "POST", credentials: "include", body: fd,
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || data.detail || "Something went wrong");
-
-    const productId: number = data.product_id;
-
-    if (replaceOptions.length > 0) {
-      const rRes = await fetch(`${base_url}products/add_replace_options/${productId}/`, {
-        method: "POST", credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          replace_options: replaceOptions.map(o => ({
-            title: o.title,
-            description: o.description,
-            category_id: o.category,
-            replace_type: "product",
-            icon: o.icon,           // ← added
-          })),
-        }),
+      const res  = await fetch(`${base_url}products/create_product/`, {
+        method: "POST", credentials: "include", body: fd,
       });
-      const rData = await rRes.json();
-      if (!rRes.ok) throw new Error(rData.error || "Failed to save exchange options");
-    }
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || data.detail || "Something went wrong");
 
-    setStep("done");
-    await sendBot("done");
-  } catch (err: any) {
-    showError(err.message ?? "Failed to post 😬");
-  } finally {
-    setLoading(false);
-  }
-}, [form, replaceOptions, sendBot]);
+      const productId: number = data.product_id;
+
+      if (replaceOptions.length > 0) {
+        const rRes = await fetch(`${base_url}products/add_replace_options/${productId}/`, {
+          method: "POST", credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            replace_options: replaceOptions.map(o => ({
+              title: o.title,
+              description: o.description,
+              category_id: o.category,
+              replace_type: "product",
+              icon: o.icon,
+            })),
+          }),
+        });
+        const rData = await rRes.json();
+        if (!rRes.ok) throw new Error(rData.error || "Failed to save exchange options");
+      }
+
+      setStep("done");
+      await sendBot("done");
+    } catch (err: any) {
+      showError(err.message ?? "Failed to post 😬");
+    } finally {
+      setLoading(false);
+    }
+  }, [form, replaceOptions, sendBot]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
   };
 
   const showTextInput = ["title", "description", "purchase_year"].includes(step);
-  const progressPct   = Math.round((STEP_ORDER.indexOf(step) / (STEP_ORDER.length - 1)) * 100);
+  const progressPct  = Math.round((STEP_ORDER.indexOf(step) / (STEP_ORDER.length - 1)) * 100);
+
+  // ── Profile checking loader ──
+  if (profileChecking) {
+    return (
+      <AppShellDetail>
+        <div className={styles.pageWrapper}>
+          <div className={styles.page}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", flexDirection: "column", gap: "12px" }}>
+              <div className={styles.loadingSpinner} />
+              <p style={{ fontSize: "0.875rem", color: "var(--color-text-subtle)" }}>Ek second bhai… 🔍</p>
+            </div>
+          </div>
+        </div>
+      </AppShellDetail>
+    );
+  }
 
   return (
     <AppShellDetail>
       <div className={styles.pageWrapper}>
-    <div className={styles.page}>
+        <div className={styles.page}>
 
-{/* ── Chat Header ── */}
-<div className={styles.chatHeader}>
-  <div className={styles.chatHeaderLeft}>
-    <button className={styles.backBtn} onClick={() => router.back()}>
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-        <path d="M19 12H5M12 5l-7 7 7 7"/>
-      </svg>
-    </button>
-    <div className={styles.botChip}>
-      <div className={styles.botChipAvatar}>LB</div>
-      <div className={styles.botChipInfo}>
-        <span className={styles.botChipName}>ListingBot</span>
-        <span className={styles.botChipStatus}>
-          <span className={styles.statusDot} />
-          {botTyping ? "typing..." : aiValidating ? "thinking... 🧠" : "online"}
-        </span>
-      </div>
-    </div>
-  </div>
-
-  <div className={styles.chatHeaderRight}>
-    <div className={styles.progressPill}>
-      <div className={styles.progressPillBar}>
-        <div className={styles.progressPillFill} style={{ width: `${progressPct}%` }} />
-      </div>
-      <span className={styles.progressPillText}>{progressPct}%</span>
-    </div>
-  </div>
-</div>
-
-{/* ── Progress track (keep this thin line below header) ── */}
-<div className={styles.progressTrack}>
-  <div className={styles.progressBar} style={{ width: `${progressPct}%` }} />
-</div>
-
-      {/* ── Progress bar ── */}
-      <div className={styles.progressTrack}>
-        <div className={styles.progressBar} style={{ width: `${progressPct}%` }} />
-      </div>
-
-      {/* ── Chat body ── */}
-      <div className={styles.chatBody}>
-        <div className={styles.dateChip}>Today</div>
-
-        {messages.map(msg => (
-          <div key={msg.id} className={`${styles.msgRow} ${msg.role === "user" ? styles.msgRowUser : styles.msgRowBot}`}>
-            {msg.role === "bot" && <div className={styles.avatarSmall}>LB</div>}
-            <div className={msg.role === "bot" ? styles.botBubble : styles.userBubble}>
-              <div
-                className={styles.bubbleText}
-                dangerouslySetInnerHTML={{
-                  __html: msg.text
-                    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-                    .replace(/_(.*?)_/g, "<em>$1</em>")
-                    .replace(/\n/g, "<br/>"),
-                }}
-              />
-              <div className={msg.role === "bot" ? styles.timeBot : styles.timeUser}>
-                {formatTime(msg.timestamp)}
-                {msg.role === "user" && <span className={styles.tick}>✓✓</span>}
-              </div>
-            </div>
-          </div>
-        ))}
-
-        {/* Typing indicator */}
-        {(botTyping || aiValidating) && (
-          <div className={`${styles.msgRow} ${styles.msgRowBot}`}>
-            <div className={styles.avatarSmall}>LB</div>
-            <div className={styles.botBubble}>
-              <div className={styles.typingDots}>
-                <span className={styles.dot} style={{ animationDelay: "0s" }} />
-                <span className={styles.dot} style={{ animationDelay: "0.2s" }} />
-                <span className={styles.dot} style={{ animationDelay: "0.4s" }} />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Category chips */}
-        {step === "category" && !botTyping && (
-          <div className={styles.chipsArea}>
-            {categories.map(cat => (
-              <button key={cat.id} className={styles.chip} onClick={() => handleCategory(cat)}>
-                {cat.name}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* Condition chips */}
-        {step === "condition" && !botTyping && (
-          <div className={styles.chipsArea}>
-            {CONDITIONS.map(c => (
-              <button key={c} className={styles.chip} onClick={() => handleCondition(c)}>
-                {CONDITIONS_EMOJI[c]} {c}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* Images */}
-        {step === "images" && !botTyping && (
-          <div className={styles.actionsArea}>
-            <input ref={fileRef} type="file" accept="image/*" multiple style={{ display: "none" }} onChange={handleImageChange} />
-            <button className={styles.uploadBtn} onClick={() => fileRef.current?.click()}>
-              📷 Photos Choose Karo
-            </button>
-            {imagePreviews.length > 0 && (
-              <>
-                <div className={styles.previewRow}>
-                  {imagePreviews.map((src, i) => (
-                    <img key={i} src={src} alt="" className={styles.previewThumb} />
-                  ))}
-                </div>
-                <button className={styles.primaryBtn} onClick={handleImagesDone}>
-                  Photos ho gayi ✓
-                </button>
-              </>
-            )}
-          </div>
-        )}
-
-        {/* Ask replace */}
-        {step === "ask_replace" && !botTyping && (
-          <div className={styles.chipsArea}>
-            <button className={styles.chip} onClick={() => handleAskReplace(true)}>
-              🎯 Haan, specific item chahiye
-            </button>
-            <button className={styles.chip} onClick={() => handleAskReplace(false)}>
-              🤙 Nahi, kuch bhi chalega!
-            </button>
-          </div>
-        )}
-
-        {/* Replace options */}
-{step === "replace_options" && !botTyping && (
-  <div className={styles.actionsArea}>
-    {replaceOptions.length > 0 && (
-      <div className={styles.replaceList}>
-        {replaceOptions.map(opt => (
-  <div key={opt.id} className={styles.replaceCard}>
-    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-      <Icon icon={opt.icon ?? "noto:package"} width={24} height={24} style={{ flexShrink: 0 }} />
-      <div>
-        <div className={styles.replaceTitle}>{opt.title}</div>
-        <div className={styles.replaceMeta}>
-          {opt.categoryName}{opt.description ? ` · ${opt.description.slice(0, 40)}` : ""}
-        </div>
-      </div>
-    </div>
-    <button
-      className={styles.removeBtn}
-      onClick={() => setReplaceOptions(p => p.filter(o => o.id !== opt.id))}
-    >
-      ×
-    </button>
-  </div>
-))}
-      </div>
-    )}
-
-    <div className={styles.replaceForm}>
-      <input
-        className={styles.replaceInput}
-        placeholder="Item ka naam (e.g. iPhone 13)"
-        value={replaceForm.title}
-        onChange={e => setReplaceForm(f => ({ ...f, title: e.target.value }))}
-      />
-      <input
-        className={styles.replaceInput}
-        placeholder="Description (optional)"
-        value={replaceForm.description}
-        onChange={e => setReplaceForm(f => ({ ...f, description: e.target.value }))}
-      />
-      <select
-        className={styles.replaceSelect}
-        value={replaceForm.category ?? ""}
-        onChange={e => {
-          const cat = categories.find(c => c.id === Number(e.target.value));
-          setReplaceForm(f => ({ ...f, category: cat?.id ?? null, categoryName: cat?.name ?? "" }));
-        }}
-      >
-        <option value="">Category choose karo…</option>
-        {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-      </select>
-
-      <button
-        className={styles.addBtn}
-        onClick={handleAddReplace}
-        disabled={iconLoading}
-      >
-        {iconLoading ? "⏳ Adding..." : "+ Option Add Karo"}
-      </button>
-    </div>
-
-    <div className={styles.replaceActions}>
-      <button
-        className={styles.primaryBtn}
-        onClick={handleReplaceDone}
-        disabled={replaceOptions.length === 0}
-      >
-        Done ✓
-      </button>
-    </div>
-  </div>
-)}
-
-        {/* Confirm */}
-        {step === "confirm" && !botTyping && (
-          <div className={styles.summaryCard}>
-            <SummaryRow label="📦 Item"         value={form.title} />
-            <SummaryRow label="📝 Description"   value={form.description} />
-            <SummaryRow label="🏷️ Category"     value={form.categoryName} />
-            <SummaryRow label="✨ Condition"     value={form.condition} />
-            {form.purchase_year && <SummaryRow label="📅 Kab liya" value={form.purchase_year} />}
-            <SummaryRow label="📸 Photos"        value={`${form.images.length} upload hui`} />
-            <SummaryRow label="💱 Badle mein"    value={
-              replaceOptions.length === 0
-                ? "Kuch bhi chalega 🤙"
-                : replaceOptions.map(o => o.title).join(", ")
-            } />
-            <div className={styles.divider} />
-            <button className={styles.confirmBtn} onClick={handleConfirm} disabled={loading}>
-              {loading ? "Post ho raha hai... ⏳" : "🚀 Confirm karo & Post karo!"}
-            </button>
-          </div>
-        )}
-
-        {/* Done */}
-        {step === "done" && !botTyping && (
-          <div className={styles.actionsArea}>
-            <button className={styles.primaryBtn} onClick={() => router.push("/")}>
-              Dashboard pe jao 🏠
-            </button>
-            <button className={styles.chip} onClick={() => router.push("/listings")}>
-              Meri Listings dekho 📋
-            </button>
-          </div>
-        )}
-
-        <div style={{ minHeight: "12px", flexShrink: 0 }} />
-        <div ref={bottomRef} />
-      </div>
-
-      {/* Error toast */}
-      {error && <div className={styles.errorToast}>{error}</div>}
-
-      {/* Input bar */}
-      {showTextInput && (
-        <div className={styles.inputBar}>
-          <input
-            ref={inputRef}
-            className={styles.textInput}
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={
-              step === "title"         ? "Item ka naam likh…"
-              : step === "description" ? "Item ke baare mein bata…"
-              : "Saal likho jaise 2022 ya skip"
-            }
-            disabled={botTyping || aiValidating}
+          {/* ── Profile gate modal ── */}
+          <ProfileCompleteModal
+            isOpen={profileModalOpen}
+            onClose={() => {
+              // Don't allow closing if profile is still blocked
+              if (!profileBlocked) setProfileModalOpen(false);
+            }}
+            incompleteFields={incompleteFields}
+            onSaved={handleProfileSaved}
           />
-          <button
-            className={styles.sendBtn}
-            onClick={handleSend}
-            disabled={!input.trim() || botTyping || aiValidating}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/>
-            </svg>
-          </button>
-        </div>
-      )}
-    </div>
-    </div>
 
+          {/* ── Blocked overlay (if modal is dismissed somehow) ── */}
+          {profileBlocked && !profileModalOpen && (
+            <div style={{
+              position: "absolute", inset: 0, zIndex: 10,
+              background: "rgba(255,255,255,0.85)", backdropFilter: "blur(4px)",
+              display: "flex", flexDirection: "column",
+              alignItems: "center", justifyContent: "center", gap: "12px",
+              borderRadius: "inherit",
+            }}>
+              <p style={{ fontSize: "1rem", fontWeight: 600, color: "#92400E" }}>
+                ⚠️ Pehle profile complete kar bhai!
+              </p>
+              <p style={{ fontSize: "0.8rem", color: "var(--color-text-subtle)", textAlign: "center", maxWidth: "260px" }}>
+                Location aur contact details missing hain. Listing post karne ke liye yeh zaroori hai.
+              </p>
+              <button
+                onClick={() => setProfileModalOpen(true)}
+                style={{
+                  padding: "10px 24px", background: "#F59E0B", color: "#fff",
+                  border: "none", borderRadius: "999px", fontWeight: 600,
+                  fontSize: "0.875rem", cursor: "pointer",
+                }}
+              >
+                Profile Complete Karo
+              </button>
+            </div>
+          )}
+
+          {/* ── Chat Header ── */}
+          <div className={styles.chatHeader}>
+            <div className={styles.chatHeaderLeft}>
+              <button className={styles.backBtn} onClick={() => router.back()}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <path d="M19 12H5M12 5l-7 7 7 7"/>
+                </svg>
+              </button>
+              <div className={styles.botChip}>
+                <div className={styles.botChipAvatar}>LB</div>
+                <div className={styles.botChipInfo}>
+                  <span className={styles.botChipName}>ListingBot</span>
+                  <span className={styles.botChipStatus}>
+                    <span className={styles.statusDot} />
+                    {botTyping ? "typing..." : aiValidating ? "thinking... 🧠" : "online"}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className={styles.chatHeaderRight}>
+              <div className={styles.progressPill}>
+                <div className={styles.progressPillBar}>
+                  <div className={styles.progressPillFill} style={{ width: `${progressPct}%` }} />
+                </div>
+                <span className={styles.progressPillText}>{progressPct}%</span>
+              </div>
+            </div>
+          </div>
+
+          {/* ── Progress track ── */}
+          <div className={styles.progressTrack}>
+            <div className={styles.progressBar} style={{ width: `${progressPct}%` }} />
+          </div>
+
+          {/* ── Chat body ── */}
+          <div className={styles.chatBody}>
+            <div className={styles.dateChip}>Today</div>
+
+            {messages.map(msg => (
+              <div key={msg.id} className={`${styles.msgRow} ${msg.role === "user" ? styles.msgRowUser : styles.msgRowBot}`}>
+                {msg.role === "bot" && <div className={styles.avatarSmall}>LB</div>}
+                <div className={msg.role === "bot" ? styles.botBubble : styles.userBubble}>
+                  <div
+                    className={styles.bubbleText}
+                    dangerouslySetInnerHTML={{
+                      __html: msg.text
+                        .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+                        .replace(/_(.*?)_/g, "<em>$1</em>")
+                        .replace(/\n/g, "<br/>"),
+                    }}
+                  />
+                  <div className={msg.role === "bot" ? styles.timeBot : styles.timeUser}>
+                    {formatTime(msg.timestamp)}
+                    {msg.role === "user" && <span className={styles.tick}>✓✓</span>}
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {/* Typing indicator */}
+            {(botTyping || aiValidating) && (
+              <div className={`${styles.msgRow} ${styles.msgRowBot}`}>
+                <div className={styles.avatarSmall}>LB</div>
+                <div className={styles.botBubble}>
+                  <div className={styles.typingDots}>
+                    <span className={styles.dot} style={{ animationDelay: "0s" }} />
+                    <span className={styles.dot} style={{ animationDelay: "0.2s" }} />
+                    <span className={styles.dot} style={{ animationDelay: "0.4s" }} />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Category chips */}
+            {step === "category" && !botTyping && (
+              <div className={styles.chipsArea}>
+                {categories.map(cat => (
+                  <button key={cat.id} className={styles.chip} onClick={() => handleCategory(cat)}>
+                    {cat.name}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Condition chips */}
+            {step === "condition" && !botTyping && (
+              <div className={styles.chipsArea}>
+                {CONDITIONS.map(c => (
+                  <button key={c} className={styles.chip} onClick={() => handleCondition(c)}>
+                    {CONDITIONS_EMOJI[c]} {c}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Images */}
+            {step === "images" && !botTyping && (
+              <div className={styles.actionsArea}>
+                <input ref={fileRef} type="file" accept="image/*" multiple style={{ display: "none" }} onChange={handleImageChange} />
+                <button className={styles.uploadBtn} onClick={() => fileRef.current?.click()}>
+                  📷 Photos Choose Karo
+                </button>
+                {imagePreviews.length > 0 && (
+                  <>
+                    <div className={styles.previewRow}>
+                      {imagePreviews.map((src, i) => (
+                        <img key={i} src={src} alt="" className={styles.previewThumb} />
+                      ))}
+                    </div>
+                    <button className={styles.primaryBtn} onClick={handleImagesDone}>
+                      Photos ho gayi ✓
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* Ask replace */}
+            {step === "ask_replace" && !botTyping && (
+              <div className={styles.chipsArea}>
+                <button className={styles.chip} onClick={() => handleAskReplace(true)}>
+                  🎯 Haan, specific item chahiye
+                </button>
+                <button className={styles.chip} onClick={() => handleAskReplace(false)}>
+                  🤙 Nahi, kuch bhi chalega!
+                </button>
+              </div>
+            )}
+
+            {/* Replace options */}
+            {step === "replace_options" && !botTyping && (
+              <div className={styles.actionsArea}>
+                {replaceOptions.length > 0 && (
+                  <div className={styles.replaceList}>
+                    {replaceOptions.map(opt => (
+                      <div key={opt.id} className={styles.replaceCard}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                          <Icon icon={opt.icon ?? "noto:package"} width={24} height={24} style={{ flexShrink: 0 }} />
+                          <div>
+                            <div className={styles.replaceTitle}>{opt.title}</div>
+                            <div className={styles.replaceMeta}>
+                              {opt.categoryName}{opt.description ? ` · ${opt.description.slice(0, 40)}` : ""}
+                            </div>
+                          </div>
+                        </div>
+                        <button
+                          className={styles.removeBtn}
+                          onClick={() => setReplaceOptions(p => p.filter(o => o.id !== opt.id))}
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className={styles.replaceForm}>
+                  <input
+                    className={styles.replaceInput}
+                    placeholder="Item ka naam (e.g. iPhone 13)"
+                    value={replaceForm.title}
+                    onChange={e => setReplaceForm(f => ({ ...f, title: e.target.value }))}
+                  />
+                  <input
+                    className={styles.replaceInput}
+                    placeholder="Description (optional)"
+                    value={replaceForm.description}
+                    onChange={e => setReplaceForm(f => ({ ...f, description: e.target.value }))}
+                  />
+                  <select
+                    className={styles.replaceSelect}
+                    value={replaceForm.category ?? ""}
+                    onChange={e => {
+                      const cat = categories.find(c => c.id === Number(e.target.value));
+                      setReplaceForm(f => ({ ...f, category: cat?.id ?? null, categoryName: cat?.name ?? "" }));
+                    }}
+                  >
+                    <option value="">Category choose karo…</option>
+                    {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </select>
+                  <button
+                    className={styles.addBtn}
+                    onClick={handleAddReplace}
+                    disabled={iconLoading}
+                  >
+                    {iconLoading ? "⏳ Adding..." : "+ Option Add Karo"}
+                  </button>
+                </div>
+
+                <div className={styles.replaceActions}>
+                  <button
+                    className={styles.primaryBtn}
+                    onClick={handleReplaceDone}
+                    disabled={replaceOptions.length === 0}
+                  >
+                    Done ✓
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Confirm */}
+            {step === "confirm" && !botTyping && (
+              <div className={styles.summaryCard}>
+                <SummaryRow label="📦 Item"       value={form.title} />
+                <SummaryRow label="📝 Description" value={form.description} />
+                <SummaryRow label="🏷️ Category"   value={form.categoryName} />
+                <SummaryRow label="✨ Condition"   value={form.condition} />
+                {form.purchase_year && <SummaryRow label="📅 Kab liya" value={form.purchase_year} />}
+                <SummaryRow label="📸 Photos"      value={`${form.images.length} upload hui`} />
+                <SummaryRow label="💱 Badle mein"  value={
+                  replaceOptions.length === 0
+                    ? "Kuch bhi chalega 🤙"
+                    : replaceOptions.map(o => o.title).join(", ")
+                } />
+                <div className={styles.divider} />
+                <button className={styles.confirmBtn} onClick={handleConfirm} disabled={loading}>
+                  {loading ? "Post ho raha hai... ⏳" : "🚀 Confirm karo & Post karo!"}
+                </button>
+              </div>
+            )}
+
+            {/* Done */}
+            {step === "done" && !botTyping && (
+              <div className={styles.actionsArea}>
+                <button className={styles.primaryBtn} onClick={() => router.push("/")}>
+                  Dashboard pe jao 🏠
+                </button>
+                <button className={styles.chip} onClick={() => router.push("/listings")}>
+                  Meri Listings dekho 📋
+                </button>
+              </div>
+            )}
+
+            <div style={{ minHeight: "12px", flexShrink: 0 }} />
+            <div ref={bottomRef} />
+          </div>
+
+          {/* Error toast */}
+          {error && <div className={styles.errorToast}>{error}</div>}
+
+          {/* Input bar */}
+          {showTextInput && !profileBlocked && (
+            <div className={styles.inputBar}>
+              <input
+                ref={inputRef}
+                className={styles.textInput}
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={
+                  step === "title"         ? "Item ka naam likh…"
+                  : step === "description" ? "Item ke baare mein bata…"
+                  : "Saal likho jaise 2022 ya skip"
+                }
+                disabled={botTyping || aiValidating}
+              />
+              <button
+                className={styles.sendBtn}
+                onClick={handleSend}
+                disabled={!input.trim() || botTyping || aiValidating}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/>
+                </svg>
+              </button>
+            </div>
+          )}
+
+        </div>
+      </div>
     </AppShellDetail>
-    
   );
 }
 

@@ -25,7 +25,8 @@ export default function GetFCMToken() {
         setToken(fcmToken);
 
         // 3. Send token to Django backend
-        await fetch("http://localhost:8000/api/notifications/send-notification/", {
+        const base_url    = process.env.NEXT_PUBLIC_BACKEND_URL;
+        await fetch(`${base_url}api/notifications/send-notification/`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ token: fcmToken }),

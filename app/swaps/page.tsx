@@ -41,13 +41,14 @@ export default function MySwapsPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const base_url    = process.env.NEXT_PUBLIC_BACKEND_URL;
     const fetchData = async () => {
       try {
         const [completedRes, rejectedRes] = await Promise.all([
-          fetch("http://localhost:8000/barter/completed_barter_requests/", {
+          fetch(`${base_url}barter/completed_barter_requests/`, {
             credentials: "include",
           }),
-          fetch("http://localhost:8000/barter/rejected_barter_requests/", {
+          fetch(`${base_url}barter/rejected_barter_requests/`, {
             credentials: "include",
           }),
         ]);

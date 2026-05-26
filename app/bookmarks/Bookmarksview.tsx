@@ -39,11 +39,12 @@ function BookmarkCard({
   const [removing, setRemoving] = useState(false);
 
   const handleRemove = async () => {
+    const base_url    = process.env.NEXT_PUBLIC_BACKEND_URL;
     if (removing) return;
     setRemoving(true);
     try {
       const res = await fetch(
-        `http://localhost:8000/products/bookmark/${item.product_id}/remove/`,
+        `${base_url}products/bookmark/${item.product_id}/remove/`,
         { method: "DELETE", credentials: "include" }
       );
       if (!res.ok) throw new Error("Failed to remove bookmark");
