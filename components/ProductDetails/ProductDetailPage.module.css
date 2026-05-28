@@ -2,6 +2,7 @@
   min-height: 100vh;
   background: var(--color-surface);
   padding-bottom: var(--space-24);
+  overflow-x: hidden;
 }
 
 .container {
@@ -20,6 +21,7 @@
   gap: var(--space-2);
   font-size: var(--text-sm);
   color: var(--color-text-muted);
+  flex-wrap: wrap;
 }
 
 .breadcrumb a {
@@ -49,13 +51,6 @@
   align-items: start;
 }
 
-@media (max-width: 768px) {
-  .mainGrid {
-    grid-template-columns: 1fr;
-    gap: var(--space-6);
-  }
-}
-
 .leftCol {
   position: sticky;
   top: var(--space-6);
@@ -81,4 +76,51 @@
   gap: var(--space-8);
   padding-top: var(--space-4);
   border-top: 1px solid var(--color-border);
+}
+
+/* ────────────────────────────────────────────
+   RESPONSIVE — Tablet (≤ 768px)
+──────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .container {
+    gap: var(--space-8);
+  }
+
+  .mainGrid {
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+  }
+
+  /* Remove sticky so the gallery doesn't clip/overlap in single-col flow */
+  .leftCol {
+    position: relative;
+    top: unset;
+  }
+
+  .bottomSections {
+    gap: var(--space-6);
+  }
+}
+
+/* ────────────────────────────────────────────
+   RESPONSIVE — Mobile (≤ 480px)
+──────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .container {
+    padding: var(--space-4) var(--space-4);
+    gap: var(--space-6);
+  }
+
+  .breadcrumbActive {
+    max-width: 120px;
+  }
+
+  .rightCol {
+    gap: var(--space-4);
+  }
+
+  .bottomSections {
+    gap: var(--space-5);
+    padding-top: var(--space-3);
+  }
 }
