@@ -550,113 +550,43 @@ export default function SwapRequests({
           </div>
 
           {/* ── Action bar ── */}
-          <div className={styles.actions}>
-            <button
-              className={styles.btn}
-              onClick={() => onViewDetails?.(match.id)}
-            >
-              <svg
-                width="15"
-                height="15"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M1 12S5 5 12 5s11 7 11 7-4 7-11 7S1 12 1 12z" />
-                <circle cx="12" cy="12" r="3" />
-              </svg>
-              View details
-            </button>
-            <button
-              className={styles.btn}
-              onClick={() => onChat?.(match.id)}
-            >
-              <svg
-                width="15"
-                height="15"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-              </svg>
-              Chat with owner
-            </button>
-            <button
-              className={styles.btnPrimary}
-              onClick={() => onStartExchange?.(match.id)}
-            >
-              <svg
-                width="15"
-                height="15"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M7 16V4m0 0L3 8m4-4l4 4" />
-                <path d="M17 8v12m0 0l4-4m-4 4l-4-4" />
-              </svg>
-              Start exchange
-            </button>
+          // Replace the entire actions div
+<div className={styles.actions}>
+  <button
+    className={styles.btnPrimary}
+    onClick={() => window.location.href = `/products/${match.theirItem && match.matchedVia ? match.id : match.id}`}
+  >
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M1 12S5 5 12 5s11 7 11 7-4 7-11 7S1 12 1 12z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+    View details
+  </button>
 
-            <nav className={styles.nav} aria-label="Browse matches">
-              <button
-                className={styles.navBtn}
-                onClick={() => setIdx((i) => Math.max(0, i - 1))}
-                disabled={idx === 0}
-                aria-label="Previous match"
-              >
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="M15 18l-6-6 6-6" />
-                </svg>
-              </button>
-              <span className={styles.navCount}>
-                {idx + 1} / {total}
-              </span>
-              <button
-                className={styles.navBtn}
-                onClick={() => setIdx((i) => Math.min(total - 1, i + 1))}
-                disabled={idx === total - 1}
-                aria-label="Next match"
-              >
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="M9 18l6-6-6-6" />
-                </svg>
-              </button>
-            </nav>
-          </div>
+  <nav className={styles.nav} aria-label="Browse matches">
+    <button
+      className={styles.navBtn}
+      onClick={() => setIdx((i) => Math.max(0, i - 1))}
+      disabled={idx === 0}
+      aria-label="Previous match"
+    >
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M15 18l-6-6 6-6" />
+      </svg>
+    </button>
+    <span className={styles.navCount}>{idx + 1} / {total}</span>
+    <button
+      className={styles.navBtn}
+      onClick={() => setIdx((i) => Math.min(total - 1, i + 1))}
+      disabled={idx === total - 1}
+      aria-label="Next match"
+    >
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M9 18l6-6-6-6" />
+      </svg>
+    </button>
+  </nav>
+</div>
         </div>
       )}
 
