@@ -16,6 +16,7 @@ interface ChatMessage {
   role: "bot" | "user";
   text: string;
   timestamp: Date;
+  isError?: boolean;   // marks AI validation error bubbles
 }
 
 interface ReplaceOptionDraft {
@@ -74,6 +75,17 @@ function uid() { return Math.random().toString(36).slice(2); }
 function sleep(ms: number) { return new Promise(r => setTimeout(r, ms)); }
 function formatTime(d: Date) {
   return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
+// ─── Error emoji picker ───────────────────────────────────────────────────────
+
+function getErrorEmoji(msg: string): string {
+  if (msg.includes("photo") || msg.includes("📸")) return "📸";
+  if (msg.includes("naam") || msg.includes("product")) return "🤔";
+  if (msg.includes("saal") || msg.includes("skip")) return "📅";
+  if (msg.includes("description") || msg.includes("likh")) return "✍️";
+  if (msg.includes("item") || msg.includes("add")) return "📦";
+  return "⚠️";
 }
 
 // ─── OpenAI validator ─────────────────────────────────────────────────────────
@@ -202,7 +214,6 @@ export default function AddListingPage() {
   const [botTyping, setBotTyping]             = useState(false);
   const [aiValidating, setAiValidating]       = useState(false);
   const [imagePreviews, setImagePreviews]     = useState<string[]>([]);
-  const [error, setError]                     = useState("");
   const [loading, setLoading]                 = useState(false);
   const [iconLoading, setIconLoading]         = useState(false);
 
@@ -216,15 +227,14 @@ export default function AddListingPage() {
   const inputRef    = useRef<HTMLInputElement>(null);
   const fileRef     = useRef<HTMLInputElement>(null);
   const initialized = useRef(false);
-  
 
   // ── Fetch categories ──
   useEffect(() => {
-    fetch(`/api/categories`)                          // ← changed
+    fetch(`/api/categories`)
       .then(r => r.json())
       .then(d => setCategories(Array.isArray(d) ? d : d.results ?? []))
       .catch(() => {});
-}, []);
+  }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -248,11 +258,9 @@ export default function AddListingPage() {
       try {
         const res = await fetch(`/api/completion`);
         const data = await res.json();
-
         const missing = (data.incomplete_fields ?? []).filter((f: string) =>
           REQUIRED_PROFILE_FIELDS.includes(f)
         );
-
         if (missing.length > 0) {
           setIncompleteFields(missing);
           setProfileBlocked(true);
@@ -264,7 +272,6 @@ export default function AddListingPage() {
           sendBot("title");
         }
       } catch {
-        // On error, let them through
         setProfileBlocked(false);
         setProfileChecking(false);
         sendBot("title");
@@ -274,24 +281,19 @@ export default function AddListingPage() {
     init();
   }, [sendBot]);
 
-  // Called when user saves profile from modal
   const handleProfileSaved = useCallback(async () => {
     setProfileModalOpen(false);
     try {
-      const res = await fetch(`/api/completion`);     
+      const res = await fetch(`/api/completion`);
       const data = await res.json();
-
       const missing = (data.incomplete_fields ?? []).filter((f: string) =>
         REQUIRED_PROFILE_FIELDS.includes(f)
       );
-
       if (missing.length > 0) {
-        // Still incomplete — keep blocked, reopen modal with remaining fields
         setIncompleteFields(missing);
         setProfileBlocked(true);
         setProfileModalOpen(true);
       } else {
-        // All good — start the bot
         setIncompleteFields([]);
         setProfileBlocked(false);
         sendBot("title");
@@ -305,10 +307,22 @@ export default function AddListingPage() {
   const addUser = (text: string) =>
     setMessages(prev => [...prev, { id: uid(), role: "user", text, timestamp: new Date() }]);
 
-  const showError = (msg: string) => {
-    setError(msg);
-    setTimeout(() => setError(""), 2500);
-  };
+  // ── showError now injects a bot bubble instead of a toast ──
+  const showError = useCallback((msg: string) => {
+    const emoji = getErrorEmoji(msg);
+    setMessages(prev => [
+      ...prev,
+      {
+        id: uid(),
+        role: "bot",
+        text: msg,
+        timestamp: new Date(),
+        isError: true,
+        // store emoji separately so render can split them
+        ...(({ _emoji: emoji } as any)),
+      } as ChatMessage & { _emoji: string },
+    ]);
+  }, []);
 
   const advance = useCallback(async (current: Step) => {
     const idx  = STEP_ORDER.indexOf(current);
@@ -353,7 +367,7 @@ export default function AddListingPage() {
       setInput("");
       await advance("purchase_year");
     }
-  }, [input, step, advance]);
+  }, [input, step, advance, showError]);
 
   const handleCategory = useCallback(async (cat: Category) => {
     addUser(`${cat.name} 🏷️`);
@@ -377,7 +391,7 @@ export default function AddListingPage() {
     if (form.images.length === 0) return showError("Kam se kam 1 photo toh daal bhai! 📸");
     addUser(`${form.images.length} photo${form.images.length > 1 ? "s" : ""} upload ho gayi 📸✓`);
     await advance("images");
-  }, [form.images, advance]);
+  }, [form.images, advance, showError]);
 
   const handleAskReplace = useCallback(async (wantReplace: boolean) => {
     if (wantReplace) {
@@ -413,7 +427,7 @@ export default function AddListingPage() {
     addUser(`Chahiye badle mein: ${replaceOptions.map(o => o.title).join(", ")} ✓`);
     setStep("confirm");
     await sendBot("confirm");
-  }, [replaceOptions, sendBot]);
+  }, [replaceOptions, sendBot, showError]);
 
   const handleConfirm = useCallback(async () => {
     setLoading(true);
@@ -426,31 +440,28 @@ export default function AddListingPage() {
       if (form.purchase_year) fd.append("purchase_year", form.purchase_year);
       form.images.forEach(img => fd.append("images", img));
 
-      const res = await fetch(`/api/product/create`, {  // ← changed
-      method: "POST",
-      body: fd,                                         // formData — no Content-Type header needed
-    });
+      const res = await fetch(`/api/product/create`, { method: "POST", body: fd });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || data.detail || "Something went wrong");
 
       const productId: number = data.product_id;
 
       if (replaceOptions.length > 0) {
-        const rRes = await fetch(`/api/products/replace-options`, {  // ← changed
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          productId,                                      // ← pass productId in body
-          body: {
-            replace_options: replaceOptions.map(o => ({
-              title: o.title,
-              description: o.description,
-              category_id: o.category,
-              replace_type: "product",
-              icon: o.icon,
-            })),
-          },
-        }),
+        const rRes = await fetch(`/api/products/replace-options`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            productId,
+            body: {
+              replace_options: replaceOptions.map(o => ({
+                title: o.title,
+                description: o.description,
+                category_id: o.category,
+                replace_type: "product",
+                icon: o.icon,
+              })),
+            },
+          }),
         });
         const rData = await rRes.json();
         if (!rRes.ok) throw new Error(rData.error || "Failed to save exchange options");
@@ -463,7 +474,7 @@ export default function AddListingPage() {
     } finally {
       setLoading(false);
     }
-  }, [form, replaceOptions, sendBot]);
+  }, [form, replaceOptions, sendBot, showError]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
@@ -475,7 +486,7 @@ export default function AddListingPage() {
   // ── Profile checking loader ──
   if (profileChecking) {
     return (
-      <AppShellDetail>
+      <AppShellDetail variant="chat">
         <div className={styles.pageWrapper}>
           <div className={styles.page}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", flexDirection: "column", gap: "12px" }}>
@@ -489,22 +500,19 @@ export default function AddListingPage() {
   }
 
   return (
-    <AppShellDetail>
+    <AppShellDetail variant="chat">
       <div className={styles.pageWrapper}>
         <div className={styles.page}>
 
           {/* ── Profile gate modal ── */}
           <ProfileCompleteModal
             isOpen={profileModalOpen}
-            onClose={() => {
-              // Don't allow closing if profile is still blocked
-              if (!profileBlocked) setProfileModalOpen(false);
-            }}
+            onClose={() => { if (!profileBlocked) setProfileModalOpen(false); }}
             incompleteFields={incompleteFields}
             onSaved={handleProfileSaved}
           />
 
-          {/* ── Blocked overlay (if modal is dismissed somehow) ── */}
+          {/* ── Blocked overlay ── */}
           {profileBlocked && !profileModalOpen && (
             <div style={{
               position: "absolute", inset: 0, zIndex: 10,
@@ -570,26 +578,42 @@ export default function AddListingPage() {
           <div className={styles.chatBody}>
             <div className={styles.dateChip}>Today</div>
 
-            {messages.map(msg => (
-              <div key={msg.id} className={`${styles.msgRow} ${msg.role === "user" ? styles.msgRowUser : styles.msgRowBot}`}>
-                {msg.role === "bot" && <div className={styles.avatarSmall}>LB</div>}
-                <div className={msg.role === "bot" ? styles.botBubble : styles.userBubble}>
-                  <div
-                    className={styles.bubbleText}
-                    dangerouslySetInnerHTML={{
-                      __html: msg.text
-                        .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-                        .replace(/_(.*?)_/g, "<em>$1</em>")
-                        .replace(/\n/g, "<br/>"),
-                    }}
-                  />
-                  <div className={msg.role === "bot" ? styles.timeBot : styles.timeUser}>
-                    {formatTime(msg.timestamp)}
-                    {msg.role === "user" && <span className={styles.tick}>✓✓</span>}
+            {messages.map(msg => {
+              const errorMsg = msg as ChatMessage & { _emoji?: string };
+              const isError  = errorMsg.isError && errorMsg._emoji;
+
+              return (
+                <div
+                  key={msg.id}
+                  className={`${styles.msgRow} ${msg.role === "user" ? styles.msgRowUser : styles.msgRowBot}`}
+                >
+                  {msg.role === "bot" && <div className={styles.avatarSmall}>LB</div>}
+                  <div className={msg.role === "bot" ? styles.botBubble : styles.userBubble}>
+                    {isError ? (
+                      /* ── Error bubble: big emoji + text ── */
+                      <div className={styles.bubbleText}>
+                        <span className={styles.errorEmoji}>{errorMsg._emoji}</span>
+                        <span className={styles.errorMsg}>{msg.text}</span>
+                      </div>
+                    ) : (
+                      <div
+                        className={styles.bubbleText}
+                        dangerouslySetInnerHTML={{
+                          __html: msg.text
+                            .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+                            .replace(/_(.*?)_/g, "<em>$1</em>")
+                            .replace(/\n/g, "<br/>"),
+                        }}
+                      />
+                    )}
+                    <div className={msg.role === "bot" ? styles.timeBot : styles.timeUser}>
+                      {formatTime(msg.timestamp)}
+                      {msg.role === "user" && <span className={styles.tick}>✓✓</span>}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
 
             {/* Typing indicator */}
             {(botTyping || aiValidating) && (
@@ -687,7 +711,6 @@ export default function AddListingPage() {
                     ))}
                   </div>
                 )}
-
                 <div className={styles.replaceForm}>
                   <input
                     className={styles.replaceInput}
@@ -712,21 +735,12 @@ export default function AddListingPage() {
                     <option value="">Category choose karo…</option>
                     {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
-                  <button
-                    className={styles.addBtn}
-                    onClick={handleAddReplace}
-                    disabled={iconLoading}
-                  >
+                  <button className={styles.addBtn} onClick={handleAddReplace} disabled={iconLoading}>
                     {iconLoading ? "⏳ Adding..." : "+ Option Add Karo"}
                   </button>
                 </div>
-
                 <div className={styles.replaceActions}>
-                  <button
-                    className={styles.primaryBtn}
-                    onClick={handleReplaceDone}
-                    disabled={replaceOptions.length === 0}
-                  >
+                  <button className={styles.primaryBtn} onClick={handleReplaceDone} disabled={replaceOptions.length === 0}>
                     Done ✓
                   </button>
                 </div>
@@ -736,13 +750,13 @@ export default function AddListingPage() {
             {/* Confirm */}
             {step === "confirm" && !botTyping && (
               <div className={styles.summaryCard}>
-                <SummaryRow label="📦 Item"       value={form.title} />
+                <SummaryRow label="📦 Item"        value={form.title} />
                 <SummaryRow label="📝 Description" value={form.description} />
-                <SummaryRow label="🏷️ Category"   value={form.categoryName} />
-                <SummaryRow label="✨ Condition"   value={form.condition} />
+                <SummaryRow label="🏷️ Category"    value={form.categoryName} />
+                <SummaryRow label="✨ Condition"    value={form.condition} />
                 {form.purchase_year && <SummaryRow label="📅 Kab liya" value={form.purchase_year} />}
-                <SummaryRow label="📸 Photos"      value={`${form.images.length} upload hui`} />
-                <SummaryRow label="💱 Badle mein"  value={
+                <SummaryRow label="📸 Photos"       value={`${form.images.length} upload hui`} />
+                <SummaryRow label="💱 Badle mein"   value={
                   replaceOptions.length === 0
                     ? "Kuch bhi chalega 🤙"
                     : replaceOptions.map(o => o.title).join(", ")
@@ -766,14 +780,11 @@ export default function AddListingPage() {
               </div>
             )}
 
-            <div style={{ minHeight: "12px", flexShrink: 0 }} />
+            <div style={{ minHeight: "8px", flexShrink: 0 }} />
             <div ref={bottomRef} />
           </div>
 
-          {/* Error toast */}
-          {error && <div className={styles.errorToast}>{error}</div>}
-
-          {/* Input bar */}
+          {/* Input bar — always pinned at bottom, never hidden */}
           {showTextInput && !profileBlocked && (
             <div className={styles.inputBar}>
               <input
