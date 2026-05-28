@@ -102,30 +102,29 @@ export default function ProfileCompleteModal({
   };
 
   const handleSave = async () => {
-    const payload: Record<string, string> = {};
-    for (const key of incompleteFields) {
-      if (form[key]?.trim()) payload[key] = form[key].trim();
-    }
-    if (Object.keys(payload).length === 0) return;
+  const payload: Record<string, string> = {};
+  for (const key of incompleteFields) {
+    if (form[key]?.trim()) payload[key] = form[key].trim();
+  }
+  if (Object.keys(payload).length === 0) return;
 
-    setSaving(true);
-    setSaveError(null);
-    try {
-      const res = await fetch(`${base_url}accounts/update_profile/`, {
-        method:      "PUT",
-        credentials: "include",
-        headers:     { "Content-Type": "application/json" },
-        body:        JSON.stringify(payload),
-      });
-      if (!res.ok) throw new Error("Failed to update profile.");
-      onSaved?.();
-      onClose();
-    } catch (err: any) {
-      setSaveError(err.message || "Something went wrong.");
-    } finally {
-      setSaving(false);
-    }
-  };
+  setSaving(true);
+  setSaveError(null);
+  try {
+    const res = await fetch(`/api/profile`, {   // ← proxy, no CORS
+      method:  "PUT",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error("Failed to update profile.");
+    onSaved?.();
+    onClose();
+  } catch (err: any) {
+    setSaveError(err.message || "Something went wrong.");
+  } finally {
+    setSaving(false);
+  }
+};
 
   if (!isOpen) return null;
 
