@@ -447,7 +447,7 @@ export default function AddListingPage() {
       const productId: number = data.product_id;
 
       if (replaceOptions.length > 0) {
-        const rRes = await fetch(`/api/products/replace-options`, {
+        const rRes = await fetch(`/api/product/replace-options`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
