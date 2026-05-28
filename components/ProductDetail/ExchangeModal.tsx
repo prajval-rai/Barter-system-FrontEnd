@@ -32,7 +32,7 @@ export default function ExchangeModal({ productId, productTitle, onClose, onSent
     const load = async () => {
       setLoadingMine(true);
       try {
-        const res = await fetch(`${base_url}products/my_product`, { credentials: "include" });
+        const res = await fetch(`/api/products/my`);
         if (!res.ok) throw new Error("Couldn't load your listings");
         setMyProducts(await res.json());
       } catch (e: any) {
@@ -65,10 +65,10 @@ export default function ExchangeModal({ productId, productTitle, onClose, onSent
     setSending(true);
     setSendErr(null);
     try {
-      const res = await fetch(`${base_url}barter/request/`, {
+      // send barter request
+      const res = await fetch(`/api/barter/request/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ request_product: selectedId, request_for_product: productId }),
       });
       if (!res.ok) {
