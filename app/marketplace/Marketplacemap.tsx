@@ -39,8 +39,9 @@ interface Props {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const base_url     = process.env.NEXT_PUBLIC_BACKEND_URL;
-const PRODUCTS_API = `${base_url}products/marketplace/`;
+// ✅ Use our own Next.js proxy route — no CORS, no direct backend call
+const PRODUCTS_API = `/api/marketplace`;
+
 const INDIA_CENTER: [number, number] = [22.5937, 78.9629];
 const INDIA_ZOOM   = 5;
 
@@ -90,10 +91,9 @@ export default function MarketplaceMap({ categories }: Props) {
     });
 
     const marker = L.marker([lat, lng], { icon });
-    // NO bindPopup — only side card fires on click
     marker.on("click", () => setActiveProduct(product));
     return marker;
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── Plot all markers, spiderfying overlapping ones ────────────────────────
 
@@ -135,13 +135,10 @@ export default function MarketplaceMap({ categories }: Props) {
       const [baseLat, baseLng] = key.split(",").map(Number);
 
       if (groupProducts.length === 1) {
-        // ── Solo pin ──────────────────────────────────────────────────────────
         const marker = buildPinMarker(L, groupProducts[0], baseLat, baseLng);
         marker.addTo(markersLayer.current);
         bounds.push([baseLat, baseLng]);
-
       } else {
-        // ── Cluster marker ────────────────────────────────────────────────────
         const clusterIcon = L.divIcon({
           className: "",
           html: `<div class="${styles.cluster}">
@@ -215,7 +212,6 @@ export default function MarketplaceMap({ categories }: Props) {
         });
 
         leafletMap.current.on("click", collapse);
-
         clusterMarker.addTo(markersLayer.current);
         bounds.push([baseLat, baseLng]);
       }
@@ -368,9 +364,9 @@ export default function MarketplaceMap({ categories }: Props) {
         maxZoom: 19,
       }).addTo(map);
 
-      markersLayer.current  = L.layerGroup().addTo(map);
-      spiderLayer.current   = L.layerGroup().addTo(map);
-      leafletMap.current    = map;
+      markersLayer.current   = L.layerGroup().addTo(map);
+      spiderLayer.current    = L.layerGroup().addTo(map);
+      leafletMap.current     = map;
       mapInitialized.current = true;
 
       if (pendingPlot.current !== null) {
@@ -404,11 +400,17 @@ export default function MarketplaceMap({ categories }: Props) {
 
   useEffect(() => {
     setLoading(true);
+
+    // ✅ Proxy route — same origin, cookies forwarded server-side
     const params = new URLSearchParams({ page: "1", page_size: "100", sort: "newest" });
     if (selectedCategory) params.set("category", String(selectedCategory));
 
-    fetch(`${PRODUCTS_API}?${params.toString()}`, { credentials: "include" })
-      .then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); })
+    fetch(`${PRODUCTS_API}?${params.toString()}`)
+      .then((r) => {
+        if (r.status === 401) { window.location.href = "/login"; return; }
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
       .then((data: ApiResponse) => {
         const list = data.results ?? [];
         setProducts(list);
@@ -465,7 +467,7 @@ export default function MarketplaceMap({ categories }: Props) {
       <div className={styles.mapWrap}>
         <div ref={mapRef} className={styles.map} />
 
-        {/* ── Locate Me button ─────────────────────────────────────────────── */}
+        {/* Locate Me button */}
         <button
           className={`${styles.locateBtn} ${locating ? styles.locateBtnLoading : ""}`}
           onClick={locateUser}
@@ -485,7 +487,7 @@ export default function MarketplaceMap({ categories }: Props) {
           <span>{locating ? "Locating…" : "My Location"}</span>
         </button>
 
-        {/* ── Location error toast ─────────────────────────────────────────── */}
+        {/* Location error toast */}
         {locationError && (
           <div className={styles.locationToast}>
             <span>⚠️ {locationError}</span>
@@ -500,7 +502,7 @@ export default function MarketplaceMap({ categories }: Props) {
           </div>
         )}
 
-        {/* Side card — only detail panel, no Leaflet popup */}
+        {/* Side card */}
         {activeProduct && (
           <div className={styles.sideCard}>
             <button className={styles.closeBtn} onClick={() => setActiveProduct(null)} aria-label="Close">
@@ -517,7 +519,10 @@ export default function MarketplaceMap({ categories }: Props) {
                 <p className={styles.sideAddress}>📍 {activeProduct.owner_address}</p>
               )}
               <p className={styles.sideOwner}>Listed by {activeProduct.owner_name}</p>
-              <button className={styles.sideBtn} onClick={() => router.push(`/products/${activeProduct.id}`)}>
+              <button
+                className={styles.sideBtn}
+                onClick={() => router.push(`/products/${activeProduct.id}`)}
+              >
                 View Listing →
               </button>
             </div>
