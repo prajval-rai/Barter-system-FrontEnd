@@ -40,7 +40,7 @@ interface Props {
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 // ✅ Use our own Next.js proxy route — no CORS, no direct backend call
-const PRODUCTS_API = `/api/market-place`;
+const PRODUCTS_API = `/api/marketplace`;
 
 const INDIA_CENTER: [number, number] = [22.5937, 78.9629];
 const INDIA_ZOOM   = 5;
