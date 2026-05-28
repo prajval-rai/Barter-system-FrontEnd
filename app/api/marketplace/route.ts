@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
     const cookieHeader = cookieStore.toString();
     const { searchParams } = new URL(req.url);
 
-    console.log("→ API_BASE:", process.env.NEXT_PUBLIC_API_BASE_URL);
+    console.log("→ API_BASE:", process.env.NEXT_PUBLIC_BACKEND_URL);
     console.log("→ Fetching:", `${API_BASE}/products/marketplace/?${searchParams.toString()}`);
     console.log("→ Cookie:", cookieHeader);
 
