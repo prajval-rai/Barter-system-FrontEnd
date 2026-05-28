@@ -175,10 +175,10 @@
 
 /* FIX: Both real images and fallback share exact same dimensions + aspect ratio */
 .itemImg {
-  width: 80px;
-  height: 80px;
-  aspect-ratio: 1 / 1;    /* enforce square */
-  object-fit: cover;        /* crop to fill — no letterboxing or stretching */
+  width: 120px;
+  height: 120px;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
   border-radius: 10px;
   display: block;
   margin: 0 auto 12px;
@@ -186,16 +186,16 @@
 }
 
 .itemImgFallback {
-  width: 80px;
-  height: 80px;
-  aspect-ratio: 1 / 1;    /* matches .itemImg */
+  width: 120px;
+  height: 120px;
+  aspect-ratio: 1 / 1;
   background: #f0f4fc;
   border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0 auto 12px;
-  font-size: 34px;
+  font-size: 48px;
   line-height: 1;
 }
 
@@ -431,6 +431,15 @@
     justify-content: center;
     width: 100%;
     padding-top: 4px;
+  }
+}
+
+@media (max-width: 640px) {
+  .itemImgFallback,
+  .itemImg {
+    width: 90px;
+    height: 90px;
+    font-size: 36px;
   }
 }
 
