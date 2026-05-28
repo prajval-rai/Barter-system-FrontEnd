@@ -14,35 +14,16 @@
 
 /* ─── Page Wrapper ────────────────────────────────────────────────────────── */
 /*
-  Use dvh (dynamic viewport height) so mobile browser chrome is accounted for.
-  Falls back to 100vh for older browsers.
-  Do NOT use position:fixed — it breaks when the mobile keyboard appears.
+  The shell (variant="chat") already gives us a flex column that fills
+  100dvh minus the topbar. We just need to fill that remaining space.
+  NO position:fixed, NO height:100vh — the shell handles the frame.
 */
 .pageWrapper {
-  display: flex;
-  flex-direction: column;
-  height: 100dvh;          /* dynamic viewport — accounts for mobile chrome */
-  height: 100vh;           /* fallback */
-  overflow: hidden;
-  background: var(--color-surface);
-}
-
-/* If your app shell already provides a top nav of fixed height,
-   subtract it here via an env-safe calc: */
-@supports (height: 100dvh) {
-  .pageWrapper {
-    height: 100dvh;
-  }
-}
-
-/* ─── Content wrapper (used inside shell layouts) ─────────────────────────── */
-.content {
   flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  width: 100%;
 }
 
 /* ─── Page ────────────────────────────────────────────────────────────────── */
@@ -50,7 +31,7 @@
   display: flex;
   flex-direction: column;
   flex: 1;
-  min-height: 0;        /* critical: allows flex children to shrink */
+  min-height: 0;       /* critical: allows flex children to shrink */
   overflow: hidden;
   background: var(--color-surface);
   font-family: var(--font-body);
@@ -62,19 +43,17 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 16px;
+  padding: 10px 12px;
   background: var(--color-white);
   border-bottom: 1px solid var(--color-border);
   flex-shrink: 0;
-  /* Ensure safe area on notched phones */
-  padding-top: max(10px, env(safe-area-inset-top));
 }
 
 .chatHeaderLeft {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
-  min-width: 0;          /* allow text truncation */
+  gap: 8px;
+  min-width: 0;
 }
 
 .backBtn {
@@ -91,16 +70,12 @@
   flex-shrink: 0;
   transition: all var(--duration-fast) var(--ease-smooth);
 }
-
-.backBtn:hover {
-  background: var(--color-primary-light);
-  color: var(--color-primary);
-}
+.backBtn:hover { background: var(--color-primary-light); color: var(--color-primary); }
 
 .botChip {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: 8px;
   min-width: 0;
 }
 
@@ -160,22 +135,22 @@
 .chatHeaderRight {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: 8px;
   flex-shrink: 0;
 }
 
 .progressPill {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: 6px;
   background: var(--color-primary-light);
   border: 1px solid rgba(26, 86, 219, 0.15);
   border-radius: var(--radius-full);
-  padding: 4px 12px 4px 8px;
+  padding: 4px 10px 4px 8px;
 }
 
 .progressPillBar {
-  width: 48px;
+  width: 40px;
   height: 4px;
   background: var(--color-border);
   border-radius: var(--radius-full);
@@ -194,70 +169,13 @@
   font-weight: var(--font-bold);
   color: var(--color-primary);
   font-family: monospace;
-  min-width: 24px;
+  min-width: 28px;
 }
 
-/* ─── Top Bar (ListingBot header variant) ─────────────────────────────────── */
-.topBar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 16px;
-  background: var(--color-primary);
-  flex-shrink: 0;
-  box-shadow: var(--shadow-md);
-}
-
-.topBarCenter {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex: 1;
-  min-width: 0;
-}
-
-.botAvatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--color-primary-dark);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  font-weight: 700;
-  color: #fff;
-  letter-spacing: -0.3px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  flex-shrink: 0;
-  font-family: var(--font-display);
-}
-
-.botName {
-  font-size: 15px;
-  font-weight: 700;
-  color: #fff;
-  font-family: var(--font-display);
-  letter-spacing: -0.2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.botStatus {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.75);
-  margin-top: 1px;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-family: var(--font-body);
-}
-
-/* ─── Progress Bar (thin track below top bar) ─────────────────────────────── */
+/* ─── Progress Bar ────────────────────────────────────────────────────────── */
 .progressTrack {
   height: 3px;
-  background: rgba(26, 86, 219, 0.12);
+  background: rgba(26, 86, 219, 0.10);
   flex-shrink: 0;
 }
 
@@ -268,25 +186,30 @@
 }
 
 /* ─── Chat Body ───────────────────────────────────────────────────────────── */
-/* THE ONLY scrollable element. flex:1 + min-height:0 is the key combo. */
+/*
+  This is the ONLY scrollable element.
+  flex:1 + min-height:0 is the critical combo —
+  without min-height:0 the body refuses to shrink when
+  the mobile keyboard appears and content gets pushed offscreen.
+*/
 .chatBody {
   flex: 1;
-  min-height: 0;           /* critical — lets this shrink so input stays visible */
+  min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;   /* smooth scroll on iOS */
-  overscroll-behavior-y: contain;      /* prevent pull-to-refresh fighting scroll */
-  padding: 16px 16px 24px;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  padding: 12px 12px 20px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   background-color: var(--color-surface);
-  background-image: radial-gradient(circle, rgba(26, 86, 219, 0.06) 1px, transparent 1px);
+  background-image: radial-gradient(circle, rgba(26, 86, 219, 0.05) 1px, transparent 1px);
   background-size: 28px 28px;
   scroll-behavior: smooth;
 }
 
-.chatBody::-webkit-scrollbar       { width: 4px; }
+.chatBody::-webkit-scrollbar       { width: 3px; }
 .chatBody::-webkit-scrollbar-track { background: transparent; }
 .chatBody::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 99px; }
 
@@ -316,14 +239,14 @@
 .msgRowUser { justify-content: flex-end; }
 
 .avatarSmall {
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   background: var(--color-primary);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
   color: #fff;
   font-family: var(--font-display);
@@ -335,21 +258,26 @@
 }
 
 /* ─── Bubbles ─────────────────────────────────────────────────────────────── */
+/*
+  max-width: 78% gives more reading room.
+  Reduced horizontal padding so text doesn't feel cramped.
+  word-break: break-word prevents long words overflowing.
+*/
 .botBubble {
-  max-width: min(72%, 320px);   /* cap width on large screens too */
+  max-width: 78%;
   background: var(--color-white);
   border-radius: 4px 14px 14px 14px;
-  padding: 10px 14px 6px;
+  padding: 8px 12px 5px;
   box-shadow: var(--shadow-card);
   border: 1px solid var(--color-border);
-  word-break: break-word;       /* prevent text overflow */
+  word-break: break-word;
 }
 
 .userBubble {
-  max-width: min(72%, 320px);
+  max-width: 78%;
   background: var(--color-primary);
   border-radius: 14px 4px 14px 14px;
-  padding: 10px 14px 6px;
+  padding: 8px 12px 5px;
   box-shadow: 0 2px 10px var(--color-primary-shadow);
   word-break: break-word;
 }
@@ -363,11 +291,30 @@
 
 .userBubble .bubbleText { color: #fff; }
 
+/* ─── Error bubble emoji + text ───────────────────────────────────────────── */
+.errorEmoji {
+  display: block;
+  font-size: 38px;
+  line-height: 1;
+  margin-bottom: 6px;
+  text-align: center;
+}
+
+.errorMsg {
+  display: block;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-text-heading);
+  font-family: var(--font-body);
+  text-align: center;
+}
+
+/* ─── Timestamps ──────────────────────────────────────────────────────────── */
 .timeBot {
   font-size: 10px;
   color: var(--color-text-muted);
   text-align: right;
-  margin-top: 4px;
+  margin-top: 3px;
   font-family: var(--font-body);
 }
 
@@ -375,7 +322,7 @@
   font-size: 10px;
   color: rgba(255, 255, 255, 0.65);
   text-align: right;
-  margin-top: 4px;
+  margin-top: 3px;
   display: flex;
   justify-content: flex-end;
   align-items: center;
@@ -408,20 +355,13 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  /* Removed fixed padding-left — was causing chips to overflow on mobile */
-  padding-left: 36px;
+  padding-left: 34px;   /* align with bot bubble (avatar 28px + gap 6px) */
   padding-bottom: 4px;
   animation: fadeIn 0.3s ease both;
 }
 
-@media (max-width: 480px) {
-  .chipsArea {
-    padding-left: 0;   /* chips full-width on very small screens */
-  }
-}
-
 .chip {
-  padding: 8px 16px;
+  padding: 7px 14px;
   border-radius: 99px;
   border: 1.5px solid var(--color-primary);
   background: var(--color-primary-light);
@@ -432,7 +372,6 @@
   font-family: var(--font-body);
   box-shadow: var(--shadow-sm);
   transition: all var(--duration-fast) var(--ease-smooth);
-  /* Tap target */
   min-height: 40px;
   display: flex;
   align-items: center;
@@ -451,21 +390,15 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding-left: 36px;
+  padding-left: 34px;
   padding-bottom: 4px;
   animation: fadeIn 0.3s ease both;
-}
-
-@media (max-width: 480px) {
-  .actionsArea {
-    padding-left: 0;
-  }
 }
 
 /* ─── Upload ──────────────────────────────────────────────────────────────── */
 .uploadBtn {
   align-self: flex-start;
-  padding: 9px 18px;
+  padding: 9px 16px;
   border-radius: 12px;
   border: 1.5px dashed var(--color-primary);
   background: var(--color-primary-light);
@@ -477,11 +410,7 @@
   transition: all var(--duration-fast) var(--ease-smooth);
   min-height: 40px;
 }
-
-.uploadBtn:hover {
-  background: rgba(26, 86, 219, 0.12);
-  box-shadow: 0 2px 8px var(--color-primary-shadow);
-}
+.uploadBtn:hover { background: rgba(26, 86, 219, 0.12); box-shadow: 0 2px 8px var(--color-primary-shadow); }
 
 .previewRow {
   display: flex;
@@ -490,8 +419,8 @@
 }
 
 .previewThumb {
-  width: 64px;
-  height: 64px;
+  width: 60px;
+  height: 60px;
   border-radius: 10px;
   object-fit: cover;
   border: 2px solid var(--color-primary);
@@ -501,7 +430,7 @@
 /* ─── Primary Button ──────────────────────────────────────────────────────── */
 .primaryBtn {
   align-self: flex-start;
-  padding: 9px 20px;
+  padding: 9px 18px;
   border-radius: 12px;
   border: none;
   background: var(--color-primary);
@@ -515,13 +444,8 @@
               transform var(--duration-fast) var(--ease-smooth);
   min-height: 40px;
 }
-
 .primaryBtn:disabled { opacity: 0.4; cursor: not-allowed; }
-.primaryBtn:hover:not(:disabled) {
-  opacity: 0.9;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 14px var(--color-primary-shadow);
-}
+.primaryBtn:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 4px 14px var(--color-primary-shadow); }
 
 /* ─── Replace Options ─────────────────────────────────────────────────────── */
 .replaceList { display: flex; flex-direction: column; gap: 8px; margin-bottom: 4px; }
@@ -530,7 +454,7 @@
   background: var(--color-white);
   border: 1px solid var(--color-border);
   border-radius: 12px;
-  padding: 10px 14px;
+  padding: 10px 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -569,7 +493,6 @@
   transition: background var(--duration-fast) var(--ease-smooth);
   line-height: 1;
 }
-
 .removeBtn:hover { background: rgba(239, 68, 68, 0.15); }
 
 .replaceForm {
@@ -579,41 +502,34 @@
   background: var(--color-white);
   border: 1px solid var(--color-border);
   border-radius: 14px;
-  padding: 14px;
+  padding: 12px;
   box-shadow: var(--shadow-sm);
 }
 
 .replaceInput {
   width: 100%;
-  padding: 9px 14px;
+  padding: 9px 12px;
   border-radius: var(--radius-md);
   border: 1.5px solid var(--color-border);
   background: var(--color-surface);
-  font-size: 13px;
+  font-size: 16px;   /* 16px prevents iOS auto-zoom on focus */
   outline: none;
   box-sizing: border-box;
   font-family: var(--font-body);
   color: var(--color-text-heading);
   transition: border-color var(--duration-fast) var(--ease-smooth),
               box-shadow var(--duration-fast) var(--ease-smooth);
-  /* Prevent iOS zoom on focus (font-size must be >= 16px or use this) */
-  font-size: max(13px, 16px);
 }
-
-.replaceInput:focus {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(26, 86, 219, 0.1);
-}
-
+.replaceInput:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(26, 86, 219, 0.1); }
 .replaceInput::placeholder { color: var(--color-text-muted); }
 
 .replaceSelect {
   width: 100%;
-  padding: 9px 14px;
+  padding: 9px 12px;
   border-radius: var(--radius-md);
   border: 1.5px solid var(--color-border);
   background: var(--color-surface);
-  font-size: max(13px, 16px);
+  font-size: 16px;
   outline: none;
   box-sizing: border-box;
   cursor: pointer;
@@ -622,11 +538,7 @@
   transition: border-color var(--duration-fast) var(--ease-smooth),
               box-shadow var(--duration-fast) var(--ease-smooth);
 }
-
-.replaceSelect:focus {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(26, 86, 219, 0.1);
-}
+.replaceSelect:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(26, 86, 219, 0.1); }
 
 .addBtn {
   padding: 9px 0;
@@ -641,7 +553,6 @@
   transition: opacity var(--duration-fast) var(--ease-smooth);
   min-height: 40px;
 }
-
 .addBtn:hover { opacity: 0.85; }
 .addBtn:disabled { opacity: 0.5; cursor: not-allowed; }
 
@@ -649,12 +560,10 @@
 
 /* ─── Summary Card ────────────────────────────────────────────────────────── */
 .summaryCard {
-  /* Removed margin-left: 36px — caused overflow on narrow screens */
-  margin-left: 0;
   background: var(--color-white);
   border: 1px solid var(--color-border);
   border-radius: 18px;
-  padding: 18px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -673,7 +582,7 @@
   font-size: 11px;
   font-weight: 600;
   color: var(--color-text-muted);
-  min-width: 90px;
+  min-width: 80px;
   flex-shrink: 0;
   font-family: var(--font-body);
   text-transform: uppercase;
@@ -708,76 +617,58 @@
   letter-spacing: -0.2px;
   min-height: 48px;
 }
-
 .confirmBtn:disabled { opacity: 0.6; cursor: not-allowed; }
-.confirmBtn:hover:not(:disabled) {
-  opacity: 0.9;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px var(--color-primary-shadow);
-}
+.confirmBtn:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 6px 20px var(--color-primary-shadow); }
 
-/* ─── Error Toast ─────────────────────────────────────────────────────────── */
-.errorToast {
-  position: absolute;
-  bottom: 80px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--color-text-heading);
-  color: #fff;
-  font-size: 12px;
-  font-weight: 500;
-  padding: 9px 20px;
-  border-radius: 99px;
-  white-space: nowrap;
-  box-shadow: var(--shadow-lg);
-  z-index: 100;
-  animation: fadeIn 0.2s ease both;
-  font-family: var(--font-body);
+/* ─── Loading Spinner ─────────────────────────────────────────────────────── */
+.loadingSpinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
 }
+@keyframes spin { to { transform: rotate(360deg); } }
 
 /* ─── Input Bar ───────────────────────────────────────────────────────────── */
 /*
-  flex-shrink: 0 keeps it always visible.
-  padding-bottom uses safe-area-inset-bottom so it clears
-  the iOS home indicator / Android gesture bar.
+  flex-shrink:0 keeps it always visible at the bottom.
+  padding-bottom uses safe-area-inset-bottom to clear
+  iOS home indicator and Android gesture bar.
 */
 .inputBar {
   display: flex;
   gap: 8px;
-  padding: 10px 16px;
-  padding-bottom: max(12px, env(safe-area-inset-bottom, 12px));
+  padding: 8px 12px;
+  padding-bottom: max(10px, env(safe-area-inset-bottom, 10px));
   background: var(--color-white);
   border-top: 1px solid var(--color-border);
-  flex-shrink: 0;          /* never shrink — always pinned at bottom */
+  flex-shrink: 0;
   align-items: center;
   box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .textInput {
   flex: 1;
-  min-width: 0;            /* prevent flex overflow */
-  padding: 11px 18px;
+  min-width: 0;
+  padding: 10px 16px;
   border-radius: 24px;
   border: 1.5px solid var(--color-border);
   background: var(--color-surface);
-  font-size: 16px;         /* 16px prevents iOS auto-zoom on focus */
+  font-size: 16px;    /* 16px prevents iOS auto-zoom on focus */
   outline: none;
   font-family: var(--font-body);
   color: var(--color-text-heading);
   transition: border-color var(--duration-fast) var(--ease-smooth),
               box-shadow var(--duration-fast) var(--ease-smooth);
 }
-
-.textInput:focus {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(26, 86, 219, 0.12);
-}
-
+.textInput:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(26, 86, 219, 0.12); }
 .textInput::placeholder { color: var(--color-text-muted); }
 
 .sendBtn {
-  width: 44px;
-  height: 44px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   background: var(--color-primary);
   border: none;
@@ -791,6 +682,5 @@
   transition: opacity var(--duration-fast) var(--ease-smooth),
               transform var(--duration-fast) var(--ease-smooth);
 }
-
 .sendBtn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
 .sendBtn:hover:not(:disabled) { opacity: 0.9; transform: scale(1.05); }
