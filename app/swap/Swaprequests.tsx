@@ -232,7 +232,7 @@ export default function SwapRequests({
   onViewDetails,
   onChat,
   onStartExchange,
-  apiUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}scan/scan_all_my_products`,
+  apiUrl = `/api/scan`,
 }: Props) {
   const [matches, setMatches] = useState<SwapMatch[]>([]);
   const [loading, setLoading] = useState(true);
@@ -249,7 +249,6 @@ export default function SwapRequests({
       try {
         const res = await fetch(apiUrl, {
           method: "GET",
-          credentials: "include",
           headers: {
             "Content-Type": "application/json",
             Accept: "application/json",
