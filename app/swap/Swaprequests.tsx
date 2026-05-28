@@ -550,7 +550,6 @@ export default function SwapRequests({
           </div>
 
           {/* ── Action bar ── */}
-          // Replace the entire actions div
 <div className={styles.actions}>
   <button
     className={styles.btnPrimary}
