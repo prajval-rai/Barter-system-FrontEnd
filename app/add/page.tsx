@@ -216,15 +216,15 @@ export default function AddListingPage() {
   const inputRef    = useRef<HTMLInputElement>(null);
   const fileRef     = useRef<HTMLInputElement>(null);
   const initialized = useRef(false);
-  const base_url    = process.env.NEXT_PUBLIC_BACKEND_URL;
+  
 
   // ── Fetch categories ──
   useEffect(() => {
-    fetch(`${base_url}products/categories/`)
+    fetch(`/api/categories`)                          // ← changed
       .then(r => r.json())
       .then(d => setCategories(Array.isArray(d) ? d : d.results ?? []))
       .catch(() => {});
-  }, []);
+}, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -246,9 +246,7 @@ export default function AddListingPage() {
 
     const init = async () => {
       try {
-        const res  = await fetch(`${base_url}accounts/completion/`, {
-          credentials: "include",
-        });
+        const res = await fetch(`/api/completion`);
         const data = await res.json();
 
         const missing = (data.incomplete_fields ?? []).filter((f: string) =>
@@ -280,9 +278,7 @@ export default function AddListingPage() {
   const handleProfileSaved = useCallback(async () => {
     setProfileModalOpen(false);
     try {
-      const res  = await fetch(`${base_url}accounts/completion/`, {
-        credentials: "include",
-      });
+      const res = await fetch(`/api/completion`);     
       const data = await res.json();
 
       const missing = (data.incomplete_fields ?? []).filter((f: string) =>
@@ -304,7 +300,7 @@ export default function AddListingPage() {
       setProfileBlocked(false);
       sendBot("title");
     }
-  }, [sendBot, base_url]);
+  }, [sendBot]);
 
   const addUser = (text: string) =>
     setMessages(prev => [...prev, { id: uid(), role: "user", text, timestamp: new Date() }]);
@@ -430,19 +426,22 @@ export default function AddListingPage() {
       if (form.purchase_year) fd.append("purchase_year", form.purchase_year);
       form.images.forEach(img => fd.append("images", img));
 
-      const res  = await fetch(`${base_url}products/create_product/`, {
-        method: "POST", credentials: "include", body: fd,
-      });
+      const res = await fetch(`/api/products/create`, {  // ← changed
+      method: "POST",
+      body: fd,                                         // formData — no Content-Type header needed
+    });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || data.detail || "Something went wrong");
 
       const productId: number = data.product_id;
 
       if (replaceOptions.length > 0) {
-        const rRes = await fetch(`${base_url}products/add_replace_options/${productId}/`, {
-          method: "POST", credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
+        const rRes = await fetch(`/api/products/replace-options`, {  // ← changed
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productId,                                      // ← pass productId in body
+          body: {
             replace_options: replaceOptions.map(o => ({
               title: o.title,
               description: o.description,
@@ -450,7 +449,8 @@ export default function AddListingPage() {
               replace_type: "product",
               icon: o.icon,
             })),
-          }),
+          },
+        }),
         });
         const rData = await rRes.json();
         if (!rRes.ok) throw new Error(rData.error || "Failed to save exchange options");
