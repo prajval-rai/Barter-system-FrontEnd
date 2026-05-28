@@ -56,7 +56,7 @@ export default function NearbyItems({ onSeeAll }: NearbyItemsProps) {
       {!loading && !error && items.length > 0 && (
         <div className={styles.grid}>
           {items.map((item) => (
-            <Link key={item.id} href={`/item/${item.id}`} className={styles.cardLink}>
+            <Link key={item.id} href={`/products/${item.id}`} className={styles.cardLink}>
               <div className={styles.card}>
                 <div className={styles.thumbnail}>
                   {item.thumbnail ? (
