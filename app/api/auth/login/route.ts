@@ -12,6 +12,7 @@ export async function POST(request: NextRequest) {
   });
 
   const data = await res.json();
+  console.log("MMMMMMMMMMMMMMMMMMm",res)
   const response = NextResponse.json(data, { status: res.status });
 
   // ✅ Parse all set-cookie headers and re-set on frontend domain

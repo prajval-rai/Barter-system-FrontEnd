@@ -23,25 +23,21 @@ export default function DashboardPage() {
   const base_url    = process.env.NEXT_PUBLIC_BACKEND_URL;
 
   const fetchCompletion = async () => {
-    try {
-      const res  = await fetch(`${base_url}accounts/completion/`, {
-        credentials: "include",
-      });
-      const data = await res.json();
-      setCompletionPercentage(data.completion_percentage ?? 0);
-      setIncompleteFields(data.incomplete_fields ?? []);
-    } catch {
-      setCompletionPercentage(0);
-      setIncompleteFields([]);
-    }
-  };
+  try {
+    const res  = await fetch(`/api/completion`); // ← same origin, no CORS
+    const data = await res.json();
+    setCompletionPercentage(data.completion_percentage ?? 0);
+    setIncompleteFields(data.incomplete_fields ?? []);
+  } catch {
+    setCompletionPercentage(0);
+    setIncompleteFields([]);
+  }
+};
 
   useEffect(() => {
     const checkProducts = async () => {
       try {
-        const res  = await fetch(`${base_url}products/my_product/`, {
-          credentials: "include",
-        });
+        const res  = await fetch(`/api/my-products`); // ← same origin, no CORS
         const data = await res.json();
         setHasProducts(Array.isArray(data) && data.length > 0);
       } catch {
