@@ -426,7 +426,7 @@ export default function AddListingPage() {
       if (form.purchase_year) fd.append("purchase_year", form.purchase_year);
       form.images.forEach(img => fd.append("images", img));
 
-      const res = await fetch(`/api/products/create`, {  // ← changed
+      const res = await fetch(`/api/product/create`, {  // ← changed
       method: "POST",
       body: fd,                                         // formData — no Content-Type header needed
     });
