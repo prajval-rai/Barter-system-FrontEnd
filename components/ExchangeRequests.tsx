@@ -217,7 +217,7 @@ export default function ExchangeRequests({ onNavigate }: RequestsProps) {
   const load = async () => {
     setLoading(true); setError(null);
     try {
-      const res = await fetch( `${base_url}barter/requests/`, { credentials: "include" });
+      const res = await fetch(`/api/barter/requests`);
       if (!res.ok) throw new Error("Failed to load requests");
       setRequests(await res.json());
     } catch (e: any) {
@@ -235,12 +235,11 @@ export default function ExchangeRequests({ onNavigate }: RequestsProps) {
   const active   = tab === "received" ? received : sent;
 
   const changeStatus = async (id: number, status: "accepted" | "rejected") => {
-    const res = await fetch(`${base_url}barter/request/${id}/`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ status }),
-    });
+   const res = await fetch(`/api/barter/request/${id}/`, {
+  method: "PATCH",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ status }),
+});
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error || err.detail || `Failed to ${status}`);
