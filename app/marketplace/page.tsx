@@ -1,4 +1,4 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import MarketplaceToggleView from "./Marketplacetoggleview";
 import AppShell from "@/components/AppShell/Appshell ";
@@ -42,29 +42,37 @@ export interface Category {
   name: string;
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+// ── Helpers calling our own Next.js proxy routes ──────────────────────────────
+// Server component can call /api/* routes using the absolute internal URL.
+// We derive the host from the incoming request headers so it works on every env.
 
-async function fetchInitialProducts(cookieHeader: string): Promise<MarketplaceResponse> {
+async function getBaseUrl(): Promise<string> {
+  const headersList = await headers();
+  const host = headersList.get("host") ?? "localhost:3000";
+  const protocol = host.startsWith("localhost") ? "http" : "https";
+  return `${protocol}://${host}`;
+}
+
+async function fetchInitialProducts(
+  baseUrl: string
+): Promise<MarketplaceResponse> {
   try {
     const res = await fetch(
-      `${API_BASE}/products/marketplace/?page=1&page_size=12&sort=newest`,
-      {
-        headers: { Cookie: cookieHeader, "Content-Type": "application/json" },
-        cache: "no-store",
-      }
+      `${baseUrl}/api/marketplace?page=1&page_size=12&sort=newest`,
+      { cache: "no-store" }
     );
     if (res.status === 401) redirect("/login");
-    if (!res.ok) return { results: [], page: 1, page_size: 12, total: 0, has_next: false };
+    if (!res.ok)
+      return { results: [], page: 1, page_size: 12, total: 0, has_next: false };
     return res.json();
   } catch {
     return { results: [], page: 1, page_size: 12, total: 0, has_next: false };
   }
 }
 
-async function fetchCategories(cookieHeader: string): Promise<Category[]> {
+async function fetchCategories(baseUrl: string): Promise<Category[]> {
   try {
-    const res = await fetch(`${API_BASE}/products/categories/`, {
-      headers: { Cookie: cookieHeader, "Content-Type": "application/json" },
+    const res = await fetch(`${baseUrl}/api/categories`, {
       cache: "no-store",
     });
     if (res.status === 401) redirect("/login");
@@ -75,13 +83,13 @@ async function fetchCategories(cookieHeader: string): Promise<Category[]> {
   }
 }
 
+// ── Page ──────────────────────────────────────────────────────────────────────
 export default async function MarketplacePage() {
-  const cookieStore = await cookies();
-  const cookieHeader = cookieStore.toString(); // same as MyListingsPage pattern
+  const baseUrl = await getBaseUrl();
 
   const [initialData, categories] = await Promise.all([
-    fetchInitialProducts(cookieHeader),
-    fetchCategories(cookieHeader),
+    fetchInitialProducts(baseUrl),
+    fetchCategories(baseUrl),
   ]);
 
   return (
