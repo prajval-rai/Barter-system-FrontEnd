@@ -17,7 +17,7 @@ export default function EmptyWelcomeHero() {
             Get what you need — without spending money.
           </p>
 
-          <Link href="/add-item" className={styles.ctaBtn}>
+          <Link href="/add" className={styles.ctaBtn}>
             <PlusIcon />
             Add Your First Item
           </Link>
