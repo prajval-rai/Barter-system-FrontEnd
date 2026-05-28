@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
     console.log("→ Cookie:", cookieHeader);
 
     const res = await fetch(
-      `${API_BASE}/products/marketplace/?${searchParams.toString()}`,
+      `${API_BASE}products/marketplace/?${searchParams.toString()}`,
       {
         headers: {
           Cookie: cookieHeader,
