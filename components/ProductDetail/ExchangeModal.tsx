@@ -32,7 +32,7 @@ export default function ExchangeModal({ productId, productTitle, onClose, onSent
     const load = async () => {
       setLoadingMine(true);
       try {
-        const res = await fetch(`/api/products/my`);
+        const res = await fetch(`/api/product/my`);
         if (!res.ok) throw new Error("Couldn't load your listings");
         setMyProducts(await res.json());
       } catch (e: any) {
