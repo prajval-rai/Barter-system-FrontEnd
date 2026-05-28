@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
 
     console.log("→ API_BASE:", process.env.NEXT_PUBLIC_BACKEND_URL);
-    console.log("→ Fetching:", `${API_BASE}/products/marketplace/?${searchParams.toString()}`);
+    console.log("→ Fetching:", `${API_BASE}products/marketplace/?${searchParams.toString()}`);
     console.log("→ Cookie:", cookieHeader);
 
     const res = await fetch(
