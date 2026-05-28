@@ -12,7 +12,50 @@
   to   { opacity: 1; }
 }
 
+/* ─── Page Wrapper ────────────────────────────────────────────────────────── */
+/*
+  Use dvh (dynamic viewport height) so mobile browser chrome is accounted for.
+  Falls back to 100vh for older browsers.
+  Do NOT use position:fixed — it breaks when the mobile keyboard appears.
+*/
+.pageWrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;          /* dynamic viewport — accounts for mobile chrome */
+  height: 100vh;           /* fallback */
+  overflow: hidden;
+  background: var(--color-surface);
+}
 
+/* If your app shell already provides a top nav of fixed height,
+   subtract it here via an env-safe calc: */
+@supports (height: 100dvh) {
+  .pageWrapper {
+    height: 100dvh;
+  }
+}
+
+/* ─── Content wrapper (used inside shell layouts) ─────────────────────────── */
+.content {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  width: 100%;
+}
+
+/* ─── Page ────────────────────────────────────────────────────────────────── */
+.page {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;        /* critical: allows flex children to shrink */
+  overflow: hidden;
+  background: var(--color-surface);
+  font-family: var(--font-body);
+  position: relative;
+}
 
 /* ─── Chat Header ─────────────────────────────────────────────────────────── */
 .chatHeader {
@@ -23,12 +66,15 @@
   background: var(--color-white);
   border-bottom: 1px solid var(--color-border);
   flex-shrink: 0;
+  /* Ensure safe area on notched phones */
+  padding-top: max(10px, env(safe-area-inset-top));
 }
 
 .chatHeaderLeft {
   display: flex;
   align-items: center;
   gap: var(--space-3);
+  min-width: 0;          /* allow text truncation */
 }
 
 .backBtn {
@@ -55,6 +101,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  min-width: 0;
 }
 
 .botChipAvatar {
@@ -77,6 +124,7 @@
   display: flex;
   flex-direction: column;
   gap: 1px;
+  min-width: 0;
 }
 
 .botChipName {
@@ -85,6 +133,9 @@
   color: var(--color-text-heading);
   font-family: var(--font-display);
   line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .botChipStatus {
@@ -105,11 +156,12 @@
   box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.25);
 }
 
-/* ─── Progress pill + bar ─────────────────────────────────────────────────── */
+/* ─── Progress pill ───────────────────────────────────────────────────────── */
 .chatHeaderRight {
   display: flex;
   align-items: center;
   gap: var(--space-3);
+  flex-shrink: 0;
 }
 
 .progressPill {
@@ -145,51 +197,7 @@
   min-width: 24px;
 }
 
-/* ─── Page Wrapper ────────────────────────────────────────────────────────── */
-/* Fills the AppShellDetail content area exactly — no outer scroll */
-.pageWrapper {
-  position: fixed;
-  top: 60px;        /* height of your top nav */
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  /* Remove all the negative margin hacks */
-  margin: 0;
-}
-.content {
-  flex: 1;
-  padding: var(--space-6) var(--space-8);
-  max-width: 1400px;
-  margin: 0 auto;
-  width: 100%;
-  overflow: hidden;        /* ← add this */
-  display: flex;           /* ← add this */
-  flex-direction: column;  /* ← add this */
-}
-
-@media (max-width: 768px) {
-  .pageWrapper {
-    height: calc(100vh - 60px);
-    margin: calc(-1 * var(--space-4));
-  }
-}
-
-/* ─── Page ────────────────────────────────────────────────────────────────── */
-.page {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 0;        /* ← critical: allows flex shrink */
-  overflow: hidden;     /* ← contain everything inside */
-  background: var(--color-surface);
-  font-family: var(--font-body);
-  position: relative;
-}
-
-/* ─── Top Bar (ListingBot header) ─────────────────────────────────────────── */
+/* ─── Top Bar (ListingBot header variant) ─────────────────────────────────── */
 .topBar {
   display: flex;
   align-items: center;
@@ -200,26 +208,12 @@
   box-shadow: var(--shadow-md);
 }
 
-.backBtn {
-  background: rgba(255, 255, 255, 0.15);
-  border: none;
-  color: #fff;
-  cursor: pointer;
-  padding: 6px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-  transition: background var(--duration-fast) var(--ease-smooth);
-}
-
-.backBtn:hover { background: rgba(255, 255, 255, 0.25); }
-
 .topBarCenter {
   display: flex;
   align-items: center;
   gap: 10px;
   flex: 1;
+  min-width: 0;
 }
 
 .botAvatar {
@@ -245,6 +239,9 @@
   color: #fff;
   font-family: var(--font-display);
   letter-spacing: -0.2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .botStatus {
@@ -257,28 +254,7 @@
   font-family: var(--font-body);
 }
 
-.statusDot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #4ade80;
-  flex-shrink: 0;
-  box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.3);
-}
-
-.progressPill {
-  background: rgba(255, 255, 255, 0.18);
-  color: #fff;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 4px 11px;
-  border-radius: 99px;
-  font-family: monospace;
-  flex-shrink: 0;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-/* ─── Progress Bar ────────────────────────────────────────────────────────── */
+/* ─── Progress Bar (thin track below top bar) ─────────────────────────────── */
 .progressTrack {
   height: 3px;
   background: rgba(26, 86, 219, 0.12);
@@ -292,12 +268,14 @@
 }
 
 /* ─── Chat Body ───────────────────────────────────────────────────────────── */
-/* This is the ONLY scrollable element */
+/* THE ONLY scrollable element. flex:1 + min-height:0 is the key combo. */
 .chatBody {
   flex: 1;
-  min-height: 0;           /* ← critical */
+  min-height: 0;           /* critical — lets this shrink so input stays visible */
   overflow-y: auto;
   overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;   /* smooth scroll on iOS */
+  overscroll-behavior-y: contain;      /* prevent pull-to-refresh fighting scroll */
   padding: 16px 16px 24px;
   display: flex;
   flex-direction: column;
@@ -308,7 +286,6 @@
   scroll-behavior: smooth;
 }
 
-/* Thin scrollbar */
 .chatBody::-webkit-scrollbar       { width: 4px; }
 .chatBody::-webkit-scrollbar-track { background: transparent; }
 .chatBody::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 99px; }
@@ -359,20 +336,22 @@
 
 /* ─── Bubbles ─────────────────────────────────────────────────────────────── */
 .botBubble {
-  max-width: 72%;
+  max-width: min(72%, 320px);   /* cap width on large screens too */
   background: var(--color-white);
   border-radius: 4px 14px 14px 14px;
   padding: 10px 14px 6px;
   box-shadow: var(--shadow-card);
   border: 1px solid var(--color-border);
+  word-break: break-word;       /* prevent text overflow */
 }
 
 .userBubble {
-  max-width: 72%;
+  max-width: min(72%, 320px);
   background: var(--color-primary);
   border-radius: 14px 4px 14px 14px;
   padding: 10px 14px 6px;
   box-shadow: 0 2px 10px var(--color-primary-shadow);
+  word-break: break-word;
 }
 
 .bubbleText {
@@ -429,9 +408,16 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  /* Removed fixed padding-left — was causing chips to overflow on mobile */
   padding-left: 36px;
   padding-bottom: 4px;
   animation: fadeIn 0.3s ease both;
+}
+
+@media (max-width: 480px) {
+  .chipsArea {
+    padding-left: 0;   /* chips full-width on very small screens */
+  }
 }
 
 .chip {
@@ -446,9 +432,14 @@
   font-family: var(--font-body);
   box-shadow: var(--shadow-sm);
   transition: all var(--duration-fast) var(--ease-smooth);
+  /* Tap target */
+  min-height: 40px;
+  display: flex;
+  align-items: center;
 }
 
-.chip:hover {
+.chip:hover,
+.chip:active {
   background: var(--color-primary);
   color: #fff;
   box-shadow: 0 3px 10px var(--color-primary-shadow);
@@ -465,6 +456,12 @@
   animation: fadeIn 0.3s ease both;
 }
 
+@media (max-width: 480px) {
+  .actionsArea {
+    padding-left: 0;
+  }
+}
+
 /* ─── Upload ──────────────────────────────────────────────────────────────── */
 .uploadBtn {
   align-self: flex-start;
@@ -478,6 +475,7 @@
   cursor: pointer;
   font-family: var(--font-body);
   transition: all var(--duration-fast) var(--ease-smooth);
+  min-height: 40px;
 }
 
 .uploadBtn:hover {
@@ -515,6 +513,7 @@
   font-family: var(--font-body);
   transition: opacity var(--duration-fast) var(--ease-smooth),
               transform var(--duration-fast) var(--ease-smooth);
+  min-height: 40px;
 }
 
 .primaryBtn:disabled { opacity: 0.4; cursor: not-allowed; }
@@ -597,6 +596,8 @@
   color: var(--color-text-heading);
   transition: border-color var(--duration-fast) var(--ease-smooth),
               box-shadow var(--duration-fast) var(--ease-smooth);
+  /* Prevent iOS zoom on focus (font-size must be >= 16px or use this) */
+  font-size: max(13px, 16px);
 }
 
 .replaceInput:focus {
@@ -612,7 +613,7 @@
   border-radius: var(--radius-md);
   border: 1.5px solid var(--color-border);
   background: var(--color-surface);
-  font-size: 13px;
+  font-size: max(13px, 16px);
   outline: none;
   box-sizing: border-box;
   cursor: pointer;
@@ -638,6 +639,7 @@
   cursor: pointer;
   font-family: var(--font-body);
   transition: opacity var(--duration-fast) var(--ease-smooth);
+  min-height: 40px;
 }
 
 .addBtn:hover { opacity: 0.85; }
@@ -647,7 +649,8 @@
 
 /* ─── Summary Card ────────────────────────────────────────────────────────── */
 .summaryCard {
-  margin-left: 36px;
+  /* Removed margin-left: 36px — caused overflow on narrow screens */
+  margin-left: 0;
   background: var(--color-white);
   border: 1px solid var(--color-border);
   border-radius: 18px;
@@ -684,6 +687,7 @@
   text-align: right;
   max-width: 60%;
   font-family: var(--font-body);
+  word-break: break-word;
 }
 
 .divider { height: 1px; background: var(--color-border); margin: 2px 0; }
@@ -702,6 +706,7 @@
               transform var(--duration-fast) var(--ease-smooth);
   font-family: var(--font-display);
   letter-spacing: -0.2px;
+  min-height: 48px;
 }
 
 .confirmBtn:disabled { opacity: 0.6; cursor: not-allowed; }
@@ -731,24 +736,31 @@
 }
 
 /* ─── Input Bar ───────────────────────────────────────────────────────────── */
+/*
+  flex-shrink: 0 keeps it always visible.
+  padding-bottom uses safe-area-inset-bottom so it clears
+  the iOS home indicator / Android gesture bar.
+*/
 .inputBar {
   display: flex;
   gap: 8px;
-  padding: 10px 16px 12px;
+  padding: 10px 16px;
+  padding-bottom: max(12px, env(safe-area-inset-bottom, 12px));
   background: var(--color-white);
   border-top: 1px solid var(--color-border);
-  flex-shrink: 0;          /* ← never shrink, always visible at bottom */
+  flex-shrink: 0;          /* never shrink — always pinned at bottom */
   align-items: center;
   box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .textInput {
   flex: 1;
+  min-width: 0;            /* prevent flex overflow */
   padding: 11px 18px;
   border-radius: 24px;
   border: 1.5px solid var(--color-border);
   background: var(--color-surface);
-  font-size: 14px;
+  font-size: 16px;         /* 16px prevents iOS auto-zoom on focus */
   outline: none;
   font-family: var(--font-body);
   color: var(--color-text-heading);
