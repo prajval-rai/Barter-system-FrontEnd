@@ -12,33 +12,36 @@ interface Props {
   categories: Category[];
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
-
 export default function MarketplaceClient({
   initialProducts,
   initialHasNext,
   initialTotal,
   categories,
 }: Props) {
-  const [products, setProducts] = useState<Product[]>(initialProducts);
-  const [hasNext, setHasNext] = useState(initialHasNext);
-  const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(false);
+  const [products, setProducts]               = useState<Product[]>(initialProducts);
+  const [hasNext, setHasNext]                 = useState(initialHasNext);
+  const [page, setPage]                       = useState(1);
+  const [loading, setLoading]                 = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
-  const [total, setTotal] = useState(initialTotal);
-  const loaderRef = useRef<HTMLDivElement>(null);
-  const isFirstRender = useRef(true);
+  const [total, setTotal]                     = useState(initialTotal);
+  const loaderRef                             = useRef<HTMLDivElement>(null);
+  const isFirstRender                         = useRef(true);
 
   const fetchProducts = useCallback(
     async (pageNum: number, categoryId: number | null, reset = false) => {
       setLoading(true);
       try {
-        let url = `${API_BASE}/products/marketplace/?page=${pageNum}&page_size=12&sort=newest`;
+        // ✅ Call our own Next.js proxy route — no CORS, cookies handled server-side
+        let url = `/api/marketplace?page=${pageNum}&page_size=12&sort=newest`;
         if (categoryId) url += `&category=${categoryId}`;
-        const res = await fetch(url, {
-          credentials: "include", // sends cookies cross-origin (browser handles it)
-        });
+
+        const res = await fetch(url);
+        if (res.status === 401) {
+          window.location.href = "/login";
+          return;
+        }
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
         const data = await res.json();
         setProducts((prev) => (reset ? data.results : [...prev, ...data.results]));
         setHasNext(data.has_next);
