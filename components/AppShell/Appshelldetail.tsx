@@ -42,7 +42,7 @@ function Avatar({ image, name, size = 32 }: { image: string | null; name: string
   );
 }
 
-/* ─── Nav items (same as AppShell) ───────────────────── */
+/* ─── Nav items ───────────────────────────────────────── */
 const NAV_ITEMS = [
   { label: "Home",          href: "/swap",          badge: null, icon: ["M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z", "M9 22V12h6v10"] },
   { label: "Marketplace",   href: "/marketplace",   badge: null, icon: ["M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z", "M3 6h18", "M16 10a4 4 0 01-8 0"] },
@@ -62,25 +62,21 @@ const NAV_SECTIONS = [
   { label: "Account",  items: ["Profile", "Settings"] },
 ];
 
-/* ─── Drawer (hamburger menu) ─────────────────────────── */
+/* ─── Drawer ──────────────────────────────────────────── */
 function Drawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
   const drawerRef = useRef<HTMLDivElement>(null);
 
-  // Close on outside click
   useEffect(() => {
     if (!open) return;
     function handleClick(e: MouseEvent) {
-      if (drawerRef.current && !drawerRef.current.contains(e.target as Node)) {
-        onClose();
-      }
+      if (drawerRef.current && !drawerRef.current.contains(e.target as Node)) onClose();
     }
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, [open, onClose]);
 
-  // Close on Escape
   useEffect(() => {
     if (!open) return;
     function handleKey(e: KeyboardEvent) { if (e.key === "Escape") onClose(); }
@@ -92,12 +88,8 @@ function Drawer({ open, onClose }: { open: boolean; onClose: () => void }) {
 
   return (
     <>
-      {/* Backdrop */}
       <div className={`${styles.backdrop} ${open ? styles.backdropVisible : ""}`} aria-hidden="true" />
-
-      {/* Drawer panel */}
       <div ref={drawerRef} className={`${styles.drawer} ${open ? styles.drawerOpen : ""}`} aria-label="Navigation menu">
-        {/* Drawer header */}
         <div className={styles.drawerHeader}>
           <Link href="/swap" className={styles.drawerLogo} onClick={onClose}>
             <span className={styles.logoIcon}>
@@ -116,7 +108,6 @@ function Drawer({ open, onClose }: { open: boolean; onClose: () => void }) {
           </button>
         </div>
 
-        {/* Add item CTA */}
         <div className={styles.drawerCta}>
           <Link href="/add" className={styles.ctaBtn} onClick={onClose}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -126,7 +117,6 @@ function Drawer({ open, onClose }: { open: boolean; onClose: () => void }) {
           </Link>
         </div>
 
-        {/* Nav sections */}
         <nav className={styles.drawerNav}>
           {NAV_SECTIONS.map((section, si) => (
             <div key={section.label} className={`${styles.drawerSection} ${si > 0 ? styles.drawerSectionBordered : ""}`}>
@@ -141,13 +131,9 @@ function Drawer({ open, onClose }: { open: boolean; onClose: () => void }) {
                     className={`${styles.drawerNavItem} ${isActive ? styles.drawerNavItemActive : ""}`}
                     onClick={onClose}
                   >
-                    <span className={styles.drawerNavIcon}>
-                      <Icon paths={item.icon} size={17} />
-                    </span>
+                    <span className={styles.drawerNavIcon}><Icon paths={item.icon} size={17} /></span>
                     <span className={styles.drawerNavLabel}>{item.label}</span>
-                    {item.badge !== null && (
-                      <span className={styles.drawerBadge}>{item.badge}</span>
-                    )}
+                    {item.badge !== null && <span className={styles.drawerBadge}>{item.badge}</span>}
                   </Link>
                 );
               })}
@@ -155,12 +141,9 @@ function Drawer({ open, onClose }: { open: boolean; onClose: () => void }) {
           ))}
         </nav>
 
-        {/* User footer */}
         {user && (
           <div className={styles.drawerUser}>
-            <div className={styles.avatarRing}>
-              <Avatar image={user.image} name={user.name} size={32} />
-            </div>
+            <div className={styles.avatarRing}><Avatar image={user.image} name={user.name} size={32} /></div>
             <div className={styles.drawerUserInfo}>
               <span className={styles.drawerUserName}>{user.name}</span>
               <span className={styles.drawerUserEmail}>{user.email}</span>
@@ -191,10 +174,7 @@ function SearchBar() {
   }
 
   return (
-    <form
-      className={`${styles.searchForm} ${focused ? styles.searchFormFocused : ""}`}
-      onSubmit={handleSubmit}
-    >
+    <form className={`${styles.searchForm} ${focused ? styles.searchFormFocused : ""}`} onSubmit={handleSubmit}>
       <button type="submit" className={styles.searchIconBtn} aria-label="Search">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <circle cx="11" cy="11" r="8" />
@@ -224,10 +204,8 @@ function SearchBar() {
 /* ─── Top Bar ─────────────────────────────────────────── */
 function TopBar({ onHamburger }: { onHamburger: () => void }) {
   const { user } = useAuth();
-
   return (
     <header className={styles.topbar}>
-      {/* Left: hamburger + logo */}
       <div className={styles.topbarLeft}>
         <button className={styles.hamburger} onClick={onHamburger} aria-label="Open menu">
           <span /><span /><span />
@@ -243,13 +221,7 @@ function TopBar({ onHamburger }: { onHamburger: () => void }) {
           <span className={styles.logoText}>Exchangeit</span>
         </Link>
       </div>
-
-      {/* Center: search */}
-      <div className={styles.topbarCenter}>
-        <SearchBar />
-      </div>
-
-      {/* Right: icons + user */}
+      <div className={styles.topbarCenter}><SearchBar /></div>
       <div className={styles.topbarRight}>
         <Link href="/notifications" className={styles.iconBtn} aria-label="Notifications">
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -258,21 +230,18 @@ function TopBar({ onHamburger }: { onHamburger: () => void }) {
           </svg>
           <span className={styles.notifDot} />
         </Link>
-
         <Link href="/messages" className={styles.iconBtn} aria-label="Messages">
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
           </svg>
           <span className={styles.msgBadge}>2</span>
         </Link>
-
         <Link href="/add" className={styles.addBtn}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
             <path d="M12 5v14M5 12h14" />
           </svg>
           <span>Add Item</span>
         </Link>
-
         <Link href="/profile" className={styles.userBtn} aria-label="Profile">
           <div className={styles.avatarRing}>
             <Avatar image={user?.image ?? null} name={user?.name ?? "U"} size={30} />
@@ -284,15 +253,21 @@ function TopBar({ onHamburger }: { onHamburger: () => void }) {
   );
 }
 
-/* ─── AppShellDetail (exported) ───────────────────────── */
-export default function AppShellDetail({ children }: { children: React.ReactNode }) {
+/* ─── AppShellDetail ──────────────────────────────────── */
+export default function AppShellDetail({
+  children,
+  variant,
+}: {
+  children: React.ReactNode;
+  variant?: "chat";
+}) {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   return (
-    <div className={styles.shell}>
+    <div className={variant === "chat" ? styles.shellChat : styles.shell}>
       <TopBar onHamburger={() => setDrawerOpen(true)} />
       <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
-      <main className={styles.content}>
+      <main className={variant === "chat" ? styles.contentChat : styles.content}>
         {children}
       </main>
     </div>
