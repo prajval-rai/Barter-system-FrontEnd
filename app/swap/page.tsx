@@ -65,6 +65,11 @@ export default function DashboardPage() {
         <div className={styles.emptyPage}>
           <DashboardTopBar />
           <EmptyWelcomeHero />
+          <ProfileCompletionBanner
+            progress={completionPercentage}
+            incompleteFields={incompleteFields}
+            onProfileSaved={fetchCompletion}
+          />
           <EmptyHowItWorks />
           <div className={styles.emptyBottomGrid}>
             <EmptyNoItems />
