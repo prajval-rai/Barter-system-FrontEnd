@@ -103,7 +103,6 @@ function msgReducer(s: MsgState, a: MsgAction): MsgState {
 /* ─────────────────────────────────────────
    CONSTANTS & HELPERS
 ───────────────────────────────────────── */
-const BASE       = process.env.NEXT_PUBLIC_BACKEND_URL
 const MAX_IMAGES = 4;
 const MAX_VIDEO  = 1;
 
@@ -138,7 +137,7 @@ const truncate = (s: string, n = 38) => s.length > n ? s.slice(0, n) + "…" : s
 ───────────────────────────────────────── */
 async function fetchWsToken(): Promise<string | null> {
   try {
-    const r = await fetch(`${BASE}accounts/ws-token/`, { credentials: "include" });
+    const r = await fetch(`/api/accounts/ws-token/`);
     if (!r.ok) return null;
     return (await r.json()).token ?? null;
   } catch { return null; }
@@ -156,7 +155,7 @@ async function requestNotifPermission() {
 
 function showBrowserNotif(title: string, body: string, icon?: string) {
   if (!("Notification" in window) || Notification.permission !== "granted") return;
-  if (document.visibilityState === "visible") return; // only when tab is hidden
+  if (document.visibilityState === "visible") return;
   new Notification(title, { body, icon: icon ?? "/favicon.ico", tag: "trade-chat" });
 }
 
@@ -358,16 +357,23 @@ function RatingModal({ req, userEmail, onDone }: { req: AcceptedRequest; userEma
   const [done, setDone]     = useState(false);
   const otherUser = req.from_user === userEmail ? req.to_user : req.from_user;
   const labels    = ["", "Terrible 😬", "Bad 😕", "Okay 😐", "Good 😊", "Excellent 🤩"];
-  const submit    = async () => {
-    if (rating === 0) return; setLoading(true);
+
+  const submit = async () => {
+    if (rating === 0) return;
+    setLoading(true);
     try {
-      await fetch(`${BASE}barter/rate/${req.id}/`, {
-        method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include",
-        body: JSON.stringify({ rating, review, rated_user: otherUser }),
+      await fetch(`/api/barter/rate/${req.id}/`, {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ rating, review, rated_user: otherUser }),
       });
-      setDone(true); setTimeout(onDone, 1800);
-    } catch { setLoading(false); }
+      setDone(true);
+      setTimeout(onDone, 1800);
+    } catch {
+      setLoading(false);
+    }
   };
+
   return (
     <div className={styles.modalOverlay}>
       <div className={styles.modalBox} style={{ maxWidth: 420 }}>
@@ -422,28 +428,42 @@ function OtpModal({ req, userEmail, onComplete, onClose }: {
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState<string | null>(null);
   const [copied, setCopied]   = useState(false);
+
   useEffect(() => {
-    if (!isInitiator) return; setLoading(true);
-    fetch(`${BASE}chat/request/${req.id}/otp/generate/`, { method: "POST", credentials: "include" })
-      .then(r => r.json()).then(d => { setOtp(d.otp); setLoading(false); })
+    if (!isInitiator) return;
+    setLoading(true);
+    fetch(`/api/chat/request/${req.id}/otp/generate/`, { method: "POST" })
+      .then(r => r.json())
+      .then(d => { setOtp(d.otp); setLoading(false); })
       .catch(() => { setError("Failed to generate OTP"); setLoading(false); });
   }, [isInitiator, req.id]);
+
   const copyOtp = () => {
-    if (!otp) return; navigator.clipboard.writeText(otp);
-    setCopied(true); setTimeout(() => setCopied(false), 2000);
+    if (!otp) return;
+    navigator.clipboard.writeText(otp);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
+
   const submitOtp = async () => {
-    if (!input.trim()) return; setLoading(true); setError(null);
+    if (!input.trim()) return;
+    setLoading(true);
+    setError(null);
     try {
-      const res  = await fetch(`${BASE}chat/request/${req.id}/otp/verify/`, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        credentials: "include", body: JSON.stringify({ otp: input.trim() }),
+      const res  = await fetch(`/api/chat/request/${req.id}/otp/verify/`, {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ otp: input.trim() }),
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error ?? "Invalid OTP. Try again."); setLoading(false); return; }
       onComplete();
-    } catch { setError("Network error. Try again."); setLoading(false); }
+    } catch {
+      setError("Network error. Try again.");
+      setLoading(false);
+    }
   };
+
   return (
     <div className={styles.modalOverlay}>
       <div className={styles.modalBox} style={{ maxWidth: 400 }}>
@@ -458,7 +478,8 @@ function OtpModal({ req, userEmail, onComplete, onClose }: {
           </div>
         </div>
         {isInitiator ? (
-          loading ? <div className={styles.otpLoading}><Loader2 size={24} className={styles.spin} /><span>Generating OTP…</span></div>
+          loading
+            ? <div className={styles.otpLoading}><Loader2 size={24} className={styles.spin} /><span>Generating OTP…</span></div>
             : otp ? (
               <div className={styles.otpDisplay}>
                 <div className={styles.otpCode}>{otp}</div>
@@ -787,16 +808,13 @@ function ChatView({
   const isLocked    = req.status !== "accepted";
   const messages    = msgState.list;
 
-  // Clear unread badge when chat opens
   useEffect(() => { onMarkRead(req.id); }, [req.id, onMarkRead]);
 
   const onMessage = useCallback((msg: Message, pk?: string) => {
     dispatch(pk ? { type: "CONFIRM", pendingKey: pk, confirmed: msg } : { type: "ADD", msg });
-    // Only notify parent for real incoming messages (not our own confirms)
     if (!pk) onIncomingMessage(req.id, msg);
   }, [req.id, onIncomingMessage]);
 
-  // ── History: update preview only, never increment unread ──────────────────
   const onHistory = useCallback((msgs: Message[]) => {
     dispatch({ type: "HISTORY", msgs });
     if (msgs.length > 0) onHistoryPreview(req.id, msgs[msgs.length - 1]);
@@ -844,23 +862,26 @@ function ChatView({
     const optimisticMedia = attachments.map(a => ({ type: a.type, url: a.previewUrl }));
     const optimistic: Message = { id: pk, text, sender: userEmail, created_at: now, seen: false, pending: true, pendingKey: pk, media: optimisticMedia };
     dispatch({ type: "OPTIMISTIC", msg: optimistic });
-    // Update sidebar preview immediately (won't increment unread since it's our own message)
     onIncomingMessage(req.id, { ...optimistic, pending: false });
     endRef.current?.scrollIntoView({ behavior: "smooth" });
     const uploadedMedia = await Promise.all(attachments.map(async a => ({ type: a.type, url: await uploadMediaDummy(a.file) })));
     sendWs({ type: "message", text, pending_key: pk, media: uploadedMedia });
   }, [userEmail, sendWs, req.id, onIncomingMessage]);
 
+  // ✅ Fixed: correct proxy URL, await, method, body, variable name
   const patchDeal = async (status: "cancelled" | "fraud") => {
     setActionLoading(true);
     try {
-      const res = await fetch(`${BASE}barter/request/${req.id}/`, {
-        method: "PATCH", headers: { "Content-Type": "application/json" },
-        credentials: "include", body: JSON.stringify({ status }),
+      const res = await fetch(`/api/barter/request/${req.id}/`, {
+        method:  "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ status }),
       });
       if (!res.ok) throw new Error();
       onDealAction(status);
-    } catch { setActionLoading(false); }
+    } catch {
+      setActionLoading(false);
+    }
   };
 
   const handleOtpComplete = () => { setModal("rating"); onDealAction("completed"); };
@@ -959,7 +980,6 @@ function ChatListItem({ req, other, isActive, isDone, isOnline, unread, lastMsg,
       onClick={onSelect}
     >
       {isDone && <div className={styles.chatItemDoneStripe} />}
-
       <div className={styles.chatItemAvatarWrap}>
         <div className={`${styles.chatItemAvatar} ${isDone ? styles.chatItemAvatarDone : ""}`}>
           {req.status === "completed" ? "🏆"
@@ -969,9 +989,7 @@ function ChatListItem({ req, other, isActive, isDone, isOnline, unread, lastMsg,
         </div>
         {!isDone && isOnline && <span className={styles.onlineDot} />}
       </div>
-
       <div className={styles.chatItemBody}>
-        {/* Row 1: name + badge + time */}
         <div className={styles.chatItemTop}>
           <span className={`${styles.chatItemName} ${hasUnread ? styles.chatItemNameBold : ""}`}>
             {other.split("@")[0]}
@@ -989,8 +1007,6 @@ function ChatListItem({ req, other, isActive, isDone, isOnline, unread, lastMsg,
             </span>
           </div>
         </div>
-
-        {/* Row 2: preview + unread badge */}
         <div className={styles.chatItemPreviewRow}>
           <span className={`${styles.chatItemPreview} ${hasUnread ? styles.chatItemPreviewBold : ""}`}>
             {lastMsg === "__media__"
@@ -1003,8 +1019,6 @@ function ChatListItem({ req, other, isActive, isDone, isOnline, unread, lastMsg,
             </span>
           )}
         </div>
-
-        {/* Row 3: trade products */}
         <div className={styles.chatItemTrade}>
           <span className={styles.chatItemProduct}>
             <ProductThumb product={req.request_product} imgClassName={styles.chatItemProductImg} emptyClassName={styles.chatItemProductEmpty} onProductClick={onProductClick} />
@@ -1041,7 +1055,6 @@ export default function Chats() {
   const [productModalId, setProductModalId] = useState<number | null>(null);
   const [chatMeta, setChatMeta]             = useState<Record<number, ChatMeta>>({});
 
-  // Request browser notification permission on mount
   useEffect(() => { requestNotifPermission(); }, []);
 
   const handleProductClick = useCallback((id: number) => setProductModalId(id), []);
@@ -1050,62 +1063,51 @@ export default function Chats() {
     setToast({ msg, ok }); setTimeout(() => setToast(null), 4000);
   };
 
-  // Stable ref to selected so callbacks don't go stale
   const selectedRef = useRef<AcceptedRequest | null>(null);
   useEffect(() => { selectedRef.current = selected; }, [selected]);
 
-  // Add this hook in the Chats component
-useEffect(() => {
-  if (!user?.email) return;
-  let ws: WebSocket;
-  let reconnTimer: ReturnType<typeof setTimeout>;
+  // ── Global unread WS ──
+  useEffect(() => {
+    if (!user?.email) return;
+    let ws: WebSocket;
+    let reconnTimer: ReturnType<typeof setTimeout>;
 
-  const connect = async () => {
-    const token = await fetchWsToken();
-    const qs    = token ? `?token=${encodeURIComponent(token)}` : "";
-    ws = new WebSocket(`${process.env.NEXT_PUBLIC_WEB_SOCEKT}ws/unread/${qs}`);
+    const connect = async () => {
+      const token = await fetchWsToken();
+      const qs    = token ? `?token=${encodeURIComponent(token)}` : "";
+      ws = new WebSocket(`${process.env.NEXT_PUBLIC_WEB_SOCEKT}ws/unread/${qs}`);
 
-    ws.onmessage = (e) => {
-      const d = JSON.parse(e.data);
-      if (d.type === "unread_counts") {
-        // d.counts = { "23": 2, "13": 5, ... }
-        setChatMeta(prev => {
-          const next = { ...prev };
-          Object.entries(d.counts as Record<string, number>).forEach(([id, count]) => {
-            const reqId = Number(id);
-            // Don't overwrite if chat is currently open (already zeroed locally)
-            if (selectedRef.current?.id === reqId) return;
-            next[reqId] = { ...(next[reqId] ?? { lastMsg: "", lastTime: "", lastSender: "" }), unread: count };
+      ws.onmessage = (e) => {
+        const d = JSON.parse(e.data);
+        if (d.type === "unread_counts") {
+          setChatMeta(prev => {
+            const next = { ...prev };
+            Object.entries(d.counts as Record<string, number>).forEach(([id, count]) => {
+              const reqId = Number(id);
+              if (selectedRef.current?.id === reqId) return;
+              next[reqId] = { ...(next[reqId] ?? { lastMsg: "", lastTime: "", lastSender: "" }), unread: count };
+            });
+            Object.keys(next).forEach(id => {
+              if (!(id in d.counts) && next[Number(id)]?.unread > 0) {
+                if (selectedRef.current?.id !== Number(id))
+                  next[Number(id)] = { ...next[Number(id)], unread: 0 };
+              }
+            });
+            return next;
           });
-          // Zero out any chats not in the counts (all seen)
-          Object.keys(next).forEach(id => {
-            if (!(id in d.counts) && next[Number(id)]?.unread > 0) {
-              if (selectedRef.current?.id !== Number(id))
-                next[Number(id)] = { ...next[Number(id)], unread: 0 };
-            }
-          });
-          return next;
-        });
-      }
+        }
+      };
+
+      ws.onclose = () => { reconnTimer = setTimeout(connect, 3000); };
     };
 
-    ws.onclose = () => {
-      reconnTimer = setTimeout(connect, 3000);
-    };
-  };
+    connect();
+    return () => { clearTimeout(reconnTimer); ws?.close(); };
+  }, [user?.email]);
 
-  connect();
-  return () => {
-    clearTimeout(reconnTimer);
-    ws?.close();
-  };
-}, [user?.email]);
-
-  // Stable ref to requests list (for looking up chat names in notifs)
   const requestsRef = useRef<AcceptedRequest[]>([]);
   useEffect(() => { requestsRef.current = requests; }, [requests]);
 
-  /* ── Called for LIVE incoming messages (increments unread if chat not open) */
   const handleIncomingMessage = useCallback((reqId: number, msg: Message) => {
     setChatMeta(prev => {
       const cur         = prev[reqId];
@@ -1113,7 +1115,6 @@ useEffect(() => {
       const isFromOther = msg.sender !== user?.email;
       const isOpen      = selectedRef.current?.id === reqId;
 
-      // Fire browser notification for messages from others when chat is not focused
       if (isFromOther && !isOpen) {
         const req  = requestsRef.current.find(r => r.id === reqId);
         const name = req
@@ -1139,7 +1140,6 @@ useEffect(() => {
     });
   }, [user?.email]);
 
-  /* ── Called for history load — updates preview but NEVER increments unread */
   const handleHistoryPreview = useCallback((reqId: number, msg: Message) => {
     setChatMeta(prev => {
       const cur     = prev[reqId];
@@ -1148,10 +1148,8 @@ useEffect(() => {
       return {
         ...prev,
         [reqId]: {
-          unread:     cur?.unread ?? 0,  // never touched here
-          lastMsg:    msg.media?.length && !msg.text
-                        ? "__media__"
-                        : truncate(msg.text || ""),
+          unread:     cur?.unread ?? 0,
+          lastMsg:    msg.media?.length && !msg.text ? "__media__" : truncate(msg.text || ""),
           lastTime:   msg.created_at,
           lastSender: msg.sender,
         },
@@ -1159,7 +1157,6 @@ useEffect(() => {
     });
   }, []);
 
-  /* ── Called when user opens a chat — zeros the badge */
   const handleMarkRead = useCallback((reqId: number) => {
     setChatMeta(prev => {
       if (!prev[reqId] || prev[reqId].unread === 0) return prev;
@@ -1167,11 +1164,10 @@ useEffect(() => {
     });
   }, []);
 
-  /* ── Load chats from API, seed chatMeta from annotations */
   const loadChats = async () => {
     setChatLoading(true); setChatError(null);
     try {
-      const res  = await fetch(`${BASE}barter/get_accepted_request/`, { credentials: "include" });
+      const res  = await fetch(`/api/barter/accepted-requests/`);
       if (!res.ok) throw new Error("Failed to load chats");
       const data: AcceptedRequest[] = await res.json();
       setRequests(data);
@@ -1181,10 +1177,10 @@ useEffect(() => {
         data.forEach(r => {
           if (!next[r.id]) {
             next[r.id] = {
-              unread:     r.unread_count           ?? 0,
-              lastMsg:    r.last_message           ? truncate(r.last_message) : "",
-              lastTime:   r.last_message_time      ?? r.created_at,
-              lastSender: r.last_message_sender    ?? "",
+              unread:     r.unread_count        ?? 0,
+              lastMsg:    r.last_message        ? truncate(r.last_message) : "",
+              lastTime:   r.last_message_time   ?? r.created_at,
+              lastSender: r.last_message_sender ?? "",
             };
           }
         });
@@ -1198,7 +1194,7 @@ useEffect(() => {
 
   const loadBarterRequests = async () => {
     try {
-      const res  = await fetch(`${BASE}barter/requests/`, { credentials: "include" });
+      const res  = await fetch(`/api/barter/requests/`);
       if (!res.ok) return;
       const data: BarterRequest[] = await res.json();
       setBarterRequests(data.filter(r => r.status === "pending"));
@@ -1209,12 +1205,14 @@ useEffect(() => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { loadAll(); }, []);
 
+  // ✅ Fixed: uses proxy, no credentials:"include", no BASE
   const handleAccept = async (id: number) => {
     setAccepting(id);
     try {
-      const res = await fetch(`${BASE}barter/request/${id}/`, {
-        method: "PATCH", headers: { "Content-Type": "application/json" },
-        credentials: "include", body: JSON.stringify({ status: "accepted" }),
+      const res = await fetch(`/api/barter/request/${id}/`, {
+        method:  "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ status: "accepted" }),
       });
       if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.error || err.detail || "Failed to accept"); }
       setBarterRequests(prev => prev.filter(r => r.id !== id));
@@ -1224,12 +1222,14 @@ useEffect(() => {
     finally { setAccepting(null); }
   };
 
+  // ✅ Fixed: uses proxy, no credentials:"include", no BASE
   const handleReject = async (id: number) => {
     setRejecting(id);
     try {
-      const res = await fetch(`${BASE}barter/request/${id}/`, {
-        method: "PATCH", headers: { "Content-Type": "application/json" },
-        credentials: "include", body: JSON.stringify({ status: "rejected" }),
+      const res = await fetch(`/api/barter/request/${id}/`, {
+        method:  "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ status: "rejected" }),
       });
       if (!res.ok) throw new Error("Failed to reject");
       setBarterRequests(prev => prev.filter(r => r.id !== id));
