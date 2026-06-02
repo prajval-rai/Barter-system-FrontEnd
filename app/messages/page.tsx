@@ -1368,7 +1368,7 @@ export default function Chats() {
         {!selected ? (
           <div className={styles.emptyWindow}>
             <div className={styles.emptyIconWrap}><MessageCircle size={34} /></div>
-            <h3 className={styles.emptyTitle}>Pick a trade chat</h3>
+            <h3 className={styles.emptyTitle}>Pick a trade chattttttttttttttttttttttt</h3>
             <p className={styles.emptyText}>Select a conversation — or just stare at this screen. Your call 🐸</p>
           </div>
         ) : (
