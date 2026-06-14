@@ -21,12 +21,12 @@ interface UserProfile {
 
 function getCompletionData(profile: UserProfile) {
   const fields: { key: keyof UserProfile; label: string }[] = [
-    { key: "address", label: "Address" },
-    { key: "description", label: "Description" },
+    { key: "address",        label: "Address" },
+    { key: "description",    label: "Description" },
     { key: "contact_number", label: "Contact number" },
-    { key: "city", label: "City" },
-    { key: "pincode", label: "Pincode" },
-    { key: "latitude", label: "Location" },
+    { key: "city",           label: "City" },
+    { key: "pincode",        label: "Pincode" },
+    { key: "latitude",       label: "Location" },
   ];
 
   const incompleteFields = fields
@@ -38,9 +38,23 @@ function getCompletionData(profile: UserProfile) {
 }
 
 export default function ProfileCard() {
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [profile, setProfile]                       = useState<UserProfile | null>(null);
+  const [loading, setLoading]                       = useState(true);
+  const [error, setError]                           = useState<string | null>(null);
+  const [completionPercentage, setCompletionPercentage] = useState<number>(0);
+  const [incompleteFields, setIncompleteFields]     = useState<string[]>([]);
+
+  const fetchCompletion = async () => {
+    try {
+      const res  = await fetch("/api/completion");
+      const data = await res.json();
+      setCompletionPercentage(data.completion_percentage ?? 0);
+      setIncompleteFields(data.incomplete_fields ?? []);
+    } catch {
+      setCompletionPercentage(0);
+      setIncompleteFields([]);
+    }
+  };
 
   const fetchProfile = async () => {
     try {
@@ -56,65 +70,83 @@ export default function ProfileCard() {
     }
   };
 
-  useEffect(() => { fetchProfile(); }, []);
+  useEffect(() => {
+    fetchProfile();
+    fetchCompletion();
+  }, []);
 
-  if (loading) return <p>Loading profile...</p>;
-  if (error)   return <p>Error: {error}</p>;
+  const handleProfileSaved = async () => {
+    await Promise.all([fetchProfile(), fetchCompletion()]);
+  };
+
+  if (loading) {
+    return (
+      <AppShell>
+        <p className={styles.state}>Loading profile...</p>
+      </AppShell>
+    );
+  }
+
+  if (error) {
+    return (
+      <AppShell>
+        <p className={styles.state}>Error: {error}</p>
+      </AppShell>
+    );
+  }
+
   if (!profile) return null;
-
-  const { progress, incompleteFields } = getCompletionData(profile);
 
   return (
     <AppShell>
-        <div className={styles.wrapper}>
-      <ProfileCompletionBanner
-        progress={progress}
-        incompleteFields={incompleteFields}
-        onProfileSaved={fetchProfile}  
-      />
+      <div className={styles.wrapper}>
+        <ProfileCompletionBanner
+          progress={completionPercentage}
+          incompleteFields={incompleteFields}
+          onProfileSaved={handleProfileSaved}
+        />
 
-      <div className={styles.card}>
-        <div className={styles.avatar}>
-          {profile.city?.[0]?.toUpperCase() ?? "U"}
-        </div>
+        <div className={styles.card}>
+          <div className={styles.avatar}>
+            {profile.city?.[0]?.toUpperCase() ?? "U"}
+          </div>
 
-        <div className={styles.info}>
-          <div className={styles.row}>
-            <span className={styles.label}>Role</span>
-            <span className={styles.badge}>{profile.role}</span>
-          </div>
-          <div className={styles.row}>
-            <span className={styles.label}>City</span>
-            <span className={styles.value}>{profile.city || "—"}</span>
-          </div>
-          <div className={styles.row}>
-            <span className={styles.label}>Pincode</span>
-            <span className={styles.value}>{profile.pincode || "—"}</span>
-          </div>
-          <div className={styles.row}>
-            <span className={styles.label}>Contact</span>
-            <span className={styles.value}>{profile.contact_number || "—"}</span>
-          </div>
-          <div className={styles.row}>
-            <span className={styles.label}>Address</span>
-            <span className={styles.value}>{profile.address || "—"}</span>
-          </div>
-          {profile.description && (
+          <div className={styles.info}>
             <div className={styles.row}>
-              <span className={styles.label}>About</span>
-              <span className={styles.value}>{profile.description}</span>
+              <span className={styles.label}>Role</span>
+              <span className={styles.badge}>{profile.role}</span>
             </div>
-          )}
-          {profile.rating !== null && (
             <div className={styles.row}>
-              <span className={styles.label}>Rating</span>
-              <span className={styles.value}>{profile.rating} / 5</span>
+              <span className={styles.label}>City</span>
+              <span className={styles.value}>{profile.city || "—"}</span>
             </div>
-          )}
+            <div className={styles.row}>
+              <span className={styles.label}>Pincode</span>
+              <span className={styles.value}>{profile.pincode || "—"}</span>
+            </div>
+            <div className={styles.row}>
+              <span className={styles.label}>Contact</span>
+              <span className={styles.value}>{profile.contact_number || "—"}</span>
+            </div>
+            <div className={styles.row}>
+              <span className={styles.label}>Address</span>
+              <span className={styles.value}>{profile.address || "—"}</span>
+            </div>
+            {profile.description && (
+              <div className={styles.row}>
+                <span className={styles.label}>About</span>
+                <span className={styles.value}>{profile.description}</span>
+              </div>
+            )}
+            {profile.rating !== null && (
+              <div className={styles.row}>
+                <span className={styles.label}>Rating</span>
+                <span className={styles.value}>{profile.rating} / 5</span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
     </AppShell>
-    
   );
 }
