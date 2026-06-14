@@ -597,3 +597,54 @@
   background: #1447C0;
   transform: scale(1.06);
 }
+
+/* Coming soon — disabled nav items */
+.navItemDisabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--border-radius-md);
+}
+
+.comingSoonPill {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 500;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: #faeeda;
+  color: #854f0b;
+}
+
+.badgeSoon {
+  background: #faeeda;
+  color: #854f0b;
+}
+
+/* Mobile coming soon */
+.mobileNavItemDisabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  position: relative;
+}
+
+.mobileComingSoonPill {
+  font-size: 9px;
+  font-weight: 500;
+  padding: 1px 5px;
+  border-radius: 999px;
+  background: #faeeda;
+  color: #854f0b;
+  position: absolute;
+  top: -4px;
+  right: -4px;
+}
