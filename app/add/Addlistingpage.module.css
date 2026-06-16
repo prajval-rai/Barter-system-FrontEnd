@@ -684,3 +684,23 @@
 }
 .sendBtn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
 .sendBtn:hover:not(:disabled) { opacity: 0.9; transform: scale(1.05); }
+
+.summaryImgStrip {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  margin-bottom: 12px;
+  scrollbar-width: none;          /* Firefox */
+}
+.summaryImgStrip::-webkit-scrollbar { display: none; } /* Chrome/Safari */
+ 
+/* Each thumbnail in the confirm strip */
+.summaryThumb {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 10px;
+  flex-shrink: 0;
+  border: 1.5px solid var(--color-border, #e5e7eb);
+}

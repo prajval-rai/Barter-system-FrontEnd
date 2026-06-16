@@ -16,7 +16,7 @@ interface ChatMessage {
   role: "bot" | "user";
   text: string;
   timestamp: Date;
-  isError?: boolean;   // marks AI validation error bubbles
+  isError?: boolean;
 }
 
 interface ReplaceOptionDraft {
@@ -38,8 +38,9 @@ interface ProductForm {
   images: File[];
 }
 
+// ── NEW ORDER: category is first ──
 type Step =
-  | "title" | "description" | "category" | "condition"
+  | "category" | "title" | "description" | "condition"
   | "purchase_year" | "images" | "ask_replace"
   | "replace_options" | "confirm" | "done";
 
@@ -52,21 +53,21 @@ const CONDITIONS_EMOJI: Record<string, string> = {
 };
 
 const STEP_QUESTIONS: Record<Step, string> = {
-  title:           "Arre bhai! 👋 Kya bechna hai? Item ka naam bata!\n_e.g. Sony WH-1000XM5, Purani Cycle, iPhone 13_",
-  description:     "Wah choice! ✨ Ab thoda detail de — condition kaisi hai, kyun bech raha hai, koi kharabi toh nahi?\n_e.g. 6 mahine purana, ek chhoti si scratch hai, baaki bilkul sahi_",
-  category:        "Theek hai bhai 😎 Kaunsi category mein aata hai yeh item?",
-  condition:       "Sachchi bata 😅 Item ki condition kaisi hai?",
-  purchase_year:   "Kab liya tha yeh? 📅 Saal bata ya **skip** likh de agar yaad nahi",
-  images:          "Photo daal bhai! 📸 Bina photo ke koi nahi kharidega (max 5 photos). Jitni achi photo, utna jaldi deal!",
-  ask_replace:     "Almost ho gaya! 🎯 Koi specific cheez chahiye badle mein, ya kuch bhi chalega?",
-  replace_options: "Kya chahiye badle mein? 💱 Jo bhi item chahiye wo add kar — ek se zyada bhi dal sakta hai!",
-  confirm:         "Ek dum sahi lag raha hai! 🔥 Yeh raha tera listing summary. Sab theek hai?",
-  done:            "🎉 Bhai tu officially trader ban gaya! Teri listing live ho gayi, review mein hai. Ab offers ka wait kar 💸",
+  category:        "Hello! 👋\nLet's list your item for exchange.\n\nPlease choose a **category** to get started.",
+  title:           "Great choice! ✨ What's the **name or model** of your item?\n_e.g. Sony WH-1000XM5, iPhone 13, Trek Bicycle_",
+  description:     "Nice! Now tell us a bit more — condition, why you're selling, any issues?\n_e.g. 6 months old, minor scratch on back, works perfectly_",
+  condition:       "How would you describe the **condition** of your item?",
+  purchase_year:   "When did you buy it? 📅 Enter the year or type **skip** if you're not sure.",
+  images:          "Add some photos! 📸 Good photos get faster deals. _(max 5 photos)_",
+  ask_replace:     "Almost done! 🎯 Do you want something specific in exchange, or is anything fine?",
+  replace_options: "What would you like in return? 💱 You can add more than one item!",
+  confirm:         "Looking great! 🔥 Here's your listing summary. Everything look good?",
+  done:            "🎉 Your item is now live and under review. Wait for offers to roll in! 💸",
 };
 
 const STEP_ORDER: Step[] = [
-  "title","description","category","condition",
-  "purchase_year","images","ask_replace","replace_options","confirm","done",
+  "category", "title", "description", "condition",
+  "purchase_year", "images", "ask_replace", "replace_options", "confirm", "done",
 ];
 
 const REQUIRED_PROFILE_FIELDS = ["latitude", "longitude", "address", "city", "pincode", "contact_number"];
@@ -81,39 +82,37 @@ function formatTime(d: Date) {
 
 function getErrorEmoji(msg: string): string {
   if (msg.includes("photo") || msg.includes("📸")) return "📸";
-  if (msg.includes("naam") || msg.includes("product")) return "🤔";
-  if (msg.includes("saal") || msg.includes("skip")) return "📅";
-  if (msg.includes("description") || msg.includes("likh")) return "✍️";
+  if (msg.includes("name") || msg.includes("product")) return "🤔";
+  if (msg.includes("year") || msg.includes("skip")) return "📅";
+  if (msg.includes("description")) return "✍️";
   if (msg.includes("item") || msg.includes("add")) return "📦";
   return "⚠️";
 }
 
-// ─── OpenAI validator ─────────────────────────────────────────────────────────
+// ─── AI Validator ─────────────────────────────────────────────────────────────
 
 async function validateWithAI(step: Step, value: string): Promise<{ ok: boolean; message: string }> {
   const prompts: Partial<Record<Step, string>> = {
-    title: `Tu ek Indian barter marketplace ka funny aur bindaas assistant hai jiska naam SwapBot hai. Hinglish mein baat kar — matlab Hindi + English mix, jaise desi log normally bolte hain.
-      User ne yeh product name daala hai listing ke liye: "${value}".
+    title: `You are SwapBot, a friendly assistant for an Indian barter marketplace. Speak in simple, casual English.
+      The user entered this as a product name for their listing: "${value}".
       Rules:
-      - Agar real product name lagta hai (mobile, laptop, book, kapde, cycle, etc.) → ok: true, message: ""
-      - Agar "hi", "hello", "hey" jaisa greeting hai → ok: false, e.g. "bhai 'hi' bol ke kya bechega? 😂 product ka naam likh na!"
-      - Agar random gibberish hai jaise "asdfgh", "qwerty" → ok: false, e.g. "yeh product hai ya bijli ka bill? 😭 seedha naam likh bhai"
-      - Agar question hai jaise "kya bechun?" → ok: false, e.g. "mujhse pooch raha hai?? tera saman tu hi jaanta hai bhai 😂"
-      - Agar single random word hai jo product nahi lagta → ok: false, e.g. "bhai yeh naam hai ya joke? thoda aur specific ho ja 😅"
-      - Message 12 words se kam rakho, 1 emoji max, Hinglish mein rakho, roast funny ho mean nahi
-      Sirf JSON return karo (no markdown): {"ok": true/false, "message": "..."}`,
+      - If it looks like a real product name (phone, laptop, book, clothes, cycle, etc.) → ok: true, message: ""
+      - If it's a greeting like "hi", "hello" → ok: false, message: "That looks like a greeting, not a product name 😅 What item are you listing?"
+      - If it's random gibberish like "asdfgh" → ok: false, message: "That doesn't look like a product name 🤔 Try something like 'iPhone 13' or 'Cycle'"
+      - If it's a question like "what should I sell?" → ok: false, message: "You know your stuff best! 😄 Tell me what you'd like to list."
+      - Keep messages under 12 words, max 1 emoji, friendly tone
+      Return only JSON (no markdown): {"ok": true/false, "message": "..."}`,
 
-    description: `Tu ek Indian barter marketplace ka funny aur bindaas assistant hai jiska naam SwapBot hai. Hinglish mein baat kar — matlab Hindi + English mix, jaise desi log normally bolte hain.
-      User ne yeh product description daali hai: "${value}".
+    description: `You are SwapBot, a friendly assistant for an Indian barter marketplace. Speak in simple, casual English.
+      The user entered this description: "${value}".
       Rules:
-      - Agar actual description hai — condition, features, kyun bech raha hai → ok: true, message: ""
-      - Agar 10 characters se kam hai → ok: false, e.g. "itni choti description?? WhatsApp status bhi isse lamba hota hai 😂"
-      - Agar sirf "good", "nice", "ok", "theek hai" jaisa hai → ok: false, e.g. "'good' likh ke soch liya kaam ho gaya? 😭 thoda detail de bhai!"
-      - Agar greeting hai jaise "hello", "namaste" → ok: false, e.g. "description mein namaste?? yeh OLX nahi hai bhai 😂 item ke baare mein bata!"
-      - Agar gibberish hai → ok: false, e.g. "bhai keyboard pe haath maar ke description likh di? 💀 dobara try kar!"
-      - Agar question hai → ok: false, e.g. "description mein sawaal?? SwapBot ka dimaag mat kha 😭 item describe kar!"
-      - Message 14 words se kam, 1 emoji max, pure Hinglish tone
-      Sirf JSON return karo (no markdown): {"ok": true/false, "message": "..."}`,
+      - If it's a real description with condition, features, or reason for selling → ok: true, message: ""
+      - If under 10 characters → ok: false, message: "That's too short! Add a little more detail 🙏"
+      - If just "good", "nice", "ok" → ok: false, message: "Can you add a bit more info? Buyers love details! 😊"
+      - If a greeting → ok: false, message: "That's a greeting, not a description 😄 Tell us about the item!"
+      - If gibberish → ok: false, message: "That doesn't look right 🙈 Please describe your item properly."
+      - Keep messages under 14 words, max 1 emoji
+      Return only JSON (no markdown): {"ok": true/false, "message": "..."}`,
   };
   const prompt = prompts[step];
   if (!prompt) return { ok: true, message: "" };
@@ -200,7 +199,7 @@ export default function AddListingPage() {
   const router = useRouter();
 
   const [messages, setMessages]               = useState<ChatMessage[]>([]);
-  const [step, setStep]                       = useState<Step>("title");
+  const [step, setStep]                       = useState<Step>("category");
   const [form, setForm]                       = useState<ProductForm>({
     title: "", description: "", category: null,
     categoryName: "", condition: "", purchase_year: "", images: [],
@@ -249,7 +248,7 @@ export default function AddListingPage() {
     setTimeout(() => inputRef.current?.focus(), 100);
   }, []);
 
-  // ── Profile check + bot init ──
+  // ── Profile check + bot init (starts at "category" now) ──
   useEffect(() => {
     if (initialized.current) return;
     initialized.current = true;
@@ -269,12 +268,12 @@ export default function AddListingPage() {
         } else {
           setProfileBlocked(false);
           setProfileChecking(false);
-          sendBot("title");
+          sendBot("category");
         }
       } catch {
         setProfileBlocked(false);
         setProfileChecking(false);
-        sendBot("title");
+        sendBot("category");
       }
     };
 
@@ -296,18 +295,17 @@ export default function AddListingPage() {
       } else {
         setIncompleteFields([]);
         setProfileBlocked(false);
-        sendBot("title");
+        sendBot("category");
       }
     } catch {
       setProfileBlocked(false);
-      sendBot("title");
+      sendBot("category");
     }
   }, [sendBot]);
 
   const addUser = (text: string) =>
     setMessages(prev => [...prev, { id: uid(), role: "user", text, timestamp: new Date() }]);
 
-  // ── showError now injects a bot bubble instead of a toast ──
   const showError = useCallback((msg: string) => {
     const emoji = getErrorEmoji(msg);
     setMessages(prev => [
@@ -318,7 +316,6 @@ export default function AddListingPage() {
         text: msg,
         timestamp: new Date(),
         isError: true,
-        // store emoji separately so render can split them
         ...(({ _emoji: emoji } as any)),
       } as ChatMessage & { _emoji: string },
     ]);
@@ -336,18 +333,18 @@ export default function AddListingPage() {
     if (!val) return;
 
     if (step === "title") {
-      if (val.length < 3) return showError("Arre bhai itna chota naam? 😅 Thoda aur likh!");
+      if (val.length < 3) return showError("Name is too short! Please add a bit more. 😅");
       setAiValidating(true);
       const { ok, message } = await validateWithAI("title", val);
       setAiValidating(false);
-      if (!ok) return showError(message || "Hmm that doesn't look like a product name 🤔");
+      if (!ok) return showError(message || "That doesn't look like a product name 🤔");
       addUser(val);
       setForm(f => ({ ...f, title: val }));
       setInput("");
       await advance("title");
 
     } else if (step === "description") {
-      if (val.length < 10) return showError("Itna kam? Thoda aur likh bhai! 🙏 10 characters minimum");
+      if (val.length < 10) return showError("Too short! Please add at least 10 characters 🙏");
       setAiValidating(true);
       const { ok, message } = await validateWithAI("description", val);
       setAiValidating(false);
@@ -361,7 +358,7 @@ export default function AddListingPage() {
       const isSkip = val.toLowerCase() === "skip";
       const yr     = parseInt(val);
       if (!isSkip && (isNaN(yr) || yr < 1990 || yr > new Date().getFullYear()))
-        return showError(`Saal 1990 se ${new Date().getFullYear()} ke beech hona chahiye, ya 'skip' likh 😊`);
+        return showError(`Please enter a year between 1990 and ${new Date().getFullYear()}, or type 'skip' 😊`);
       addUser(isSkip ? "Skipped 🤷" : `${val} 📅`);
       setForm(f => ({ ...f, purchase_year: isSkip ? "" : val }));
       setInput("");
@@ -369,6 +366,7 @@ export default function AddListingPage() {
     }
   }, [input, step, advance, showError]);
 
+  // ── Category is now first ──
   const handleCategory = useCallback(async (cat: Category) => {
     addUser(`${cat.name} 🏷️`);
     setForm(f => ({ ...f, category: cat.id, categoryName: cat.name }));
@@ -388,26 +386,26 @@ export default function AddListingPage() {
   };
 
   const handleImagesDone = useCallback(async () => {
-    if (form.images.length === 0) return showError("Kam se kam 1 photo toh daal bhai! 📸");
-    addUser(`${form.images.length} photo${form.images.length > 1 ? "s" : ""} upload ho gayi 📸✓`);
+    if (form.images.length === 0) return showError("Please add at least 1 photo! 📸");
+    addUser(`${form.images.length} photo${form.images.length > 1 ? "s" : ""} uploaded 📸✓`);
     await advance("images");
   }, [form.images, advance, showError]);
 
   const handleAskReplace = useCallback(async (wantReplace: boolean) => {
     if (wantReplace) {
-      addUser("Haan bhai, specific item chahiye 🎯");
+      addUser("Yes, I want something specific 🎯");
       setStep("replace_options");
       await sendBot("replace_options");
     } else {
-      addUser("Nahi bhai, kuch bhi chalega 🤙");
+      addUser("No, anything works for me 🤙");
       setStep("confirm");
       await sendBot("confirm");
     }
   }, [sendBot]);
 
   const handleAddReplace = async () => {
-    if (!replaceForm.title.trim()) return showError("Item ka naam toh bata! 📝");
-    if (!replaceForm.category)     return showError("Category bhi choose kar bhai 🏷️");
+    if (!replaceForm.title.trim()) return showError("Please enter the item name! 📝");
+    if (!replaceForm.category)     return showError("Please choose a category too 🏷️");
     setIconLoading(true);
     const icon = await getIconForItem(replaceForm.title.trim(), replaceForm.categoryName);
     setIconLoading(false);
@@ -423,8 +421,8 @@ export default function AddListingPage() {
   };
 
   const handleReplaceDone = useCallback(async () => {
-    if (replaceOptions.length === 0) return showError("Kam se kam ek item toh add kar! 🙏");
-    addUser(`Chahiye badle mein: ${replaceOptions.map(o => o.title).join(", ")} ✓`);
+    if (replaceOptions.length === 0) return showError("Please add at least one item! 🙏");
+    addUser(`Want in exchange: ${replaceOptions.map(o => o.title).join(", ")} ✓`);
     setStep("confirm");
     await sendBot("confirm");
   }, [replaceOptions, sendBot, showError]);
@@ -491,7 +489,7 @@ export default function AddListingPage() {
           <div className={styles.page}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", flexDirection: "column", gap: "12px" }}>
               <div className={styles.loadingSpinner} />
-              <p style={{ fontSize: "0.875rem", color: "var(--color-text-subtle)" }}>Ek second bhai… 🔍</p>
+              <p style={{ fontSize: "0.875rem", color: "var(--color-text-subtle)" }}>Just a second… 🔍</p>
             </div>
           </div>
         </div>
@@ -522,10 +520,10 @@ export default function AddListingPage() {
               borderRadius: "inherit",
             }}>
               <p style={{ fontSize: "1rem", fontWeight: 600, color: "#92400E" }}>
-                ⚠️ Pehle profile complete kar bhai!
+                ⚠️ Please complete your profile first!
               </p>
               <p style={{ fontSize: "0.8rem", color: "var(--color-text-subtle)", textAlign: "center", maxWidth: "260px" }}>
-                Location aur contact details missing hain. Listing post karne ke liye yeh zaroori hai.
+                Your location and contact details are missing. These are required to post a listing.
               </p>
               <button
                 onClick={() => setProfileModalOpen(true)}
@@ -535,7 +533,7 @@ export default function AddListingPage() {
                   fontSize: "0.875rem", cursor: "pointer",
                 }}
               >
-                Profile Complete Karo
+                Complete Profile
               </button>
             </div>
           )}
@@ -554,7 +552,7 @@ export default function AddListingPage() {
                   <span className={styles.botChipName}>ListingBot</span>
                   <span className={styles.botChipStatus}>
                     <span className={styles.statusDot} />
-                    {botTyping ? "typing..." : aiValidating ? "thinking... 🧠" : "online"}
+                    {botTyping ? "typing..." : aiValidating ? "thinking… 🧠" : "online"}
                   </span>
                 </div>
               </div>
@@ -590,7 +588,6 @@ export default function AddListingPage() {
                   {msg.role === "bot" && <div className={styles.avatarSmall}>LB</div>}
                   <div className={msg.role === "bot" ? styles.botBubble : styles.userBubble}>
                     {isError ? (
-                      /* ── Error bubble: big emoji + text ── */
                       <div className={styles.bubbleText}>
                         <span className={styles.errorEmoji}>{errorMsg._emoji}</span>
                         <span className={styles.errorMsg}>{msg.text}</span>
@@ -629,7 +626,7 @@ export default function AddListingPage() {
               </div>
             )}
 
-            {/* Category chips */}
+            {/* ── STEP: Category (first step now) ── */}
             {step === "category" && !botTyping && (
               <div className={styles.chipsArea}>
                 {categories.map(cat => (
@@ -640,7 +637,7 @@ export default function AddListingPage() {
               </div>
             )}
 
-            {/* Condition chips */}
+            {/* ── STEP: Condition ── */}
             {step === "condition" && !botTyping && (
               <div className={styles.chipsArea}>
                 {CONDITIONS.map(c => (
@@ -651,12 +648,12 @@ export default function AddListingPage() {
               </div>
             )}
 
-            {/* Images */}
+            {/* ── STEP: Images ── */}
             {step === "images" && !botTyping && (
               <div className={styles.actionsArea}>
                 <input ref={fileRef} type="file" accept="image/*" multiple style={{ display: "none" }} onChange={handleImageChange} />
                 <button className={styles.uploadBtn} onClick={() => fileRef.current?.click()}>
-                  📷 Photos Choose Karo
+                  📷 Choose Photos
                 </button>
                 {imagePreviews.length > 0 && (
                   <>
@@ -666,26 +663,26 @@ export default function AddListingPage() {
                       ))}
                     </div>
                     <button className={styles.primaryBtn} onClick={handleImagesDone}>
-                      Photos ho gayi ✓
+                      Done with photos ✓
                     </button>
                   </>
                 )}
               </div>
             )}
 
-            {/* Ask replace */}
+            {/* ── STEP: Ask replace ── */}
             {step === "ask_replace" && !botTyping && (
               <div className={styles.chipsArea}>
                 <button className={styles.chip} onClick={() => handleAskReplace(true)}>
-                  🎯 Haan, specific item chahiye
+                  🎯 Yes, I want something specific
                 </button>
                 <button className={styles.chip} onClick={() => handleAskReplace(false)}>
-                  🤙 Nahi, kuch bhi chalega!
+                  🤙 No, anything is fine!
                 </button>
               </div>
             )}
 
-            {/* Replace options */}
+            {/* ── STEP: Replace options ── */}
             {step === "replace_options" && !botTyping && (
               <div className={styles.actionsArea}>
                 {replaceOptions.length > 0 && (
@@ -714,7 +711,7 @@ export default function AddListingPage() {
                 <div className={styles.replaceForm}>
                   <input
                     className={styles.replaceInput}
-                    placeholder="Item ka naam (e.g. iPhone 13)"
+                    placeholder="Item name (e.g. iPhone 13)"
                     value={replaceForm.title}
                     onChange={e => setReplaceForm(f => ({ ...f, title: e.target.value }))}
                   />
@@ -732,11 +729,11 @@ export default function AddListingPage() {
                       setReplaceForm(f => ({ ...f, category: cat?.id ?? null, categoryName: cat?.name ?? "" }));
                     }}
                   >
-                    <option value="">Category choose karo…</option>
+                    <option value="">Choose a category…</option>
                     {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
                   <button className={styles.addBtn} onClick={handleAddReplace} disabled={iconLoading}>
-                    {iconLoading ? "⏳ Adding..." : "+ Option Add Karo"}
+                    {iconLoading ? "⏳ Adding..." : "+ Add Item"}
                   </button>
                 </div>
                 <div className={styles.replaceActions}>
@@ -747,35 +744,50 @@ export default function AddListingPage() {
               </div>
             )}
 
-            {/* Confirm */}
+            {/* ── STEP: Confirm — now with image previews ── */}
             {step === "confirm" && !botTyping && (
               <div className={styles.summaryCard}>
+
+                {/* ── Image preview strip at top of summary ── */}
+                {imagePreviews.length > 0 && (
+                  <div className={styles.summaryImgStrip}>
+                    {imagePreviews.map((src, i) => (
+                      <img
+                        key={i}
+                        src={src}
+                        alt={`Photo ${i + 1}`}
+                        className={styles.summaryThumb}
+                      />
+                    ))}
+                  </div>
+                )}
+
                 <SummaryRow label="📦 Item"        value={form.title} />
                 <SummaryRow label="📝 Description" value={form.description} />
                 <SummaryRow label="🏷️ Category"    value={form.categoryName} />
                 <SummaryRow label="✨ Condition"    value={form.condition} />
-                {form.purchase_year && <SummaryRow label="📅 Kab liya" value={form.purchase_year} />}
-                <SummaryRow label="📸 Photos"       value={`${form.images.length} upload hui`} />
-                <SummaryRow label="💱 Badle mein"   value={
+                {form.purchase_year && <SummaryRow label="📅 Bought In"  value={form.purchase_year} />}
+                <SummaryRow label="📸 Photos"       value={`${form.images.length} uploaded`} />
+                <SummaryRow label="💱 Want in return" value={
                   replaceOptions.length === 0
-                    ? "Kuch bhi chalega 🤙"
+                    ? "Anything works 🤙"
                     : replaceOptions.map(o => o.title).join(", ")
                 } />
                 <div className={styles.divider} />
                 <button className={styles.confirmBtn} onClick={handleConfirm} disabled={loading}>
-                  {loading ? "Post ho raha hai... ⏳" : "🚀 Confirm karo & Post karo!"}
+                  {loading ? "Posting… ⏳" : "🚀 Confirm & Post!"}
                 </button>
               </div>
             )}
 
-            {/* Done */}
+            {/* ── STEP: Done ── */}
             {step === "done" && !botTyping && (
               <div className={styles.actionsArea}>
-                <button className={styles.primaryBtn} onClick={() => router.push("/")}>
-                  Dashboard pe jao 🏠
+                <button className={styles.primaryBtn} onClick={() => router.push("/swap")}>
+                  Go to Dashboard 🏠
                 </button>
                 <button className={styles.chip} onClick={() => router.push("/listings")}>
-                  Meri Listings dekho 📋
+                  View My Listings 📋
                 </button>
               </div>
             )}
@@ -784,7 +796,7 @@ export default function AddListingPage() {
             <div ref={bottomRef} />
           </div>
 
-          {/* Input bar — always pinned at bottom, never hidden */}
+          {/* Input bar */}
           {showTextInput && !profileBlocked && (
             <div className={styles.inputBar}>
               <input
@@ -794,9 +806,9 @@ export default function AddListingPage() {
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder={
-                  step === "title"         ? "Item ka naam likh…"
-                  : step === "description" ? "Item ke baare mein bata…"
-                  : "Saal likho jaise 2022 ya skip"
+                  step === "title"         ? "Enter item name…"
+                  : step === "description" ? "Describe your item…"
+                  : "Enter year like 2022 or type skip"
                 }
                 disabled={botTyping || aiValidating}
               />
