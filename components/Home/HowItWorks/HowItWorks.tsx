@@ -1,4 +1,5 @@
 import React from 'react';
+import styles from './HowItWorks.module.css';
 
 const STEPS = [
   {
@@ -54,147 +55,38 @@ const STEPS = [
 
 export default function HowItWorks() {
   return (
-    <section id="how-it-works" style={{
-      padding: '60px 0 80px',
-      background: '#f8faff',
-    }}>
-      <div style={{
-        maxWidth: 1200,
-        margin: '0 auto',
-        padding: '0 40px',
-        boxSizing: 'border-box',
-      }}>
+    <section id="how-it-works" className={styles.section}>
+      <div className={styles.inner}>
+        <h2 className={styles.heading}>How It Works?</h2>
 
-        {/* Heading */}
-        <h2 style={{
-          textAlign: 'center',
-          fontSize: '1.875rem',
-          fontWeight: 800,
-          color: '#0C1B35',
-          margin: '0 0 48px',
-          fontFamily: "'Plus Jakarta Sans', sans-serif",
-          letterSpacing: '-0.4px',
-        }}>
-          How It Works?
-        </h2>
-
-        {/* Steps row */}
-        <div style={{
-          display: 'flex',
-          flexDirection: 'row',
-          alignItems: 'flex-start',
-          width: '100%',
-          boxSizing: 'border-box',
-        }}>
+        <div className={styles.stepsRow}>
           {STEPS.map((step, i) => (
-            <React.Fragment key={step.number}>
-              {/* ── Step column ── */}
-              <div
-                style={{
-                  flex: 1,
-                  minWidth: 0,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'flex-start',
-                }}
-              >
-                {/* Icon + badge */}
-                <div style={{
-                  position: 'relative',
-                  width: 80,
-                  height: 80,
-                  marginBottom: 24,
-                  flexShrink: 0,
-                }}>
-                  {/* Outer ring (light blue border circle) */}
-                  <div style={{
-                    position: 'absolute',
-                    inset: 0,
-                    borderRadius: '50%',
-                    border: '1.5px solid #BFDBFE',
-                    opacity: 0.6,
-                  }} />
-                  {/* Inner filled circle */}
-                  <div style={{
-                    position: 'absolute',
-                    inset: 6,
-                    borderRadius: '50%',
-                    background: '#EBF2FF',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}>
+            <div className={styles.stepWrapper} key={step.number}>
+              {/* ── Step content (icon + title + desc) ── */}
+              <div className={styles.stepContent}>
+                <div className={styles.iconWrap}>
+                  <div className={styles.iconCircle}>
                     {step.icon}
                   </div>
-                  {/* Number badge */}
-                  <span style={{
-                    position: 'absolute',
-                    top: 2,
-                    right: 2,
-                    width: 22,
-                    height: 22,
-                    borderRadius: '50%',
-                    background: '#1A56DB',
-                    color: '#ffffff',
-                    fontSize: 11,
-                    fontWeight: 700,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    border: '2px solid #f8faff',
-                    boxShadow: '0 2px 6px rgba(26,86,219,0.35)',
-                    fontFamily: "'Plus Jakarta Sans', sans-serif",
-                    lineHeight: 1,
-                    zIndex: 1,
-                  }}>
-                    {step.number}
-                  </span>
+                  <span className={styles.badge}>{step.number}</span>
                 </div>
 
-                {/* Title */}
-                <h3 style={{
-                  fontSize: 16,
-                  fontWeight: 700,
-                  color: '#0C1B35',
-                  margin: '0 0 8px',
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
-                  letterSpacing: '-0.2px',
-                }}>
-                  {step.title}
-                </h3>
-
-                {/* Description */}
-                <p style={{
-                  fontSize: 13.5,
-                  color: '#475569',
-                  lineHeight: 1.7,
-                  margin: 0,
-                  fontFamily: "'DM Sans', sans-serif",
-                  paddingRight: 16,
-                }}>
-                  {step.desc}
-                </p>
+                <h3 className={styles.stepTitle}>{step.title}</h3>
+                <p className={styles.stepDesc}>{step.desc}</p>
               </div>
 
-              {/* ── Arrow connector ── */}
+              {/* ── Arrow connector (hidden on mobile via CSS) ── */}
               {i < STEPS.length - 1 && (
-                <div style={{
-                  width: 80,
-                  flexShrink: 0,
-                  display: 'flex',
-                  alignItems: 'center',
-                  paddingTop: 33,
-                }}>
+                <div className={styles.arrow}>
                   <svg width="80" height="14" viewBox="0 0 80 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <line x1="0" y1="7" x2="65" y2="7" stroke="#93C5FD" strokeWidth="1.5" strokeDasharray="5 4" />
                     <polyline points="62,3 72,7 62,11" stroke="#93C5FD" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </div>
               )}
-            </React.Fragment>
+            </div>
           ))}
         </div>
-
       </div>
     </section>
   );
