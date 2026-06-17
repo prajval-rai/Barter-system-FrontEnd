@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import styles from "./Mylistings.module.css";
 
@@ -13,16 +13,12 @@ interface Product {
   created_at: string;
 }
 
-interface Props {
-  initialProducts: Product[];
-}
-
 type StatusFilter = "all" | "approved" | "submitted" | "rejected";
 
 const STATUS_CONFIG: Record<string, { label: string; badgeClass: string }> = {
-  approved: { label: "Active",    badgeClass: "badgeActive"   },
-  submitted: { label: "Pending",  badgeClass: "badgePending"  },
-  rejected:  { label: "Rejected", badgeClass: "badgeRejected" },
+  approved:  { label: "Active",    badgeClass: "badgeActive"   },
+  submitted: { label: "Pending",   badgeClass: "badgePending"  },
+  rejected:  { label: "Rejected",  badgeClass: "badgeRejected" },
 };
 
 function getStatusConfig(status: string) {
@@ -31,17 +27,33 @@ function getStatusConfig(status: string) {
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString("en-IN", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
+    day: "numeric", month: "short", year: "numeric",
   });
 }
 
-export default function MyListings({ initialProducts }: Props) {
+export default function MyListings() {
+  const [products, setProducts] = useState<Product[]>([]);
   const [filter, setFilter] = useState<StatusFilter>("all");
   const [imgErrors, setImgErrors] = useState<Set<number>>(new Set());
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const products = initialProducts;
+  useEffect(() => {
+    async function fetchListings() {
+      try {
+        const res = await fetch("/api/product/my");
+        if (!res.ok) throw new Error("Failed to fetch listings");
+        const data = await res.json();
+        // handle both array and paginated { results: [] } shapes
+        setProducts(Array.isArray(data) ? data : (data.results ?? data.products ?? []));
+      } catch (err) {
+        setError("Could not load your listings. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchListings();
+  }, []);
 
   const filtered =
     filter === "all"
@@ -57,6 +69,36 @@ export default function MyListings({ initialProducts }: Props) {
 
   function handleImgError(id: number) {
     setImgErrors((prev) => new Set(prev).add(id));
+  }
+
+  // --- Loading skeleton ---
+  if (loading) {
+    return (
+      <div className={styles.page}>
+        <div className={styles.header}>
+          <div className={styles.headerLeft}>
+            <h1 className={styles.title}>Your Listings</h1>
+          </div>
+        </div>
+        <div className={styles.grid}>
+          {[1, 2, 3, 4].map((n) => (
+            <div key={n} className={styles.skeletonCard} />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // --- Error state ---
+  if (error) {
+    return (
+      <div className={styles.page}>
+        <div className={styles.errorBox}>
+          <p>{error}</p>
+          <button onClick={() => window.location.reload()}>Retry</button>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -111,7 +153,6 @@ export default function MyListings({ initialProducts }: Props) {
                 className={`${styles.card} ${!isActive ? styles.cardFaded : ""}`}
                 style={{ animationDelay: `${index * 40}ms` }}
               >
-                {/* Image */}
                 <div className={styles.imageWrap}>
                   {hasError ? (
                     <div className={styles.imgFallback}>🖼️</div>
@@ -123,13 +164,7 @@ export default function MyListings({ initialProducts }: Props) {
                       onError={() => handleImgError(product.id)}
                     />
                   )}
-
-                  {/* Category chip */}
-                  <span className={styles.categoryChip}>
-                    {product.category_name}
-                  </span>
-
-                  {/* Overlay label for non-active */}
+                  <span className={styles.categoryChip}>{product.category_name}</span>
                   {!isActive && (
                     <div className={`${styles.statusOverlay} ${styles[`overlay_${status}`]}`}>
                       {label}
@@ -137,15 +172,11 @@ export default function MyListings({ initialProducts }: Props) {
                   )}
                 </div>
 
-                {/* Card body */}
                 <div className={styles.cardBody}>
                   <h3 className={styles.productTitle}>{product.title}</h3>
                   <p className={styles.productDate}>{formatDate(product.created_at)}</p>
-
                   <div className={styles.cardFooter}>
-                    <span className={`${styles.badge} ${styles[badgeClass]}`}>
-                      {label}
-                    </span>
+                    <span className={`${styles.badge} ${styles[badgeClass]}`}>{label}</span>
                     <button
                       className={styles.editBtn}
                       title="Edit listing"

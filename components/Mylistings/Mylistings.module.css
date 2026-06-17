@@ -42,6 +42,26 @@
   transition: color var(--duration-fast) var(--ease-smooth);
 }
 
+.skeletonCard {
+  height: 220px;
+  border-radius: 12px;
+  background: var(--skeleton-bg, #e5e7eb);
+  animation: shimmer 1.4s infinite;
+}
+
+@keyframes shimmer {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.errorBox {
+  padding: 1rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  color: #991b1b;
+}
+
 .manageLink:hover {
   color: var(--color-primary-dark);
 }
