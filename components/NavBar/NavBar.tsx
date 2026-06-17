@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import styles from './NavBar.module.css';
+import LoginModal from "@/app/login/LoginModal";
 
 const NAV_LINKS = [
   { label: 'Home',          href: '#home' },
@@ -38,6 +39,15 @@ export default function Navbar() {
   const [scrolled,     setScrolled]     = useState(false);
   const [menuOpen,     setMenuOpen]     = useState(false);
   const [activeHash,   setActiveHash]   = useState('#home');
+  const [loginOpen, setLoginOpen] = useState(false);
+
+  const handleProtectedAction = () => {
+    if (user) {
+      router.push("/swap");   // change to your actual protected route
+    } else {
+      setLoginOpen(true);
+    }
+  };
 
   /* Add shadow on scroll */
   useEffect(() => {
@@ -101,8 +111,8 @@ export default function Navbar() {
 
         {/* CTA Buttons */}
         <div className={styles.actions}>
-          <button className={styles.loginBtn} type="button">Login</button>
-          <button className={styles.signupBtn} type="button">Sign Up</button>
+          <button className={styles.loginBtn} type="button" onClick={handleProtectedAction}>Login</button>
+          <button className={styles.signupBtn} type="button" onClick={handleProtectedAction}>Sign Up</button>
         </div>
 
         {/* Mobile Hamburger */}
@@ -118,6 +128,14 @@ export default function Navbar() {
           <span />
         </button>
       </div>
+      <LoginModal
+        isOpen={loginOpen}
+        onClose={() => setLoginOpen(false)}
+        onSuccess={() => {
+          setLoginOpen(false);
+          router.push("/swap"); // change to your actual protected route
+        }}
+      />
 
       {/* Mobile Dropdown */}
       {menuOpen && (
