@@ -1,16 +1,16 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import styles from './NavBar.module.css';
 import LoginModal from "@/app/login/LoginModal";
+import { useAuth } from "@/context/AuthContext";
 
 const NAV_LINKS = [
   { label: 'Home',          href: '#home' },
   { label: 'How it Works',  href: '#how-it-works' },
-  { label: 'Categories',    href: '#categories' },
   { label: 'Why Exchange?', href: '#why-exchange' },
-  { label: 'Testimonials',  href: '#testimonials' },
   { label: 'FAQs',          href: '#faqs' },
 ];
 
@@ -36,12 +36,16 @@ function SwapIcon() {
 }
 
 export default function Navbar() {
-  const [scrolled,     setScrolled]     = useState(false);
-  const [menuOpen,     setMenuOpen]     = useState(false);
-  const [activeHash,   setActiveHash]   = useState('#home');
-  const [loginOpen, setLoginOpen] = useState(false);
+  const [scrolled,   setScrolled]   = useState(false);
+  const [menuOpen,   setMenuOpen]   = useState(false);
+  const [activeHash, setActiveHash] = useState('#home');
+  const [loginOpen,  setLoginOpen]  = useState(false);
+
+  const { user } = useAuth();
+  const router = useRouter();
 
   const handleProtectedAction = () => {
+    setMenuOpen(false);
     if (user) {
       router.push("/swap");   // change to your actual protected route
     } else {
@@ -109,10 +113,11 @@ export default function Navbar() {
           </ul>
         </nav>
 
-        {/* CTA Buttons */}
+        {/* CTA Button */}
         <div className={styles.actions}>
-          <button className={styles.loginBtn} type="button" onClick={handleProtectedAction}>Login</button>
-          <button className={styles.signupBtn} type="button" onClick={handleProtectedAction}>Sign Up</button>
+          <button className={styles.signupBtn} type="button" onClick={handleProtectedAction}>
+            Start Exchange
+          </button>
         </div>
 
         {/* Mobile Hamburger */}
@@ -128,6 +133,7 @@ export default function Navbar() {
           <span />
         </button>
       </div>
+
       <LoginModal
         isOpen={loginOpen}
         onClose={() => setLoginOpen(false)}
@@ -151,8 +157,9 @@ export default function Navbar() {
             </a>
           ))}
           <div className={styles.mobileCtas}>
-            <button className={styles.loginBtn} type="button">Login</button>
-            <button className={styles.signupBtn} type="button">Sign Up</button>
+            <button className={styles.signupBtn} type="button" onClick={handleProtectedAction}>
+              Start Exchange
+            </button>
           </div>
         </div>
       )}
