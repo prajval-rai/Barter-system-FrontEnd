@@ -10,7 +10,6 @@ import {
   Star, Copy, CheckCircle, HandshakeIcon, Clock, Inbox, Image, Video,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-import ProductDetailPage from "@/components/ProductDetail/ProductDetail";
 import styles from "../../styles/Chat.module.css";
 
 /* ─────────────────────────────────────────
@@ -296,7 +295,6 @@ function ProductModal({ productId, onClose }: { productId: number; onClose: () =
           background: "#fff", cursor: "pointer",
           display: "flex", alignItems: "center", justifyContent: "center", color: "#555",
         }} title="Close (Esc)"><X size={16} /></button>
-        <ProductDetailPage productId={productId} onBack={onClose} onNavigate={(_id: string) => {}} />
       </div>
     </div>
   );

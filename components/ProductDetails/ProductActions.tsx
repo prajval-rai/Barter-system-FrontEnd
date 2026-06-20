@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import styles from './ProductActions.module.css';
-import ExchangeModal from '@/components/ProductDetail/ExchangeModal';
+import ExchangeModal from '@/components/ProductDetails/ExchangeModal';
 
 interface Props {
   productId: number;
