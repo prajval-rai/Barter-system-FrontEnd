@@ -1,4 +1,4 @@
-import { cookies } from 'next/headers';
+import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import MyListings from '@/components/Mylistings/Mylistings';
 import AppShell from '@/components/AppShell/Appshell ';
@@ -16,48 +16,39 @@ interface Product {
   created_at: string;
 }
 
-async function fetchMyProducts(): Promise<Product[]> {
-  try {
-    const cookieStore = await cookies();
-    const allCookies = cookieStore.getAll();
-    
-    console.log('=== COOKIE DEBUG ===');
-    console.log('All cookies:', allCookies);
-    
-    const token = cookieStore.get('access')?.value;
-    console.log('Access token:', token ? `${token.slice(0, 20)}...` : 'NOT FOUND');
-    console.log('Backend URL:', process.env.NEXT_PUBLIC_BACKEND_URL);
-    console.log('Full URL:', `${process.env.NEXT_PUBLIC_BACKEND_URL}products/my_product/`);
+async function fetchMyProducts(): Promise<Product[] | null> {
+  const incomingHeaders = await headers();
+  const cookieHeader = incomingHeaders.get('cookie') ?? '';
+  const host = incomingHeaders.get('host');
+  const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https';
 
-    if (!token) redirect('/login');
+  const res = await fetch(`${protocol}://${host}/api/product/my`, {
+    headers: { cookie: cookieHeader },
+    cache: 'no-store',
+  });
 
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}products/my_product/`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        cache: 'no-store',
-      }
-    );
+  if (res.status === 401) {
+    return null;
+  }
 
-    console.log('Response status:', res.status);
-
-    if (res.status === 401) redirect('/login');
-    if (!res.ok) return [];
-
-    const data = await res.json();
-    return Array.isArray(data) ? data : data.results ?? [];
-  } catch (e) {
-    console.log('Fetch error:', e);
+  if (!res.ok) {
     return [];
   }
+
+  const data = await res.json();
+  return Array.isArray(data) ? data : [];
 }
 
 export default async function MyListingsPage() {
   const products = await fetchMyProducts();
-  return <AppShell>
-    <MyListings initialProducts={products} />
-  </AppShell>;
+
+  if (products === null) {
+    redirect('/login');
+  }
+
+  return (
+    <AppShell>
+      <MyListings initialProducts={products} />
+    </AppShell>
+  );
 }
