@@ -5,7 +5,7 @@ import Providers from "@/app/Providers";
 import FCMListener from "@/components/FCMListener"; // ✅ add this
 
 export const metadata: Metadata = {
-  title: "ExchangeIt – Trade · Exchange · Deal",
+  title: "LenDen – Trade · Exchange · Deal",
   description: "A peer-to-peer barter and exchange platform",
 };
 

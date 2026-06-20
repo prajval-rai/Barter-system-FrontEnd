@@ -31,7 +31,7 @@ export default function WhyExchange() {
       <div className={styles.inner}>
         <div className={styles.comparisonBox}>
 
-          <h2 className={styles.comparisonTitle}>Why Exchange is Better Than Buy?</h2>
+          <h2 className={styles.comparisonTitle}>Why LenDen is Better Than Buy?</h2>
 
           <div className={styles.grid}>
             {/* ── Left: Buying ── */}

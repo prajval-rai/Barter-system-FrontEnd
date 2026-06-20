@@ -123,7 +123,7 @@ export default function Hero() {
           </h1>
 
           <p className={styles.description}>
-            Exchangeit is a modern platform that makes swapping things simple, fair &amp; valuable.
+            LenDen is a modern platform that makes swapping things simple, fair &amp; valuable.
             Because every product has a value, and every value deserves respect.
           </p>
 
@@ -134,7 +134,7 @@ export default function Hero() {
               type="button"
               onClick={handleProtectedAction}
             >
-              Start Swapping Now &nbsp;→
+              Start LenDen Now &nbsp;→
             </button>
             <button className={styles.outlineBtn} type="button">
               <span className={styles.playWrap}>
@@ -242,7 +242,7 @@ export default function Hero() {
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M7 16L3 12M3 12L7 8M3 12H15M17 8L21 12M21 12L17 16M21 12H9"/>
               </svg>
-              Start Exchange
+              Start LenDen
             </button>
 
             <div className={styles.successRow}>

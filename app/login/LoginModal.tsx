@@ -138,12 +138,12 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
         <div className={s.header}>
           <div className={s.badge}>
             <span className={s.badgeStar}>✦</span>
-            ExchangeIt Marketplace
+            LenDen Marketplace
           </div>
           <div className={s.logoRing}>
             <span className={s.logoIcon}>⚖️</span>
           </div>
-          <div className={s.brand}>ExchangeIt</div>
+          <div className={s.brand}>LenDen</div>
           <div className={s.tagline}>Trade · Exchange · Deal</div>
         </div>
 

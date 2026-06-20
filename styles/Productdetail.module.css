@@ -512,7 +512,7 @@
 
 .exchangeList { display: flex; flex-direction: column; gap: 8px; }
 
-.exchangeItem {
+.LenDenem {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -523,13 +523,13 @@
   transition: all 0.15s ease;
 }
 
-.exchangeItem:hover {
+.LenDenem:hover {
   border-color: var(--purple);
   box-shadow: 0 2px 10px rgba(124,58,237,0.1);
   transform: translateX(3px);
 }
 
-.exchangeItemIcon {
+.LenDenemIcon {
   width: 36px;
   height: 36px;
   display: flex;
@@ -540,9 +540,9 @@
   flex-shrink: 0;
 }
 
-.exchangeItemInfo { flex: 1; min-width: 0; }
+.LenDenemInfo { flex: 1; min-width: 0; }
 
-.exchangeItemTitle {
+.LenDenemTitle {
   font-size: 13px;
   font-weight: 700;
   font-family: 'Syne', sans-serif;
@@ -550,13 +550,13 @@
   margin: 0 0 2px;
 }
 
-.exchangeItemDesc {
+.LenDenemDesc {
   font-size: 11px;
   color: var(--text-muted);
   margin: 0 0 3px;
 }
 
-.exchangeItemCat {
+.LenDenemCat {
   font-size: 9.5px;
   font-weight: 700;
   font-family: 'DM Sans', sans-serif;
@@ -1491,8 +1491,8 @@
   .valueDelta    { margin-left: 0; }
 
   .exchangeSection  { padding: 12px; gap: 8px; }
-  .exchangeItem     { padding: 8px 10px; gap: 8px; }
-  .exchangeItemIcon { width: 30px; height: 30px; }
+  .LenDenem     { padding: 8px 10px; gap: 8px; }
+  .LenDenemIcon { width: 30px; height: 30px; }
 
   .ctaBlock      { gap: 7px; }
   .ctaPrimary    { padding: 13px 16px; font-size: 13.5px; }

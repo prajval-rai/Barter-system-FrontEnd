@@ -26,7 +26,7 @@ const features = [
 export default function EmptyWhyUs() {
   return (
     <div className={styles.card}>
-      <h3 className={styles.heading}>Why people love ExchangeIt?</h3>
+      <h3 className={styles.heading}>Why people love LenDen?</h3>
 
       <div className={styles.grid}>
         {features.map((f) => (

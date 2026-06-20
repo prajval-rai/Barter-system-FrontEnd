@@ -10,7 +10,7 @@ import { useAuth } from "@/context/AuthContext";
 const NAV_LINKS = [
   { label: 'Home',          href: '#home' },
   { label: 'How it Works',  href: '#how-it-works' },
-  { label: 'Why Exchange?', href: '#why-exchange' },
+  { label: 'Why LenDen?', href: '#why-exchange' },
   { label: 'FAQs',          href: '#faqs' },
 ];
 
@@ -116,7 +116,7 @@ export default function Navbar() {
         {/* CTA Button */}
         <div className={styles.actions}>
           <button className={styles.signupBtn} type="button" onClick={handleProtectedAction}>
-            Start Exchange
+            Start LenDen
           </button>
         </div>
 
@@ -158,7 +158,7 @@ export default function Navbar() {
           ))}
           <div className={styles.mobileCtas}>
             <button className={styles.signupBtn} type="button" onClick={handleProtectedAction}>
-              Start Exchange
+              Start LenDen
             </button>
           </div>
         </div>

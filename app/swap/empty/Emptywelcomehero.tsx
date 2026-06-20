@@ -10,7 +10,7 @@ export default function EmptyWelcomeHero() {
         {/* Left — Text */}
         <div className={styles.left}>
           <h1 className={styles.heading}>
-            Welcome to <span className={styles.brand}>ExchangeIt!</span> 🎉
+            Welcome to <span className={styles.brand}>LenDen!</span> 🎉
           </h1>
           <p className={styles.sub}>
             Exchange what you have.<br />

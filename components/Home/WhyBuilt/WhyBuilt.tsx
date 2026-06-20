@@ -60,14 +60,14 @@ export default function WhyBuilt() {
         {/* Heading */}
         <div className={styles.heading}>
           <h2 className={styles.title}>
-            Why We Built <span className={styles.highlight}>Exchangeit?</span>
+            Why We Built <span className={styles.highlight}>LenDen?</span>
           </h2>
           <p className={styles.body}>
             In today&apos;s world, we buy more than we need and use less than we buy.
             Meanwhile, many people struggle to afford even basic things.
           </p>
           <p className={styles.sub}>
-            <span className={styles.subBlue}>We built Exchangeit</span>{' '}
+            <span className={styles.subBlue}>We built LenDen</span>{' '}
             <strong className={styles.subBold}>to create a better way.</strong>
           </p>
         </div>

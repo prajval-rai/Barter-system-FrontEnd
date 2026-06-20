@@ -26,14 +26,14 @@ export default function ExchangeSection({ replaceOptions, productIcon, purchaseB
         <div className={styles.exchangeList}>
           {replaceOptions.length > 0 ? (
             replaceOptions.map(opt => (
-              <div key={opt.id} className={styles.exchangeItem}>
-                <div className={styles.exchangeItemIcon}>
+              <div key={opt.id} className={styles.LenDenem}>
+                <div className={styles.LenDenemIcon}>
                   <Icon icon={productIcon || "noto:package"} width="18" height="18" />
                 </div>
-                <div className={styles.exchangeItemInfo}>
-                  <p className={styles.exchangeItemTitle}>{opt.title}</p>
-                  {opt.description && <p className={styles.exchangeItemDesc}>{opt.description}</p>}
-                  <span className={styles.exchangeItemCat}>{opt.category}</span>
+                <div className={styles.LenDenemInfo}>
+                  <p className={styles.LenDenemTitle}>{opt.title}</p>
+                  {opt.description && <p className={styles.LenDenemDesc}>{opt.description}</p>}
+                  <span className={styles.LenDenemCat}>{opt.category}</span>
                 </div>
                 <Zap size={12} className={styles.exchangeZap} />
               </div>

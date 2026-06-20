@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import styles from "./Mylistings.module.css";
 
@@ -14,6 +14,10 @@ interface Product {
 }
 
 type StatusFilter = "all" | "approved" | "submitted" | "rejected";
+
+interface MyListingsProps {
+  initialProducts?: Product[];
+}
 
 const STATUS_CONFIG: Record<string, { label: string; badgeClass: string }> = {
   approved:  { label: "Active",    badgeClass: "badgeActive"   },
@@ -31,29 +35,10 @@ function formatDate(dateStr: string) {
   });
 }
 
-export default function MyListings() {
-  const [products, setProducts] = useState<Product[]>([]);
+export default function MyListings({ initialProducts = [] }: MyListingsProps) {
+  const [products] = useState<Product[]>(initialProducts);
   const [filter, setFilter] = useState<StatusFilter>("all");
   const [imgErrors, setImgErrors] = useState<Set<number>>(new Set());
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function fetchListings() {
-      try {
-        const res = await fetch("/api/product/my");
-        if (!res.ok) throw new Error("Failed to fetch listings");
-        const data = await res.json();
-        // handle both array and paginated { results: [] } shapes
-        setProducts(Array.isArray(data) ? data : (data.results ?? data.products ?? []));
-      } catch (err) {
-        setError("Could not load your listings. Please try again.");
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchListings();
-  }, []);
 
   const filtered =
     filter === "all"
@@ -71,39 +56,8 @@ export default function MyListings() {
     setImgErrors((prev) => new Set(prev).add(id));
   }
 
-  // --- Loading skeleton ---
-  if (loading) {
-    return (
-      <div className={styles.page}>
-        <div className={styles.header}>
-          <div className={styles.headerLeft}>
-            <h1 className={styles.title}>Your Listings</h1>
-          </div>
-        </div>
-        <div className={styles.grid}>
-          {[1, 2, 3, 4].map((n) => (
-            <div key={n} className={styles.skeletonCard} />
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  // --- Error state ---
-  if (error) {
-    return (
-      <div className={styles.page}>
-        <div className={styles.errorBox}>
-          <p>{error}</p>
-          <button onClick={() => window.location.reload()}>Retry</button>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className={styles.page}>
-      {/* Header */}
       <div className={styles.header}>
         <div className={styles.headerLeft}>
           <h1 className={styles.title}>Your Listings</h1>
@@ -114,7 +68,6 @@ export default function MyListings() {
         </Link>
       </div>
 
-      {/* Filter tabs */}
       <div className={styles.filterBar}>
         {(["all", "approved", "submitted", "rejected"] as StatusFilter[]).map((f) => (
           <button
@@ -132,7 +85,6 @@ export default function MyListings() {
         ))}
       </div>
 
-      {/* Grid */}
       {filtered.length === 0 ? (
         <div className={styles.empty}>
           <div className={styles.emptyIcon}>📦</div>

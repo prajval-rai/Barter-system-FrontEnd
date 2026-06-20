@@ -8,7 +8,7 @@ export default function CTA() {
 
           {/* Left: copy */}
           <div className={styles.copy}>
-            <h2 className={styles.title}>Ready to Exchange Smarter?</h2>
+            <h2 className={styles.title}>Ready to LenDen Smarter?</h2>
             <p className={styles.desc}>
               Join thousands of people who are swapping smartly and living better every day.
             </p>

@@ -48,7 +48,7 @@ const STEPS = [
         <polyline points="9 12 11 14 15 10" />
       </svg>
     ),
-    title: 'Exchange & Enjoy',
+    title: 'Enjoy',
     desc: 'Exchange safely and enjoy what you actually needed.',
   },
 ];

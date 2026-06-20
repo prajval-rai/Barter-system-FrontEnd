@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import styles from './Footer.module.css';
 
-const QUICK_LINKS = ['Home', 'How it Works', 'Categories', 'Why Exchange?'];
+const QUICK_LINKS = ['Home', 'How it Works', 'Categories', 'Why LenDen?'];
 const SUPPORT_LINKS = ['Help Center', 'Safety Tips', 'Terms of Service', 'Privacy Policy'];
 
 const SOCIAL = [
@@ -57,7 +57,7 @@ export default function Footer() {
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" strokeWidth="2.5" strokeLinecap="round">
                 <path d="M7 16L3 12M3 12L7 8M3 12H15M17 8L21 12M21 12L17 16M21 12H9"/>
               </svg>
-              Exchange<span>it</span>
+              LenDen
             </Link>
             <p className={styles.tagline}>Exchange what you have. Get what you need.</p>
           </div>
@@ -97,7 +97,7 @@ export default function Footer() {
 
         <div className={styles.bottom}>
           <p className={styles.copyright}>
-            © 2024 <span>Exchangeit</span>. All rights reserved.
+            © 2024 <span>LenDen</span>. All rights reserved.
           </p>
           <p className={styles.madeWith}>Made with ❤️ for a better tomorrow.</p>
         </div>

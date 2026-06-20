@@ -78,7 +78,7 @@ export default function MainContent({ activeId, children }: MainContentProps) {
           {/* Right: breadcrumb + live chip */}
           <div className={styles.navRight}>
             <div className={styles.breadcrumb}>
-              <span className={styles.breadHome}>ExchangeIT</span>
+              <span className={styles.breadHome}>LenDen</span>
               <span className={styles.breadSep}>/</span>
               <span className={styles.breadCurrent}>{meta.label}</span>
             </div>

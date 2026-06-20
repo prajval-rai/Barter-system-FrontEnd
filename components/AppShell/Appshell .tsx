@@ -64,7 +64,7 @@ function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => 
               <path d="M2 12l10 5 10-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </span>
-          {!collapsed && <span className={styles.logoText}>Exchangeit</span>}
+          {!collapsed && <span className={styles.logoText}>LenDen</span>}
         </Link>
         <button className={styles.collapseBtn} onClick={onToggle} aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -178,7 +178,7 @@ function MobileTopBar() {
             <path d="M2 12l10 5 10-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </span>
-        <span className={styles.logoText}>Exchangeit</span>
+        <span className={styles.logoText}>LenDen</span>
       </Link>
       <div className={styles.mobileTopbarRight}>
         <Link href="/search" className={styles.iconBtn} aria-label="Search">

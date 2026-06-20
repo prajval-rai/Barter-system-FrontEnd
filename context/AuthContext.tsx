@@ -76,12 +76,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const stored = sessionStorage.getItem("ExchangeIt_user");
+    const stored = sessionStorage.getItem("LenDen_user");
     if (stored) {
       try {
         setUser(JSON.parse(stored));
       } catch {
-        sessionStorage.removeItem("ExchangeIt_user");
+        sessionStorage.removeItem("LenDen_user");
       }
     }
     setLoading(false);
@@ -102,13 +102,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     authUser.image = picture;
 
     setUser(authUser);
-    sessionStorage.setItem("ExchangeIt_user", JSON.stringify(authUser));
+    sessionStorage.setItem("LenDen_user", JSON.stringify(authUser));
   };
 
   const logout = async () => {
     await callDjangoLogout();
     setUser(null);
-    sessionStorage.removeItem("ExchangeIt_user");
+    sessionStorage.removeItem("LenDen_user");
   };
 
   return (
