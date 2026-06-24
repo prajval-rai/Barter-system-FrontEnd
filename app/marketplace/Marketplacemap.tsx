@@ -39,11 +39,9 @@ interface Props {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-// ✅ Use our own Next.js proxy route — no CORS, no direct backend call
 const PRODUCTS_API = `/api/marketplace`;
-
 const INDIA_CENTER: [number, number] = [22.5937, 78.9629];
-const INDIA_ZOOM   = 5;
+const INDIA_ZOOM = 5;
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -54,6 +52,7 @@ export default function MarketplaceMap({ categories }: Props) {
   const markersLayer    = useRef<any>(null);
   const spiderLayer     = useRef<any>(null);
   const locationMarker  = useRef<any>(null);
+  const boundaryLayer   = useRef<any>(null); // ← NEW: holds the GeoJSON overlay
   const pendingPlot     = useRef<Product[] | null>(null);
   const mapInitialized  = useRef(false);
   const allBounds       = useRef<[number, number][]>([]);
@@ -65,7 +64,7 @@ export default function MarketplaceMap({ categories }: Props) {
   const [locating,          setLocating         ] = useState(false);
   const [locationError,     setLocationError    ] = useState<string | null>(null);
 
-  // ── Build a single pin marker — NO popup, side card only ─────────────────
+  // ── Build a single pin marker ─────────────────────────────────────────────
 
   const buildPinMarker = useCallback((L: any, product: Product, lat: number, lng: number) => {
     const shortTitle = product.title.length > 14
@@ -95,7 +94,7 @@ export default function MarketplaceMap({ categories }: Props) {
     return marker;
   }, []);
 
-  // ── Plot all markers, spiderfying overlapping ones ────────────────────────
+  // ── Plot markers ──────────────────────────────────────────────────────────
 
   const plotMarkers = useCallback(async (productList: Product[]) => {
     if (!mapInitialized.current || !leafletMap.current || !markersLayer.current) {
@@ -104,8 +103,8 @@ export default function MarketplaceMap({ categories }: Props) {
     }
 
     const L = await import("leaflet");
-
     markersLayer.current.clearLayers();
+
     if (spiderLayer.current) {
       spiderLayer.current.clearLayers();
     } else {
@@ -121,7 +120,6 @@ export default function MarketplaceMap({ categories }: Props) {
       return;
     }
 
-    // Group by location (4 decimal places ≈ 11 m)
     const groups = new Map<string, Product[]>();
     valid.forEach((p) => {
       const key = `${p.owner_latitude!.toFixed(4)},${p.owner_longitude!.toFixed(4)}`;
@@ -156,22 +154,19 @@ export default function MarketplaceMap({ categories }: Props) {
           zIndexOffset: 200,
         });
 
-        let spiderfied    = false;
+        let spiderfied     = false;
         const spiderMarkers: any[] = [];
         const spiderLines:   any[] = [];
 
         const collapse = () => {
           spiderMarkers.forEach((m) => spiderLayer.current?.removeLayer(m));
-          spiderLines.forEach(  (l) => spiderLayer.current?.removeLayer(l));
+          spiderLines.forEach((l)   => spiderLayer.current?.removeLayer(l));
           spiderMarkers.length = 0;
           spiderLines.length   = 0;
           spiderfied = false;
-
           if (allBounds.current.length > 0) {
             leafletMap.current.fitBounds(allBounds.current, {
-              padding: [80, 80],
-              maxZoom: 13,
-              animate: true,
+              padding: [80, 80], maxZoom: 13, animate: true,
             });
           }
         };
@@ -218,20 +213,59 @@ export default function MarketplaceMap({ categories }: Props) {
     });
 
     allBounds.current = bounds;
-
     if (bounds.length > 0) {
       leafletMap.current.fitBounds(bounds, { padding: [80, 80], maxZoom: 13 });
     }
   }, [buildPinMarker]);
 
-  // ── Locate the user ───────────────────────────────────────────────────────
+  // ── Load India boundary GeoJSON overlay ──────────────────────────────────
+  // ✅ NEW — fetches /india-boundary.geojson from public/ and draws it on top
+  // of the OSM tile layer. Runs once after map init. Silently skips if the
+  // file is missing (e.g. during local dev before you add it).
+
+  const loadIndiaBoundary = useCallback(async (L: any, map: any) => {
+    try {
+      const res = await fetch("/india-boundary.geojson");
+      if (!res.ok) {
+        console.warn("[MarketplaceMap] india-boundary.geojson not found in public/ — skipping boundary overlay.");
+        return;
+      }
+      const geojson = await res.json();
+
+      boundaryLayer.current = L.geoJSON(geojson, {
+        style: {
+          // Solid dark line = India's claimed territory
+          color:       "#2563eb",   // near-black
+          weight:      2,
+          opacity:     0.85,
+          fill:        false,       // outline only, no fill
+          dashArray:   undefined,   // solid = our border
+          lineCap:     "round",
+          lineJoin:    "round",
+        },
+        // Make it non-interactive — clicks should fall through to markers
+        interactive: false,
+        // Render above tiles but below markers
+        pane:        "overlayPane",
+      }).addTo(map);
+
+      // Bring markers above the boundary line
+      if (markersLayer.current) markersLayer.current.bringToFront();
+      if (spiderLayer.current)  spiderLayer.current.bringToFront();
+
+    } catch (err) {
+      // Non-fatal — OSM tiles still render fine without the overlay
+      console.warn("[MarketplaceMap] Failed to load India boundary:", err);
+    }
+  }, []);
+
+  // ── Locate user ───────────────────────────────────────────────────────────
 
   const locateUser = useCallback(async () => {
     if (!("geolocation" in navigator)) {
       setLocationError("Geolocation is not supported by your browser.");
       return;
     }
-
     setLocating(true);
     setLocationError(null);
 
@@ -268,7 +302,6 @@ export default function MarketplaceMap({ categories }: Props) {
           leafletMap.current.setView([lat, lng], 14, { animate: true });
           marker.openPopup();
         }
-
         setLocating(false);
       },
       (err) => {
@@ -288,7 +321,7 @@ export default function MarketplaceMap({ categories }: Props) {
     );
   }, []);
 
-  // ── Auto-locate on mount (silent) ─────────────────────────────────────────
+  // ── Silent locate on mount ────────────────────────────────────────────────
 
   const silentLocate = useCallback(async () => {
     if (!("geolocation" in navigator)) return;
@@ -359,8 +392,10 @@ export default function MarketplaceMap({ categories }: Props) {
       });
 
       L.control.zoom({ position: "bottomright" }).addTo(map);
+
+      // OSM tile layer — unchanged, free forever
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         maxZoom: 19,
       }).addTo(map);
 
@@ -368,6 +403,9 @@ export default function MarketplaceMap({ categories }: Props) {
       spiderLayer.current    = L.layerGroup().addTo(map);
       leafletMap.current     = map;
       mapInitialized.current = true;
+
+      // ✅ Draw India boundary overlay on top of OSM tiles
+      loadIndiaBoundary(L, map);
 
       if (pendingPlot.current !== null) {
         const queued        = pendingPlot.current;
@@ -390,18 +428,17 @@ export default function MarketplaceMap({ categories }: Props) {
         markersLayer.current   = null;
         spiderLayer.current    = null;
         locationMarker.current = null;
+        boundaryLayer.current  = null; // ← clean up boundary ref too
         mapInitialized.current = false;
         pendingPlot.current    = null;
       }
     };
-  }, [plotMarkers, silentLocate]);
+  }, [plotMarkers, silentLocate, loadIndiaBoundary]);
 
-  // ── Fetch products on category change ─────────────────────────────────────
+  // ── Fetch products ────────────────────────────────────────────────────────
 
   useEffect(() => {
     setLoading(true);
-
-    // ✅ Proxy route — same origin, cookies forwarded server-side
     const params = new URLSearchParams({ page: "1", page_size: "100", sort: "newest" });
     if (selectedCategory) params.set("category", String(selectedCategory));
 
