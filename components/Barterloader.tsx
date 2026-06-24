@@ -11,6 +11,8 @@ export default function BarterLoader({ text = "Listing Your Item..." }: BarterLo
         {/* Animated scales of justice / barter icon */}
         <div className={styles.scalesWrap}>
           <div className={styles.glowRing} />
+
+          
           <div className={styles.scalesArm}>
             <div className={styles.scalesPan} style={{ position: "absolute", left: -14, top: -12 }} />
             <div className={styles.scalesPan} style={{ position: "absolute", right: -14, top: -12 }} />
