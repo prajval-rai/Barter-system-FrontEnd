@@ -36,17 +36,15 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-size: 19px;
-  font-weight: 800;
-  color: #0c1b35;
-  text-decoration: none;
-  letter-spacing: -0.4px;
   flex-shrink: 0;
+  line-height: 0; /* kills inline-image baseline gap */
 }
 
 .logoIcon {
-  color: var(--color-primary);
+  display: block; /* removes default inline-image whitespace gap */
+  width: auto;
+  height: 38px;
+  object-fit: contain;
 }
 
 .logoAccent {

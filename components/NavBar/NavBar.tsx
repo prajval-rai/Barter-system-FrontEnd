@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import styles from './NavBar.module.css';
@@ -13,27 +14,6 @@ const NAV_LINKS = [
   { label: 'Why LenDen?', href: '#why-exchange' },
   { label: 'FAQs',          href: '#faqs' },
 ];
-
-function SwapIcon() {
-  return (
-    <svg
-      width="22"
-      height="22"
-      viewBox="0 0 24 24"
-      fill="none"
-      aria-hidden="true"
-      className={styles.logoIcon}
-    >
-      <path
-        d="M7 16L3 12M3 12L7 8M3 12H15M17 8L21 12M21 12L17 16M21 12H9"
-        stroke="currentColor"
-        strokeWidth="2.2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
 
 export default function Navbar() {
   const [scrolled,   setScrolled]   = useState(false);
@@ -92,8 +72,14 @@ export default function Navbar() {
 
         {/* Logo */}
         <Link href="/" className={styles.logo}>
-          <SwapIcon />
-          Exchange<span className={styles.logoAccent}>it</span>
+          <Image
+            src="/logo.png"
+            alt="LenDen logo"
+            width={28}
+            height={28}
+            className={styles.logoIcon}
+            priority
+          />
         </Link>
 
         {/* Desktop Nav */}

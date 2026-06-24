@@ -648,3 +648,17 @@
   top: -4px;
   right: -4px;
 }
+
+.logoImg {
+  display: block;
+  width: auto;
+  height: 35px;
+  object-fit: contain;
+}
+
+.mobileLogoImg {
+  display: block;
+  width: auto;
+  height: 24px;
+  object-fit: contain;
+}

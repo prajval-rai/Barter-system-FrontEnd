@@ -92,14 +92,14 @@ function Drawer({ open, onClose }: { open: boolean; onClose: () => void }) {
       <div ref={drawerRef} className={`${styles.drawer} ${open ? styles.drawerOpen : ""}`} aria-label="Navigation menu">
         <div className={styles.drawerHeader}>
           <Link href="/swap" className={styles.drawerLogo} onClick={onClose}>
-            <span className={styles.logoIcon}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M2 17l10 5 10-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M2 12l10 5 10-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </span>
-            <span className={styles.logoText}>LenDen</span>
+            <Image
+              src="/logo.png"
+              alt="LenDen"
+              width={120}
+              height={32}
+              className={styles.logoImg}
+              priority
+            />
           </Link>
           <button className={styles.drawerCloseBtn} onClick={onClose} aria-label="Close menu">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -211,14 +211,14 @@ function TopBar({ onHamburger }: { onHamburger: () => void }) {
           <span /><span /><span />
         </button>
         <Link href="/swap" className={styles.topbarLogo}>
-          <span className={styles.logoIcon}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-              <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M2 17l10 5 10-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M2 12l10 5 10-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </span>
-          <span className={styles.logoText}>LenDen</span>
+          <Image
+            src="/logo.png"
+            alt="LenDen"
+            width={110}
+            height={28}
+            className={styles.logoImg}
+            priority
+          />
         </Link>
       </div>
       <div className={styles.topbarCenter}><SearchBar /></div>

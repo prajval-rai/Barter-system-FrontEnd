@@ -427,6 +427,13 @@
   color: var(--color-text-muted);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
+.logoImg {
+  display: block;
+  width: auto;
+  height: 28px;
+  object-fit: contain;
+}
+
 .logoutBtn {
   display: flex;
   align-items: center;

@@ -57,14 +57,16 @@ function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => 
       {/* Logo */}
       <div className={styles.logoRow}>
         <Link href="/dashboard" className={styles.logoLink}>
-          <span className={styles.logoIcon}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M2 17l10 5 10-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M2 12l10 5 10-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </span>
-          {!collapsed && <span className={styles.logoText}>LenDen</span>}
+          {!collapsed && (
+            <Image
+              src="/logo.png"
+              alt="LenDen"
+              width={120}
+              height={32}
+              className={styles.logoImg}
+              priority
+            />
+          )}
         </Link>
         <button className={styles.collapseBtn} onClick={onToggle} aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -171,14 +173,14 @@ function MobileTopBar() {
   return (
     <header className={styles.mobileTopbar}>
       <Link href="/dashboard" className={styles.mobileLogoLink}>
-        <span className={styles.logoIcon} style={{ width: 30, height: 30 }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-            <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M2 17l10 5 10-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M2 12l10 5 10-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </span>
-        <span className={styles.logoText}>LenDen</span>
+        <Image
+          src="/logo.png"
+          alt="LenDen"
+          width={100}
+          height={26}
+          className={styles.mobileLogoImg}
+          priority
+        />
       </Link>
       <div className={styles.mobileTopbarRight}>
         <Link href="/search" className={styles.iconBtn} aria-label="Search">

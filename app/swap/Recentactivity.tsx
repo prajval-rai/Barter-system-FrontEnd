@@ -33,7 +33,7 @@ const DEFAULT_ACTIVITIES: ActivityItem[] = [
   {
     id: "2",
     type: "new_views",
-    title: "Your Canon EOS 200D got 8 new views",
+    title: "Your Camera new views",
     subtitle: "3 people bookmarked it this week",
     timeAgo: "1 hr ago",
   },

@@ -457,6 +457,7 @@
   overflow: hidden;
   animation: floatRight 4.5s ease-in-out infinite;
   z-index: 1;
+  height: 300px;
 }
 
 .msgHeader {

@@ -7,10 +7,10 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 
 const MESSAGES = [
-  { name: "Riya Sharma",  type: "Camera Exchange",   time: "2m",  color: "#6366F1", initial: "R" },
-  { name: "Aman Verma",   type: "Book Exchange",      time: "15m", color: "#0EA5E9", initial: "A" },
-  { name: "Neha Patel",   type: "Headphones Swap",    time: "1h",  color: "#22C55E", initial: "N" },
-  { name: "Karan Singh",  type: "Furniture Exchange", time: "2h",  color: "#F59E0B", initial: "K" },
+  { name: "Prajval Rai",  type: "Camera Exchange",   time: "2m",  color: "#6366F1", initial: "R" },
+  { name: "Ajit Prajapti",   type: "Book Exchange",      time: "15m", color: "#0EA5E9", initial: "A" },
+  { name: "Prakhar Rai",   type: "Headphones Swap",    time: "1h",  color: "#22C55E", initial: "N" },
+  { name: "Nilesh Mishra",  type: "Furniture Exchange", time: "2h",  color: "#F59E0B", initial: "K" },
 ];
 
 function IconElectronics() {
@@ -212,7 +212,7 @@ export default function Hero() {
                 <p className={styles.colLabel}>Your Item</p>
                 <div className={styles.itemBox}>
                   <div className={styles.itemImg}><CameraIllustration /></div>
-                  <p className={styles.itemName}>Canon EOS 200D</p>
+                  <p className={styles.itemName}>Camera</p>
                   <span className={`${styles.itemPill} ${styles.pillGood}`}>Good Condition</span>
                 </div>
               </div>
@@ -227,7 +227,7 @@ export default function Hero() {
                 <p className={styles.colLabel}>You Get</p>
                 <div className={styles.itemBox}>
                   <div className={styles.itemImg}><HeadphonesIllustration /></div>
-                  <p className={styles.itemName}>Sony WH-CH720N</p>
+                  <p className={styles.itemName}>Head Phone</p>
                   <span className={`${styles.itemPill} ${styles.pillNew}`}>Like New</span>
                 </div>
               </div>
