@@ -43,7 +43,7 @@
 .logoIcon {
   display: block; /* removes default inline-image whitespace gap */
   width: auto;
-  height: 38px;
+  height: 98px;
   object-fit: contain;
 }
 
