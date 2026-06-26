@@ -14,14 +14,14 @@ const EXCHANGING = [
 ];
 
 const XIcon = () => (
-  <svg width="11" height="11" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-    <path d="M8 2L2 8M2 2l6 6"/>
+  <svg width="12" height="12" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+    <path d="M8 2L2 8M2 2l6 6" />
   </svg>
 );
 
 const CheckIcon = () => (
-  <svg width="11" height="11" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-    <polyline points="1.5 5 4 7.5 8.5 2.5"/>
+  <svg width="12" height="12" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+    <polyline points="1.5 5 4 7.5 8.5 2.5" />
   </svg>
 );
 
@@ -29,35 +29,43 @@ export default function WhyExchange() {
   return (
     <section className={styles.section} id="why-exchange">
       <div className={styles.inner}>
-        <div className={styles.comparisonBox}>
 
-          <h2 className={styles.comparisonTitle}>Why LenDen is Better Than Buy?</h2>
+        <div className={styles.header}>
+          <span className={styles.eyebrow}>buying vs exchanging</span>
+          <h2 className={styles.title}>why lenden beats buying</h2>
+        </div>
 
-          <div className={styles.grid}>
-            {/* ── Left: Buying ── */}
-            <div className={styles.column}>
-              <div className={styles.columnTitle}>Buying (Traditional Way)</div>
+        <div className={styles.grid}>
+
+          {/* ── Left: Buying ── */}
+          <div className={`${styles.card} ${styles.cardBuying}`}>
+            <span className={`${styles.tag} ${styles.tagBad}`}>the old way</span>
+            <h3 className={styles.cardTitle}>buying it</h3>
+            <div className={styles.list}>
               {BUYING.map((text) => (
                 <div key={text} className={styles.item}>
-                  <div className={`${styles.itemIcon} ${styles.iconBad}`}>
+                  <span className={`${styles.itemIcon} ${styles.iconBad}`}>
                     <XIcon />
-                  </div>
+                  </span>
                   <span className={styles.itemText}>{text}</span>
                 </div>
               ))}
             </div>
+          </div>
 
-            {/* ── VS ── */}
-            <div className={styles.vsCircle}>VS</div>
+          {/* ── VS ── */}
+          <div className={styles.vsCircle}>VS</div>
 
-            {/* ── Right: Exchanging ── */}
-            <div className={styles.column}>
-              <div className={styles.columnTitle}>Exchanging (Smart Way)</div>
+          {/* ── Right: LenDen ── */}
+          <div className={`${styles.card} ${styles.cardLenden}`}>
+            <span className={`${styles.tag} ${styles.tagGood}`}>the lenden way</span>
+            <h3 className={styles.cardTitle}>exchanging it</h3>
+            <div className={styles.list}>
               {EXCHANGING.map((text) => (
                 <div key={text} className={styles.item}>
-                  <div className={`${styles.itemIcon} ${styles.iconGood}`}>
+                  <span className={`${styles.itemIcon} ${styles.iconGood}`}>
                     <CheckIcon />
-                  </div>
+                  </span>
                   <span className={styles.itemText}>{text}</span>
                 </div>
               ))}

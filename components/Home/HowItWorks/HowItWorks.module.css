@@ -1,6 +1,6 @@
 /* ===== Section ===== */
 .section {
-  padding: var(--space-20) 0;
+  padding: var(--space-24) 0;
   background: var(--color-white);
 }
 
@@ -13,122 +13,76 @@
 /* ===== Heading ===== */
 .heading {
   text-align: center;
+  margin-bottom: var(--space-20);
+}
+
+.eyebrow {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  margin-bottom: var(--space-3);
+}
+
+.title {
   font-family: var(--font-display);
-  font-size: var(--text-3xl);
+  font-size: clamp(var(--text-3xl), 3.4vw, var(--text-4xl));
   font-weight: var(--font-extrabold);
   color: var(--color-text-heading);
   letter-spacing: -0.5px;
-  margin-bottom: var(--space-16);
+  margin: 0;
 }
 
-/* ===== Outer steps row — single horizontal flex ===== */
-.stepsRow {
-  display: flex;
-  flex-direction: row;         /* ← X axis */
-  align-items: flex-start;
-  justify-content: space-between;
-}
-
-/*
-  Each stepWrapper = [stepContent] [arrow]
-  stepContent = icon on top, title + desc below
-*/
-.stepWrapper {
-  display: flex;
-  flex-direction: row;         /* icon-col + arrow side by side */
-  align-items: flex-start;
-  flex: 1;
-}
-
-.stepWrapper:last-child {
-  flex: none;                  /* last step has no arrow, don't over-stretch */
-}
-
-/* ===== Step content: icon above, text below ===== */
-.stepContent {
-  display: flex;
-  flex-direction: column;      /* icon on top, text below */
-  align-items: flex-start;
-  min-width: 140px;
-}
-
-/* ===== Icon circle ===== */
-.iconWrap {
+/* =====================================================
+   The rail: a single horizontal divider that each stop
+   sits on top of, with an oversized ghost numeral behind
+   the copy — the numbers read like mile markers along a
+   route, not badges stuck on a card.
+   ===================================================== */
+.rail {
   position: relative;
-  width: 76px;
-  height: 76px;
-  margin-bottom: var(--space-5);
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border-top: 1.5px solid var(--color-border);
 }
 
-.iconCircle {
-  width: 76px;
-  height: 76px;
-  border-radius: var(--radius-full);
-  background: var(--color-primary-light);
-  border: 1.5px solid #BFDBFE;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-primary);
-  transition:
-    background var(--duration-normal) var(--ease-smooth),
-    box-shadow  var(--duration-normal) var(--ease-smooth),
-    transform   var(--duration-normal) var(--ease-smooth);
+.stop {
+  position: relative;
+  padding: var(--space-8) var(--space-5) 0;
+  border-right: 1.5px solid var(--color-border);
+  overflow: hidden;
 }
 
-.stepContent:hover .iconCircle {
-  background: var(--color-primary);
-  color: var(--color-white);
-  border-color: transparent;
-  box-shadow: var(--shadow-lg);
-  transform: scale(1.06);
+.stop:last-child {
+  border-right: none;
 }
 
-/* ===== Number badge ===== */
-.badge {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 22px;
-  height: 22px;
-  border-radius: var(--radius-full);
-  background: var(--color-primary);
-  color: var(--color-white);
+.bigNumber {
+  display: block;
   font-family: var(--font-display);
-  font-size: 11px;
-  font-weight: var(--font-bold);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px solid var(--color-white);
-  box-shadow: var(--shadow-md);
+  font-size: 96px;
+  font-weight: var(--font-extrabold);
   line-height: 1;
+  color: var(--color-primary-light);
+  letter-spacing: -3px;
+  margin-bottom: var(--space-2);
+  transition: color var(--duration-normal) var(--ease-smooth);
 }
 
-/* ===== Arrow connector ===== */
-.arrow {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  /* 
-    paddingTop = half icon height (76px / 2 = 38px) 
-    so arrow vertically aligns with icon center
-  */
-  padding-top: 31px;
-  padding-left: var(--space-2);
-  padding-right: var(--space-2);
-  min-width: 40px;
+.stop:hover .bigNumber {
+  color: var(--color-primary);
 }
 
-.arrow svg {
-  width: 100%;
-  height: 14px;
+.stopBody {
+  position: relative;
 }
 
-/* ===== Step text ===== */
 .stepTitle {
   font-family: var(--font-display);
-  font-size: var(--text-base);
+  font-size: var(--text-lg);
   font-weight: var(--font-bold);
   color: var(--color-text-heading);
   margin: 0 0 var(--space-2);
@@ -141,38 +95,33 @@
   color: var(--color-text-body);
   line-height: var(--leading-relaxed);
   margin: 0;
-  padding-right: var(--space-6);
+  padding-bottom: var(--space-8);
 }
 
 /* ===== Responsive ===== */
-@media (max-width: 768px) {
-  .stepsRow {
-    flex-direction: column;
-    gap: var(--space-8);
+@media (max-width: 860px) {
+  .rail {
+    grid-template-columns: 1fr;
+    border-top: none;
   }
 
-  .stepWrapper {
-    flex: none;
-    width: 100%;
+  .stop {
+    padding: var(--space-6) 0;
+    border-right: none;
+    border-top: 1.5px solid var(--color-border);
   }
 
-  .arrow {
-    display: none;
+  .stop:first-child {
+    border-top: none;
   }
 
-  .stepContent {
-    flex-direction: row;
-    align-items: flex-start;
-    gap: var(--space-4);
-    min-width: 0;
+  .bigNumber {
+    font-size: 64px;
   }
+}
 
-  .iconWrap {
-    flex-shrink: 0;
-    margin-bottom: 0;
-  }
-
-  .stepDesc {
-    padding-right: 0;
+@media (prefers-reduced-motion: reduce) {
+  .bigNumber {
+    transition: none;
   }
 }

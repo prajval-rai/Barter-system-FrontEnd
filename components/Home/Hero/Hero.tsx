@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import styles from "./Hero.module.css";
 import LoginModal from "@/app/login/LoginModal";
 import { useAuth } from "@/context/AuthContext";
@@ -51,13 +51,6 @@ const FEED_ITEMS = [
   },
 ];
 
-type FeedItem = {
-  id: number;
-  color: string;
-  offer: string;
-  want: string;
-};
-
 export default function Hero() {
   const { user } = useAuth();
   const router = useRouter();
@@ -65,40 +58,10 @@ export default function Hero() {
   const [loginOpen, setLoginOpen] = useState(false);
   const [listingCount, setListingCount] = useState(INITIAL_LISTINGS);
 
-  const [feed, setFeed] = useState<FeedItem[]>(
-    FEED_ITEMS.slice(0, 5).map((item, i) => ({
-      ...item,
-      id: i,
-    }))
-  );
-
-  const feedIndexRef = useRef(5);
-  const idRef = useRef(100);
-
   useEffect(() => {
     const interval = setInterval(() => {
       setListingCount((c) => c + Math.floor(Math.random() * 3 + 1));
     }, 3000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const next =
-        FEED_ITEMS[feedIndexRef.current % FEED_ITEMS.length];
-
-      feedIndexRef.current++;
-      idRef.current++;
-
-      setFeed((prev) => [
-        ...prev.slice(1),
-        {
-          ...next,
-          id: idRef.current,
-        },
-      ]);
-    }, 2500);
 
     return () => clearInterval(interval);
   }, []);
@@ -110,6 +73,9 @@ export default function Hero() {
       setLoginOpen(true);
     }
   };
+
+  // Render the list twice back-to-back so the loop is seamless
+  const loopFeed = [...FEED_ITEMS, ...FEED_ITEMS];
 
   return (
     <section className={styles.hero} id="home">
@@ -187,34 +153,32 @@ export default function Hero() {
               </div>
             </div>
 
-            <div className={styles.feedList}>
-              {feed.map((item, i) => (
-                <div
-                  key={item.id}
-                  className={`${styles.feedRow} ${
-                    i === feed.length - 1
-                      ? styles.feedRowNew
-                      : ""
-                  }`}
-                >
-                  <span
-                    className={styles.feedDot}
-                    style={{
-                      background: item.color,
-                    }}
-                  />
+            <div className={styles.feedViewport}>
+              <div className={styles.feedTrack}>
+                {loopFeed.map((item, i) => (
+                  <div
+                    key={i}
+                    className={styles.feedRow}
+                  >
+                    <span
+                      className={styles.feedDot}
+                      style={{
+                        background: item.color,
+                      }}
+                    />
 
-                  <div className={styles.feedText}>
-                    <span className={styles.feedTitle}>
-                      {item.offer}
-                    </span>
+                    <div className={styles.feedText}>
+                      <span className={styles.feedTitle}>
+                        {item.offer}
+                      </span>
 
-                    <span className={styles.feedSub}>
-                      {item.want}
-                    </span>
+                      <span className={styles.feedSub}>
+                        {item.want}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         </div>
