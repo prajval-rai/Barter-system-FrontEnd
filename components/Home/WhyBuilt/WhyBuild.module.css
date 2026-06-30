@@ -73,8 +73,8 @@
 /* ── Card stage: all cards stacked in the same spot ── */
 .cardStage {
   position: relative;
-  height: 340px;
-  max-width: 560px;
+  height: 320px;
+  max-width: 980px;
   margin: 0 auto;
 }
 
@@ -83,10 +83,14 @@
   inset: 0;
   background: var(--color-white);
   border: 1px solid var(--color-border);
-  border-radius: 20px;
-  padding: 36px 40px 28px;
-  text-align: center;
+  border-radius: 24px;
+  padding: 44px 56px;
+  text-align: left;
   box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
+
+  display: flex;
+  align-items: center;
+  gap: 48px;
 
   opacity: 0;
   transform: translateY(28px) scale(0.96);
@@ -137,26 +141,38 @@
   opacity: 0.5;
 }
 
+.cardLeft {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+  width: 160px;
+}
+
+.cardRight {
+  flex: 1;
+  min-width: 0;
+}
+
 .cardTop {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 24px;
-  margin-bottom: 18px;
+  margin-bottom: 0;
 }
 
 .statBlock {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
-  padding-left: 20px;
-  border-left: 1px solid var(--color-border);
+  align-items: center;
+  text-align: center;
 }
 
 .statValue {
   font-family: "Plus Jakarta Sans", sans-serif;
-  font-size: 22px;
+  font-size: 26px;
   font-weight: 800;
   color: var(--accent, var(--color-primary));
   line-height: 1.1;
@@ -169,7 +185,7 @@
 }
 
 .cardFooter {
-  margin-top: 16px;
+  margin-top: 20px;
 }
 
 .cardTag {
@@ -186,8 +202,8 @@
 
 /* ── Icon circle ── */
 .iconWrap {
-  width: 60px;
-  height: 60px;
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
   background: color-mix(in srgb, var(--accent, var(--color-primary)) 12%, white);
   display: flex;
@@ -200,19 +216,20 @@
 /* ── Card text ── */
 .cardTitle {
   font-family: "Plus Jakarta Sans", sans-serif;
-  font-size: 18px;
+  font-size: 26px;
   font-weight: 800;
   color: var(--color-text-heading);
-  margin: 0 0 10px;
-  letter-spacing: -0.2px;
-  line-height: 1.35;
+  margin: 0 0 12px;
+  letter-spacing: -0.3px;
+  line-height: 1.3;
 }
 
 .cardDesc {
-  font-size: 14.5px;
+  font-size: 16px;
   color: var(--color-text-muted);
   line-height: 1.75;
   margin: 0;
+  max-width: 480px;
 }
 
 /* ── Progress dots ── */
@@ -240,14 +257,17 @@
 /* ── Responsive ── */
 @media (max-width: 960px) {
   .inner { padding: 0 28px; }
-  .cardStage { max-width: 420px; height: 380px; }
-  .cardTop { flex-direction: column; gap: 12px; }
-  .statBlock { border-left: none; padding-left: 0; align-items: center; text-align: center; }
+  .cardStage { max-width: 480px; height: 460px; }
+  .card { flex-direction: column; text-align: center; padding: 40px 32px; gap: 20px; }
+  .cardRight { text-align: center; }
+  .cardDesc { max-width: 100%; }
 }
 
 @media (max-width: 500px) {
   .inner { padding: 0 16px; }
   .heading { margin-bottom: 32px; }
-  .cardStage { max-width: 100%; height: 400px; }
-  .card { padding: 32px 24px 24px; }
+  .cardStage { max-width: 100%; height: 460px; }
+  .card { padding: 32px 24px; }
+  .cardTitle { font-size: 21px; }
+  .cardDesc { font-size: 14.5px; }
 }
