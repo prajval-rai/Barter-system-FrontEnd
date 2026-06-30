@@ -137,7 +137,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
           </div>
 
           <div className={s.logoRing}>
-            <LenDenLogo width={120} />
+            <LenDenLogo width={80} />
           </div>
 
           <div className={s.tagline}>Trade · Exchange · Deal</div>
