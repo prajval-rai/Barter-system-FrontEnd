@@ -23,30 +23,6 @@ export default function Hero() {
 
   return (
     <section className={styles.hero} id="home">
-      {/* faint rotating loop watermark behind the chair */}
-      <svg
-        className={styles.watermark}
-        viewBox="0 0 200 200"
-        aria-hidden="true"
-      >
-        <path
-          d="M40 100 V70 a30 30 0 0 1 30 -30 H120"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="14"
-          strokeLinecap="round"
-        />
-        <path d="M105 22 L150 40 L105 58 Z" fill="currentColor" />
-        <path
-          d="M160 100 V130 a30 30 0 0 1 -30 30 H80"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="14"
-          strokeLinecap="round"
-        />
-        <path d="M95 178 L50 160 L95 142 Z" fill="currentColor" />
-      </svg>
-
       <div className={styles.inner}>
         {/* Left Side */}
         <div className={styles.copy}>
