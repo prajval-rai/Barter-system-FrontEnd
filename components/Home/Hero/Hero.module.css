@@ -9,23 +9,11 @@
   position: relative;
 }
 
-/* faint loop icon watermark, sits behind the chair image */
-.watermark {
-  position: absolute;
-  top: 8%;
-  right: 18%;
-  width: 280px;
-  height: 280px;
-  color: var(--color-primary);
-  opacity: 0.07;
-  pointer-events: none;
-}
-
 .inner {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1.05fr;
   align-items: center;
-  gap: var(--space-12);
+  gap: var(--space-6);
   max-width: var(--container-max);
   margin: 0 auto;
   padding: 0 var(--container-pad);
@@ -141,13 +129,13 @@
   height: 480px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 .heroImg {
   width: 100%;
   height: 100%;
-  max-width: 480px;
+  max-width: 560px;
   object-fit: contain;
 }
 
@@ -164,5 +152,4 @@
   .divider { margin-left: auto; margin-right: auto; }
   .mockupArea { height: 320px; }
   .heroImg { max-width: 320px; }
-  .watermark { display: none; }
 }
