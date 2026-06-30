@@ -124,15 +124,6 @@ export default function WhyBuilt() {
             </p>
           </div>
 
-          <div className={styles.progressTrack} aria-hidden="true">
-            <div
-              className={styles.progressFill}
-              style={{
-                width: `${((activeIndex + 1) / CARDS.length) * 100}%`,
-              }}
-            />
-          </div>
-
           <div className={styles.cardStage}>
             {CARDS.map((card, i) => (
               <div
@@ -143,6 +134,42 @@ export default function WhyBuilt() {
                 style={{ ["--accent" as string]: card.accent }}
               >
                 <span className={styles.cardNumber}>{card.number}</span>
+
+                {/* unique animated decoration per step */}
+                <div className={`${styles.decor} ${styles["decor" + i]}`} aria-hidden="true">
+                  {i === 0 && (
+                    <svg viewBox="0 0 60 60" className={styles.decorSvg}>
+                      <circle cx="30" cy="30" r="22" fill="none" stroke="currentColor" strokeWidth="3" strokeDasharray="6 8" className={styles.spin} />
+                      <circle cx="30" cy="8" r="4" fill="currentColor" className={styles.spin} />
+                    </svg>
+                  )}
+                  {i === 1 && (
+                    <svg viewBox="0 0 60 60" className={styles.decorSvg}>
+                      <circle cx="20" cy="36" r="9" fill="currentColor" opacity="0.85" className={styles.coinFloat1} />
+                      <circle cx="40" cy="22" r="7" fill="currentColor" opacity="0.6" className={styles.coinFloat2} />
+                      <circle cx="46" cy="42" r="5" fill="currentColor" opacity="0.4" className={styles.coinFloat3} />
+                    </svg>
+                  )}
+                  {i === 2 && (
+                    <svg viewBox="0 0 60 60" className={styles.decorSvg}>
+                      <circle cx="14" cy="30" r="5" fill="currentColor" className={styles.nodePulse1} />
+                      <circle cx="46" cy="14" r="5" fill="currentColor" className={styles.nodePulse2} />
+                      <circle cx="46" cy="46" r="5" fill="currentColor" className={styles.nodePulse3} />
+                      <line x1="14" y1="30" x2="46" y2="14" stroke="currentColor" strokeWidth="2" opacity="0.35" />
+                      <line x1="14" y1="30" x2="46" y2="46" stroke="currentColor" strokeWidth="2" opacity="0.35" />
+                    </svg>
+                  )}
+                  {i === 3 && (
+                    <svg viewBox="0 0 60 60" className={styles.decorSvg}>
+                      <path
+                        d="M30 50C30 50 14 38 14 24a16 16 0 0 1 32 0c0 14-16 26-16 26z"
+                        fill="currentColor"
+                        opacity="0.85"
+                        className={styles.leafSway}
+                      />
+                    </svg>
+                  )}
+                </div>
 
                 <div className={styles.cardLeft}>
                   <div className={styles.iconWrap}>{card.icon}</div>
