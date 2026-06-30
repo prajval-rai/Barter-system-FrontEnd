@@ -156,74 +156,67 @@
 
 @media (max-width: 480px) {
   .hero {
-    /* lock to one screen, minus the fixed navbar's height above it */
+    /* allow it to relax slightly taller than one screen rather than
+       cramming text down to unreadable sizes */
     min-height: calc(100svh - 64px);
-    height: calc(100svh - 64px);
-    padding: var(--space-4) 0 var(--space-3);
+    padding: var(--space-6) 0 var(--space-4);
     display: flex;
     align-items: center;
     box-sizing: border-box;
   }
   .inner {
-    gap: var(--space-2);
+    gap: var(--space-3);
     padding: 0 var(--space-4);
     width: 100%;
   }
   .copy {
-    gap: var(--space-1);
+    gap: var(--space-2);
   }
   .heading {
-    font-size: var(--text-2xl);
+    font-size: var(--text-3xl);
     letter-spacing: -0.5px;
   }
   .divider {
     margin: var(--space-1) 0;
   }
   .description {
-    font-size: var(--text-sm);
+    font-size: var(--text-base);
   }
   .hashtag {
-    font-size: var(--text-xs);
+    font-size: var(--text-sm);
   }
   .actions {
     flex-direction: column;
     gap: var(--space-2);
-    margin-top: var(--space-1);
+    margin-top: var(--space-2);
     width: 100%;
   }
   .primaryBtn,
   .outlineBtn {
     width: 100%;
     justify-content: center;
-    padding: var(--space-2) var(--space-6);
-    font-size: var(--text-sm);
+    padding: var(--space-3) var(--space-6);
+    font-size: var(--text-base);
   }
   .mockupArea {
     height: auto;
-    margin-top: var(--space-1);
+    margin-top: var(--space-2);
     margin-bottom: 0;
     justify-content: center;
   }
   .heroImg {
-    max-width: 160px;
+    max-width: 220px;
     width: 100%;
     height: auto;
   }
 }
 
-/* extra-short phones: trim further so nothing clips */
-@media (max-width: 480px) and (max-height: 700px) {
+/* extra-short phones only: trim modestly, don't gut readability */
+@media (max-width: 480px) and (max-height: 650px) {
   .heading {
-    font-size: var(--text-xl);
-  }
-  .description br {
-    display: none;
-  }
-  .description {
-    max-width: 320px;
-    margin: 0 auto;
+    font-size: var(--text-2xl);
   }
   .heroImg {
-    max-width: 120px;
+    max-width: 170px;
   }
 }
