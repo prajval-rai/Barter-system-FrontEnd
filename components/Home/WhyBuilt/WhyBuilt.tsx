@@ -135,7 +135,7 @@ export default function WhyBuilt() {
               >
                 <span className={styles.cardNumber}>{card.number}</span>
 
-                <div className={styles.cardTop}>
+                <div className={styles.cardLeft}>
                   <div className={styles.iconWrap}>{card.icon}</div>
                   <div className={styles.statBlock}>
                     <span className={styles.statValue}>{card.stat}</span>
@@ -143,13 +143,15 @@ export default function WhyBuilt() {
                   </div>
                 </div>
 
-                <h3 className={styles.cardTitle}>{card.title}</h3>
-                <p className={styles.cardDesc}>{card.desc}</p>
+                <div className={styles.cardRight}>
+                  <h3 className={styles.cardTitle}>{card.title}</h3>
+                  <p className={styles.cardDesc}>{card.desc}</p>
 
-                <div className={styles.cardFooter}>
-                  <span className={styles.cardTag}>
-                    {i + 1} of {CARDS.length}
-                  </span>
+                  <div className={styles.cardFooter}>
+                    <span className={styles.cardTag}>
+                      {i + 1} of {CARDS.length}
+                    </span>
+                  </div>
                 </div>
               </div>
             ))}
