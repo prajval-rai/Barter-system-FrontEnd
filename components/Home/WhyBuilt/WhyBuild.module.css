@@ -232,29 +232,67 @@
   max-width: 480px;
 }
 
-/* ── Scroll progress bar (desktop only) ── */
-.progressTrack {
-  display: none;
+/* ── Per-card animated decoration, top-right corner ── */
+.decor {
+  position: absolute;
+  top: 20px;
+  right: 24px;
+  width: 60px;
+  height: 60px;
+  color: var(--accent, var(--color-primary));
+  opacity: 0;
+}
+
+.decorSvg {
   width: 100%;
-  max-width: 980px;
-  height: 4px;
-  margin: 0 auto 28px;
-  background: var(--color-border);
-  border-radius: 999px;
-  overflow: hidden;
-}
-
-.progressFill {
   height: 100%;
-  background: linear-gradient(90deg, var(--color-primary), #60a5fa);
-  border-radius: 999px;
-  transition: width 0.6s cubic-bezier(0.65, 0, 0.35, 1);
+  overflow: visible;
 }
 
-@media (min-width: 961px) {
-  .progressTrack {
-    display: block;
-  }
+.cardActive .decor {
+  opacity: 0.9;
+}
+
+/* Step 1 — rotating ring */
+.spin {
+  transform-origin: 30px 30px;
+}
+.cardActive .decor0 .spin {
+  animation: spinRing 6s linear infinite;
+}
+@keyframes spinRing {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Step 2 — floating coins */
+.cardActive .decor1 .coinFloat1 { animation: coinBob 2.2s ease-in-out infinite; }
+.cardActive .decor1 .coinFloat2 { animation: coinBob 2.6s ease-in-out infinite 0.3s; }
+.cardActive .decor1 .coinFloat3 { animation: coinBob 1.9s ease-in-out infinite 0.6s; }
+@keyframes coinBob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+/* Step 3 — pulsing network nodes */
+.cardActive .decor2 .nodePulse1 { animation: nodePulse 1.8s ease-in-out infinite; }
+.cardActive .decor2 .nodePulse2 { animation: nodePulse 1.8s ease-in-out infinite 0.4s; }
+.cardActive .decor2 .nodePulse3 { animation: nodePulse 1.8s ease-in-out infinite 0.8s; }
+@keyframes nodePulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.5); opacity: 0.6; }
+}
+
+/* Step 4 — swaying leaf */
+.leafSway {
+  transform-origin: 30px 50px;
+}
+.cardActive .decor3 .leafSway {
+  animation: leafSway 2.4s ease-in-out infinite;
+}
+@keyframes leafSway {
+  0%, 100% { transform: rotate(-6deg); }
+  50% { transform: rotate(6deg); }
 }
 
 /* ── Icon pop-in when its card becomes active ── */
