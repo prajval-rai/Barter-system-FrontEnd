@@ -232,7 +232,83 @@
   max-width: 480px;
 }
 
-/* ── Progress dots ── */
+/* ── Scroll progress bar (desktop only) ── */
+.progressTrack {
+  display: none;
+  width: 100%;
+  max-width: 980px;
+  height: 4px;
+  margin: 0 auto 28px;
+  background: var(--color-border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-primary), #60a5fa);
+  border-radius: 999px;
+  transition: width 0.6s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+@media (min-width: 961px) {
+  .progressTrack {
+    display: block;
+  }
+}
+
+/* ── Icon pop-in when its card becomes active ── */
+@keyframes iconPop {
+  0% {
+    transform: scale(0.4) rotate(-12deg);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.12) rotate(4deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+.cardActive .iconWrap {
+  animation: iconPop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* ── Title/desc slide up slightly after icon, on active card ── */
+@keyframes contentRise {
+  from {
+    transform: translateY(14px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.cardActive .cardRight {
+  animation: contentRise 0.5s ease 0.1s both;
+}
+
+/* ── Number badge counts in ── */
+.cardActive .cardNumber {
+  animation: contentRise 0.4s ease both;
+}
+
+/* ── Dot pulse while active ── */
+.dotActive {
+  background: var(--color-primary);
+  transform: scale(1.3);
+  animation: dotPulse 1.6s ease-in-out infinite;
+}
+
+@keyframes dotPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(37, 99, 255, 0.35); }
+  50% { box-shadow: 0 0 0 6px rgba(37, 99, 255, 0); }
+}
 .dots {
   display: flex;
   align-items: center;
@@ -247,11 +323,6 @@
   border-radius: 50%;
   background: var(--color-border);
   transition: background 0.3s ease, transform 0.3s ease;
-}
-
-.dotActive {
-  background: var(--color-primary);
-  transform: scale(1.3);
 }
 
 /* ── Responsive ── */
