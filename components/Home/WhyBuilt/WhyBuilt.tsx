@@ -5,6 +5,10 @@ import styles from "./WhyBuild.module.css";
 
 const CARDS = [
   {
+    number: "01",
+    accent: "#2563ff",
+    stat: "₹0",
+    statLabel: "to spend upfront",
     icon: (
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M12 2v20M2 12h20" />
@@ -15,6 +19,10 @@ const CARDS = [
     desc: "Need something for a day or a week? Borrow it from someone nearby instead of spending thousands.",
   },
   {
+    number: "02",
+    accent: "#16a34a",
+    stat: "₹500+",
+    statLabel: "earned per item/month",
     icon: (
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M20 12V22H4V12" />
@@ -28,6 +36,10 @@ const CARDS = [
     desc: "Your idle camera, drill, or tent is money sitting unused. Lend it out and earn while you sleep.",
   },
   {
+    number: "03",
+    accent: "#9333ea",
+    stat: "100%",
+    statLabel: "verified neighbours",
     icon: (
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
@@ -40,6 +52,10 @@ const CARDS = [
     desc: "Real people, real items, real locality. LenDen connects you with verified neighbours you can trust.",
   },
   {
+    number: "04",
+    accent: "#0d9488",
+    stat: "1 less",
+    statLabel: "product manufactured",
     icon: (
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z" />
@@ -115,10 +131,26 @@ export default function WhyBuilt() {
                 className={`${styles.card} ${
                   i === activeIndex ? styles.cardActive : ""
                 }`}
+                style={{ ["--accent" as string]: card.accent }}
               >
-                <div className={styles.iconWrap}>{card.icon}</div>
+                <span className={styles.cardNumber}>{card.number}</span>
+
+                <div className={styles.cardTop}>
+                  <div className={styles.iconWrap}>{card.icon}</div>
+                  <div className={styles.statBlock}>
+                    <span className={styles.statValue}>{card.stat}</span>
+                    <span className={styles.statLabel}>{card.statLabel}</span>
+                  </div>
+                </div>
+
                 <h3 className={styles.cardTitle}>{card.title}</h3>
                 <p className={styles.cardDesc}>{card.desc}</p>
+
+                <div className={styles.cardFooter}>
+                  <span className={styles.cardTag}>
+                    {i + 1} of {CARDS.length}
+                  </span>
+                </div>
               </div>
             ))}
           </div>
