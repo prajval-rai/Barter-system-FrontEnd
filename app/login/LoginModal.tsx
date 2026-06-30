@@ -5,6 +5,7 @@ import s from "./LoginModal.module.css";
 import { initializeApp, getApps } from "firebase/app";
 import { getMessaging, getToken } from "firebase/messaging";
 import { useAuth } from "@/context/AuthContext"; // ← adjust path if needed
+import LenDenLogo from "@/components/LenDenLogo";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -106,14 +107,8 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
 
   const handleCredentialResponse = async (response: { credential: string }) => {
     try {
-      // ✅ This is the key fix:
-      // login() calls Django, stores user in AuthContext + sessionStorage
-      // so TopBar / Sidebar will immediately show real name, image etc.
       await login(response.credential);
-
-      // FCM notification (non-blocking — don't await to avoid delaying UX)
       sendLoginNotification().catch(console.error);
-
       onSuccess?.();
       onClose();
     } catch (err) {
@@ -130,7 +125,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
         {/* Close button */}
         <button className={s.closeBtn} onClick={onClose} aria-label="Close">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M12 4L4 12M4 4l8 8" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round"/>
+            <path d="M12 4L4 12M4 4l8 8" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
           </svg>
         </button>
 
@@ -140,10 +135,11 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
             <span className={s.badgeStar}>✦</span>
             LenDen Marketplace
           </div>
+
           <div className={s.logoRing}>
-            <span className={s.logoIcon}>⚖️</span>
+            <LenDenLogo width={120} />
           </div>
-          <div className={s.brand}>LenDen</div>
+
           <div className={s.tagline}>Trade · Exchange · Deal</div>
         </div>
 
@@ -162,6 +158,7 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
             <div ref={btnRef} style={{ width: "100%" }} />
           </div>
 
+          <div className={s.featuresLabel}>What you get with LenDen</div>
           <div className={s.features}>
             {[
               "Browse thousands of items to trade",
