@@ -153,3 +153,49 @@
   .mockupArea { height: 320px; }
   .heroImg { max-width: 320px; }
 }
+
+@media (max-width: 480px) {
+  .hero {
+    padding: var(--space-8) 0 var(--space-6);
+  }
+  .inner {
+    gap: var(--space-3);
+    padding: 0 var(--space-4);
+  }
+  .copy {
+    gap: var(--space-2);
+  }
+  .heading {
+    font-size: var(--text-3xl);
+    letter-spacing: -0.5px;
+  }
+  .divider {
+    margin: var(--space-1) 0;
+  }
+  .description {
+    font-size: var(--text-base);
+  }
+  .hashtag {
+    font-size: var(--text-sm);
+  }
+  .actions {
+    flex-direction: column;
+    gap: var(--space-2);
+    margin-top: var(--space-2);
+    width: 100%;
+  }
+  .primaryBtn,
+  .outlineBtn {
+    width: 100%;
+    justify-content: center;
+    padding: var(--space-3) var(--space-6);
+    font-size: var(--text-sm);
+  }
+  .mockupArea {
+    height: 180px;
+    margin-top: var(--space-2);
+  }
+  .heroImg {
+    max-width: 220px;
+  }
+}
