@@ -2,26 +2,21 @@
    WhyBuilt.module.css
    All colors reference globals.css tokens — no hardcoded hex.
    ============================================================ */
-
 /* ── Section ── */
 .section {
   padding: 88px 0 96px;
-  /* Light blue gradient background matching screenshot */
-  background: linear-gradient(180deg, var(--color-hero-start) 0%, var(--color-hero-end) 100%);
+  background: var(--color-white);
 }
-
 .inner {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 48px;
 }
-
 /* ── Heading block ── */
 .heading {
   text-align: center;
   margin-bottom: 52px;
 }
-
 .title {
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-size: clamp(1.8rem, 3vw, 2.4rem);
@@ -31,11 +26,9 @@
   margin: 0 0 14px;
   line-height: 1.2;
 }
-
 .highlight {
   color: var(--color-primary);
 }
-
 .body {
   font-size: 15px;
   color: var(--color-text-muted);
@@ -43,30 +36,25 @@
   margin: 0 auto 10px;
   line-height: 1.75;
 }
-
 .sub {
   font-size: 15px;
   margin: 0;
   line-height: 1.7;
 }
-
 .subBlue {
   color: var(--color-primary);
   font-weight: 700;
 }
-
 .subBold {
   color: var(--color-text-heading);
   font-weight: 700;
 }
-
 /* ── Card grid ── */
 .grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 20px;
 }
-
 /* ── Card ── */
 .card {
   background: var(--color-white);
@@ -77,28 +65,23 @@
   box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
   transition: transform 0.22s ease, box-shadow 0.22s ease;
 }
-
 .card:hover {
   transform: translateY(-5px);
   box-shadow: 0 12px 32px rgba(26, 86, 219, 0.12);
 }
-
 /* ── Icon circle ── */
 .iconWrap {
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  /* Uses --color-primary-light from globals */
   background: var(--color-primary-light);
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0 auto 20px;
   color: var(--color-primary);
-  /* Subtle border using the light color darkened — no extra token needed */
   box-shadow: 0 0 0 1px rgba(26, 86, 219, 0.12);
 }
-
 /* ── Card text ── */
 .cardTitle {
   font-family: 'Plus Jakarta Sans', sans-serif;
@@ -109,20 +92,17 @@
   letter-spacing: -0.2px;
   line-height: 1.35;
 }
-
 .cardDesc {
   font-size: 13.5px;
   color: var(--color-text-muted);
   line-height: 1.75;
   margin: 0;
 }
-
 /* ── Responsive ── */
 @media (max-width: 960px) {
   .inner { padding: 0 28px; }
   .grid  { grid-template-columns: repeat(2, 1fr); gap: 16px; }
 }
-
 @media (max-width: 500px) {
   .inner { padding: 0 16px; }
   .grid  { grid-template-columns: 1fr; }
