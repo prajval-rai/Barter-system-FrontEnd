@@ -156,10 +156,10 @@
 
 @media (max-width: 480px) {
   .hero {
-    /* lock to one screen, accounting for the fixed navbar above it */
-    min-height: 100svh;
-    height: 100svh;
-    padding: var(--space-6) 0 var(--space-3);
+    /* lock to one screen, minus the fixed navbar's height above it */
+    min-height: calc(100svh - 64px);
+    height: calc(100svh - 64px);
+    padding: var(--space-4) 0 var(--space-3);
     display: flex;
     align-items: center;
     box-sizing: border-box;
