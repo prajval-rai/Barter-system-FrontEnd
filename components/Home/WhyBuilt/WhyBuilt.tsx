@@ -1,4 +1,7 @@
-import styles from './WhyBuild.module.css';
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import styles from "./WhyBuild.module.css";
 
 const CARDS = [
   {
@@ -8,7 +11,7 @@ const CARDS = [
         <circle cx="12" cy="12" r="9" />
       </svg>
     ),
-    title: 'Borrow Instead of Buy',
+    title: "Borrow Instead of Buy",
     desc: "Need something for a day or a week? Borrow it from someone nearby instead of spending thousands.",
   },
   {
@@ -21,8 +24,8 @@ const CARDS = [
         <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />
       </svg>
     ),
-    title: 'Earn From What You Own',
-    desc: 'Your idle camera, drill, or tent is money sitting unused. Lend it out and earn while you sleep.',
+    title: "Earn From What You Own",
+    desc: "Your idle camera, drill, or tent is money sitting unused. Lend it out and earn while you sleep.",
   },
   {
     icon: (
@@ -33,8 +36,8 @@ const CARDS = [
         <path d="M16 3.13a4 4 0 0 1 0 7.75" />
       </svg>
     ),
-    title: 'Trust Your Neighbourhood',
-    desc: 'Real people, real items, real locality. LenDen connects you with verified neighbours you can trust.',
+    title: "Trust Your Neighbourhood",
+    desc: "Real people, real items, real locality. LenDen connects you with verified neighbours you can trust.",
   },
   {
     icon: (
@@ -43,40 +46,94 @@ const CARDS = [
         <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
       </svg>
     ),
-    title: 'Less Waste, More Planet',
-    desc: 'Every borrow is one less product manufactured. Small choices, big impact on the environment.',
+    title: "Less Waste, More Planet",
+    desc: "Every borrow is one less product manufactured. Small choices, big impact on the environment.",
   },
 ];
 
 export default function WhyBuilt() {
+  const sectionRef = useRef(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const section = sectionRef.current;
+      if (!section) return;
+
+      const rect = section.getBoundingClientRect();
+      const vh = window.innerHeight;
+
+      // total scrollable distance inside the pinned section
+      const total = section.offsetHeight - vh;
+      if (total <= 0) return;
+
+      // how far we've scrolled into the section (0 -> total)
+      const scrolled = -rect.top;
+      const progress = Math.min(Math.max(scrolled / total, 0), 1);
+
+      const index = Math.min(
+        CARDS.length - 1,
+        Math.floor(progress * CARDS.length)
+      );
+
+      setActiveIndex(index);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
-    <section className={styles.section}>
-      <div className={styles.inner}>
+    <section
+      ref={sectionRef}
+      className={styles.section}
+      style={{ height: `${CARDS.length * 100}vh` }}
+    >
+      <div className={styles.sticky}>
+        <div className={styles.inner}>
+          <div className={styles.heading}>
+            <h2 className={styles.title}>
+              Why We Built <span className={styles.highlight}>LenDen?</span>
+            </h2>
+            <p className={styles.body}>
+              Most things we buy are used a handful of times, then forgotten.
+              Meanwhile, someone nearby needs exactly that thing — right now.
+            </p>
+            <p className={styles.sub}>
+              <span className={styles.subBlue}>We built LenDen</span>{" "}
+              <strong className={styles.subBold}>
+                to turn your neighbourhood into a shared inventory.
+              </strong>
+            </p>
+          </div>
 
-        <div className={styles.heading}>
-          <h2 className={styles.title}>
-            Why We Built <span className={styles.highlight}>LenDen?</span>
-          </h2>
-          <p className={styles.body}>
-            Most things we buy are used a handful of times, then forgotten.
-            Meanwhile, someone nearby needs exactly that thing — right now.
-          </p>
-          <p className={styles.sub}>
-            <span className={styles.subBlue}>We built LenDen</span>{' '}
-            <strong className={styles.subBold}>to turn your neighbourhood into a shared inventory.</strong>
-          </p>
+          <div className={styles.cardStage}>
+            {CARDS.map((card, i) => (
+              <div
+                key={card.title}
+                className={`${styles.card} ${
+                  i === activeIndex ? styles.cardActive : ""
+                }`}
+              >
+                <div className={styles.iconWrap}>{card.icon}</div>
+                <h3 className={styles.cardTitle}>{card.title}</h3>
+                <p className={styles.cardDesc}>{card.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className={styles.dots}>
+            {CARDS.map((_, i) => (
+              <span
+                key={i}
+                className={`${styles.dot} ${
+                  i === activeIndex ? styles.dotActive : ""
+                }`}
+              />
+            ))}
+          </div>
         </div>
-
-        <div className={styles.grid}>
-          {CARDS.map((card) => (
-            <div key={card.title} className={styles.card}>
-              <div className={styles.iconWrap}>{card.icon}</div>
-              <h3 className={styles.cardTitle}>{card.title}</h3>
-              <p className={styles.cardDesc}>{card.desc}</p>
-            </div>
-          ))}
-        </div>
-
       </div>
     </section>
   );
