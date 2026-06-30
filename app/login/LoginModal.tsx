@@ -5,7 +5,7 @@ import s from "./LoginModal.module.css";
 import { initializeApp, getApps } from "firebase/app";
 import { getMessaging, getToken } from "firebase/messaging";
 import { useAuth } from "@/context/AuthContext"; // ← adjust path if needed
-import LenDenLogo from "@/components/LenDenLogo";
+import LenDenLogo from "@/components/logo";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
