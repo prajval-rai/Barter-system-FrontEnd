@@ -1,0 +1,66 @@
+.flightLayer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+  overflow: visible;
+}
+
+.butterfly {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 26px;
+  height: 18px;
+  offset-rotate: 0deg;
+  transform-origin: center;
+  animation-name: fly;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-play-state: running;
+  transition: filter 0.3s ease;
+}
+
+.butterfly.settled {
+  animation-play-state: paused;
+}
+
+@keyframes fly {
+  0%   { offset-distance: 0%;   transform: scale(1); }
+  10%  { offset-distance: 10%; }
+  13%  { offset-distance: 13%; transform: scale(0.85) rotate(-4deg); }
+  22%  { offset-distance: 13%; transform: scale(0.85) rotate(-4deg); }
+  40%  { offset-distance: 45%; }
+  44%  { offset-distance: 50%; transform: scale(0.85) rotate(3deg); }
+  54%  { offset-distance: 50%; transform: scale(0.85) rotate(3deg); }
+  75%  { offset-distance: 85%; }
+  79%  { offset-distance: 90%; transform: scale(0.8) rotate(-2deg); }
+  90%  { offset-distance: 90%; transform: scale(0.8) rotate(-2deg); }
+  100% { offset-distance: 100%; transform: scale(1); }
+}
+
+.wingLeft, .wingRight {
+  transform-origin: 20px 15px;
+  animation: flap 0.32s ease-in-out infinite;
+}
+.wingRight { animation-delay: 0.05s; }
+
+/* fold wings closed when settled, instead of leaving them flapping mid-air */
+.settled .wingLeft,
+.settled .wingRight {
+  animation-play-state: paused;
+  transition: transform 0.4s ease;
+}
+.settled .wingLeft { transform: scaleX(0.15) rotate(2deg); }
+.settled .wingRight { transform: scaleX(0.15) rotate(-2deg); }
+
+@keyframes flap {
+  0%, 100% { transform: scaleX(1); }
+  50%      { transform: scaleX(0.55); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .butterfly, .wingLeft, .wingRight {
+    animation: none;
+  }
+}
