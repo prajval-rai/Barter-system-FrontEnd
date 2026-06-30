@@ -1,70 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import Image from "next/image";
 import styles from "./Hero.module.css";
 import LoginModal from "@/app/login/LoginModal";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-
-const INITIAL_LISTINGS = 24735;
-
-const FEED_ITEMS = [
-  {
-    color: "#F59E0B",
-    offer: "Camping tent available",
-    want: "Weekend rental • 2 mins ago",
-  },
-  {
-    color: "#22C55E",
-    offer: "Looking for a GoPro",
-    want: "Needed for 2 days • 5 mins ago",
-  },
-  {
-    color: "#14B8A6",
-    offer: "Mountain bike available",
-    want: "₹200/day • nearby",
-  },
-  {
-    color: "#F87171",
-    offer: "Engineering books available",
-    want: "Semester borrow • today",
-  },
-  {
-    color: "#60A5FA",
-    offer: "DSLR camera available",
-    want: "₹500/day • nearby",
-  },
-  {
-    color: "#A78BFA",
-    offer: "Drill machine available",
-    want: "₹100/day • nearby",
-  },
-  {
-    color: "#FB923C",
-    offer: "Projector available",
-    want: "1-day booking • today",
-  },
-  {
-    color: "#34D399",
-    offer: "Trekking backpack available",
-    want: "Weekend rental • nearby",
-  },
-];
 
 export default function Hero() {
   const { user } = useAuth();
   const router = useRouter();
 
   const [loginOpen, setLoginOpen] = useState(false);
-  const [listingCount, setListingCount] = useState(INITIAL_LISTINGS);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setListingCount((c) => c + Math.floor(Math.random() * 3 + 1));
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, []);
 
   const handleProtectedAction = () => {
     if (user) {
@@ -74,23 +21,66 @@ export default function Hero() {
     }
   };
 
-  // Render the list twice back-to-back so the loop is seamless
-  const loopFeed = [...FEED_ITEMS, ...FEED_ITEMS];
-
   return (
     <section className={styles.hero} id="home">
+      {/* faint rotating loop watermark behind the chair */}
+      <svg
+        className={styles.watermark}
+        viewBox="0 0 200 200"
+        aria-hidden="true"
+      >
+        <path
+          d="M40 100 V70 a30 30 0 0 1 30 -30 H120"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="14"
+          strokeLinecap="round"
+        />
+        <path d="M105 22 L150 40 L105 58 Z" fill="currentColor" />
+        <path
+          d="M160 100 V130 a30 30 0 0 1 -30 30 H80"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="14"
+          strokeLinecap="round"
+        />
+        <path d="M95 178 L50 160 L95 142 Z" fill="currentColor" />
+      </svg>
+
       <div className={styles.inner}>
         {/* Left Side */}
         <div className={styles.copy}>
           <h1 className={styles.heading}>
-            Don&apos;t buy everything.
+            Every Product
+            <br />
+            Deserves a
+            <br />
+            <span className={styles.headingAccent}>
+              Second Life
+              <svg
+                className={styles.heart}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                aria-hidden="true"
+              >
+                <path d="M12 21s-7.5-4.6-10-9.3C0.3 7.7 2.6 4 6.3 4c2.1 0 3.7 1.1 4.7 2.7C12 5.1 13.6 4 15.7 4 19.4 4 21.7 7.7 20 11.7 19.5 16.4 12 21 12 21z" />
+              </svg>
+            </span>
           </h1>
 
+          <div className={styles.divider} />
+
           <p className={styles.description}>
-            Why spend thousands on something you&apos;ll only use for a few
-            days? Find camping gear, cameras, books, tools and more from
-            people nearby.
+            Jo aapke liye useless hai,
+            <br />
+            kisi aur ke liye
+            <br />
+            valuable ho sakta hai.
           </p>
+
+          <p className={styles.hashtag}>#ExchangeForBetter</p>
 
           <div className={styles.actions}>
             <button
@@ -99,7 +89,6 @@ export default function Hero() {
               onClick={handleProtectedAction}
             >
               find what you need
-
               <svg
                 width="14"
                 height="14"
@@ -115,72 +104,22 @@ export default function Hero() {
               </svg>
             </button>
 
-            <button
-              className={styles.outlineBtn}
-              type="button"
-            >
+            <button className={styles.outlineBtn} type="button">
               how it works
             </button>
-          </div>
-
-          <div className={styles.statRow}>
-            <span
-              className={styles.liveDot}
-              aria-hidden="true"
-            />
-
-            <span>live right now —</span>
-
-            <span className={styles.statCount}>
-              {listingCount.toLocaleString()}
-            </span>
-
-            <span>community listings</span>
           </div>
         </div>
 
         {/* Right Side */}
-        <div
-          className={styles.mockupArea}
-          aria-hidden="true"
-        >
-          <div className={styles.feedPanel}>
-            <div className={styles.feedHeader}>
-              <div className={styles.feedHeaderDots}>
-                <span />
-                <span />
-                <span />
-              </div>
-            </div>
-
-            <div className={styles.feedViewport}>
-              <div className={styles.feedTrack}>
-                {loopFeed.map((item, i) => (
-                  <div
-                    key={i}
-                    className={styles.feedRow}
-                  >
-                    <span
-                      className={styles.feedDot}
-                      style={{
-                        background: item.color,
-                      }}
-                    />
-
-                    <div className={styles.feedText}>
-                      <span className={styles.feedTitle}>
-                        {item.offer}
-                      </span>
-
-                      <span className={styles.feedSub}>
-                        {item.want}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+        <div className={styles.mockupArea} aria-hidden="true">
+          <Image
+            src="/Image/LandingPage/hero-img.png"
+            alt="Chair with teddy bear, camera and books available for exchange"
+            width={640}
+            height={640}
+            className={styles.heroImg}
+            priority
+          />
         </div>
       </div>
 
