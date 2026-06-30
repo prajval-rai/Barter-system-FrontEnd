@@ -1,12 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import styles from './NavBar.module.css';
 import LoginModal from "@/app/login/LoginModal";
 import { useAuth } from "@/context/AuthContext";
+import LenDenLogo from "@/components/logo";
 
 const NAV_LINKS = [
   { label: 'Home',          href: '#home' },
@@ -72,14 +72,7 @@ export default function Navbar() {
 
         {/* Logo */}
         <Link href="/" className={styles.logo}>
-          <Image
-            src="/logo.png"
-            alt="LenDen logo"
-            width={28}
-            height={28}
-            className={styles.logoIcon}
-            priority
-          />
+          <LenDenLogo width={140} />
         </Link>
 
         {/* Desktop Nav */}
