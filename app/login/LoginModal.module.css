@@ -120,31 +120,19 @@
   opacity: 0.8;
 }
 
+/* The logo lives directly on the gradient header now, on a soft
+   translucent pill so the navy half of the wordmark stays legible
+   against the dark blue background. */
 .logoRing {
-  width: 58px;
-  height: 58px;
-  background: rgba(255, 255, 255, 0.15);
-  border: 1.5px solid rgba(255, 255, 255, 0.3);
-  border-radius: 14px;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  border-radius: 14px;
+  padding: 10px 18px;
   margin: 0 auto 0.75rem;
   backdrop-filter: blur(8px);
-}
-
-.logoIcon {
-  font-size: 28px;
-  line-height: 1;
-}
-
-.brand {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  font-weight: 800;
-  font-size: 1.35rem;
-  color: #ffffff;
-  letter-spacing: -0.3px;
-  margin-bottom: 4px;
 }
 
 .tagline {
@@ -215,6 +203,17 @@
 }
 
 /* ---------- Features ---------- */
+.featuresLabel {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: #1A56DB;
+  margin-bottom: 0.6rem;
+  padding-left: 2px;
+}
+
 .features {
   background: #F8FAFF;
   border: 1px solid #E2E8F0;
