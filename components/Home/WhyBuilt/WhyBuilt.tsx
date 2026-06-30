@@ -124,6 +124,15 @@ export default function WhyBuilt() {
             </p>
           </div>
 
+          <div className={styles.progressTrack} aria-hidden="true">
+            <div
+              className={styles.progressFill}
+              style={{
+                width: `${((activeIndex + 1) / CARDS.length) * 100}%`,
+              }}
+            />
+          </div>
+
           <div className={styles.cardStage}>
             {CARDS.map((card, i) => (
               <div
