@@ -52,7 +52,7 @@ const CARDS = [
 ];
 
 export default function WhyBuilt() {
-  const sectionRef = useRef(null);
+  const sectionRef = useRef<HTMLElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
