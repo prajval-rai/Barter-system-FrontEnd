@@ -1,8 +1,19 @@
 import Link from 'next/link';
 import styles from './Footer.module.css';
 
-const QUICK_LINKS = ['Home', 'How it Works', 'Categories', 'Why LenDen?'];
-const SUPPORT_LINKS = ['Help Center', 'Safety Tips', 'Terms of Service', 'Privacy Policy'];
+const QUICK_LINKS = [
+  { label: 'Home',         href: '/#home' },
+  { label: 'How it Works', href: '/#how-it-works' },
+  { label: 'Why LenDen?',  href: '/#why-exchange' },
+  { label: 'FAQs',         href: '/#faqs' },
+];
+
+const SUPPORT_LINKS = [
+  { label: 'Help Center',       href: '/help-center' },
+  { label: 'Safety Tips',       href: '/safety-tips' },
+  { label: 'Terms of Service',  href: '/terms-of-service' },
+  { label: 'Privacy Policy',    href: '/privacy-policy' },
+];
 
 const SOCIAL = [
   {
@@ -67,7 +78,9 @@ export default function Footer() {
             <div className={styles.colTitle}>Quick Links</div>
             <ul className={styles.colLinks}>
               {QUICK_LINKS.map((link) => (
-                <li key={link}><a href="#">{link}</a></li>
+                <li key={link.label}>
+                  <Link href={link.href}>{link.label}</Link>
+                </li>
               ))}
             </ul>
           </div>
@@ -77,7 +90,9 @@ export default function Footer() {
             <div className={styles.colTitle}>Support</div>
             <ul className={styles.colLinks}>
               {SUPPORT_LINKS.map((link) => (
-                <li key={link}><a href="#">{link}</a></li>
+                <li key={link.label}>
+                  <Link href={link.href}>{link.label}</Link>
+                </li>
               ))}
             </ul>
           </div>
