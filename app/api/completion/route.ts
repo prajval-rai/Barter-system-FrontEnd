@@ -1,18 +1,13 @@
-import { cookies } from "next/headers";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function GET() {
-  const cookieStore = await cookies();  // ← add await
-  const cookieHeader = cookieStore.getAll()
-    .map(c => `${c.name}=${c.value}`)
-    .join("; ");
+const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL!;
 
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}accounts/completion/`, {
-    headers: {
-      Cookie: cookieHeader,
-    },
+export async function GET(req: NextRequest) {
+  const res = await fetch(`${BACKEND}products/completion/`, {
+    headers: { cookie: req.headers.get("cookie") ?? "" },
+    cache: "no-store",
   });
 
-  const data = await res.json();
+  const data = await res.json().catch(() => ({}));
   return NextResponse.json(data, { status: res.status });
 }
