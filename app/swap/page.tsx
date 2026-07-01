@@ -1,92 +1,61 @@
-"use client";
-import { useEffect, useState } from "react";
-import AppShell from "@/components/AppShell/Appshell ";
-import DashboardTopBar from "./Dashboardtopbar";
-import DashboardHero from "./Dashboardhero";
-import styles from "./Dashboard.module.css";
-import SwapRequests from "./Swaprequests";
-import MoreMatches from "./Morematches";
-import BrowseByCategory from "./Browsebycategory";
-import YourListings from "./Yourlistings";
-import NearbyItems from "./Nearbyitems";
-import EmptyWelcomeHero from "./empty/Emptywelcomehero";
-import EmptyHowItWorks from "./empty/Emptyhowitworks";
-import EmptyNoItems from "./empty/Emptynoitems";
-import EmptyWhyUs from "./empty/Emptywhyus";
+import { headers } from 'next/headers';
+import { redirect } from 'next/navigation';
+import DashboardClient from '@/components/Dashboard/DashboardClient';
 
-export default function DashboardPage() {
-  const [hasProducts, setHasProducts]               = useState<boolean | null>(null);
-  const [completionPercentage, setCompletionPercentage] = useState<number>(0);
-  const base_url    = process.env.NEXT_PUBLIC_BACKEND_URL;
+export const metadata = {
+  title: 'Dashboard — LenDen',
+};
 
-  const fetchCompletion = async () => {
-    try {
-      const res  = await fetch(`/api/completion`); // ← same origin, no CORS
-      const data = await res.json();
-      setCompletionPercentage(data.completion_percentage ?? 0);
-    } catch {
-      setCompletionPercentage(0);
-    }
-  };
+interface CompletionResponse {
+  completion_percentage: number;
+}
 
-  useEffect(() => {
-    const checkProducts = async () => {
-      try {
-        const res  = await fetch(`/api/my-products`); // ← same origin, no CORS
-        const data = await res.json();
-        setHasProducts(Array.isArray(data) && data.length > 0);
-      } catch {
-        setHasProducts(false);
-      }
-    };
-    checkProducts();
-    fetchCompletion();
-  }, []);
+async function fetchDashboardData() {
+  const incomingHeaders = await headers();
+  const cookieHeader = incomingHeaders.get('cookie') ?? '';
+  const host = incomingHeaders.get('host');
+  const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https';
+  const baseUrl = `${protocol}://${host}`;
 
-  if (hasProducts === null) {
-    return (
-      <AppShell>
-        <div className={styles.loadingScreen}>
-          <div className={styles.loadingSpinner} />
-        </div>
-      </AppShell>
-    );
+  const [productsRes, completionRes] = await Promise.all([
+    fetch(`${baseUrl}/api/my-products`, {
+      headers: { cookie: cookieHeader },
+      cache: 'no-store',
+    }),
+    fetch(`${baseUrl}/api/completion`, {
+      headers: { cookie: cookieHeader },
+      cache: 'no-store',
+    }),
+  ]);
+
+  if (productsRes.status === 401) {
+    return null;
   }
 
-  if (!hasProducts) {
-    return (
-      <AppShell>
-        <div className={styles.emptyPage}>
-          <DashboardTopBar completionPercentage={completionPercentage} />
-          <EmptyWelcomeHero />
-          <EmptyHowItWorks />
-          <div className={styles.emptyBottomGrid}>
-            <EmptyNoItems />
-            <EmptyWhyUs />
-          </div>
-          <div className={styles.pageBody}>
-            <NearbyItems />
-          </div>
-        </div>
-      </AppShell>
-    );
+  const productsData = productsRes.ok ? await productsRes.json() : [];
+  const completionData: CompletionResponse = completionRes.ok
+    ? await completionRes.json()
+    : { completion_percentage: 0 };
+
+  const products = Array.isArray(productsData) ? productsData : [];
+
+  return {
+    hasProducts: products.length > 0,
+    completionPercentage: completionData.completion_percentage ?? 0,
+  };
+}
+
+export default async function DashboardPage() {
+  const data = await fetchDashboardData();
+
+  if (data === null) {
+    redirect('/login');
   }
 
   return (
-    <AppShell>
-      <div className={styles.page}>
-        <div className={styles.heroBg}>
-          <DashboardTopBar completionPercentage={completionPercentage} />
-          <DashboardHero />
-        </div>
-        <div className={styles.pageBody}>
-          <SwapRequests />
-          <MoreMatches />
-          <BrowseByCategory />
-          <YourListings />
-          <NearbyItems />
-        </div>
-      </div>
-    </AppShell>
+    <DashboardClient
+      hasProducts={data.hasProducts}
+      completionPercentage={data.completionPercentage}
+    />
   );
 }
