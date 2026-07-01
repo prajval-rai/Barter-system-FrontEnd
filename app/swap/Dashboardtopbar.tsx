@@ -1,12 +1,19 @@
 "use client";
-
 import Link from "next/link";
 import Image from "next/image";
 import styles from "./Dashboardtopbar.module.css";
 import { useAuth } from "@/context/AuthContext";
 
-export default function DashboardTopBar() {
+interface DashboardTopBarProps {
+  completionPercentage?: number;
+}
+
+export default function DashboardTopBar({ completionPercentage = 0 }: DashboardTopBarProps) {
   const { user } = useAuth();
+
+  const radius = 16;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (completionPercentage / 100) * circumference;
 
   return (
     <header className={styles.topbar}>
@@ -24,6 +31,31 @@ export default function DashboardTopBar() {
       </div>
 
       <div className={styles.actions}>
+        {/* Profile completion ring */}
+        {completionPercentage < 100 && (
+          <Link href="/profile" className={styles.progressBtn} aria-label={`Profile ${completionPercentage}% complete`}>
+            <svg width="40" height="40" viewBox="0 0 40 40" className={styles.progressSvg}>
+              <circle
+                cx="20" cy="20" r={radius}
+                className={styles.progressTrack}
+                fill="none"
+                strokeWidth="3"
+              />
+              <circle
+                cx="20" cy="20" r={radius}
+                className={styles.progressFill}
+                fill="none"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeDasharray={circumference}
+                strokeDashoffset={offset}
+                transform="rotate(-90 20 20)"
+              />
+            </svg>
+            <span className={styles.progressText}>{completionPercentage}%</span>
+          </Link>
+        )}
+
         {/* Notifications */}
         <Link href="/notifications" className={styles.iconBtn} aria-label="Notifications">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
