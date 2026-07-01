@@ -453,9 +453,12 @@
   justify-content: center;
   width: 36px;
   height: 36px;
-  border-radius: 9px;
+  border-radius: 50%;      /* ← force circle, was 9px (rounded square) */
   color: #64748B;
   text-decoration: none;
+  background: transparent;  /* ← ensure no stray border/bg */
+  border: none;
+  cursor: pointer;
   transition: background 120ms, color 120ms;
 }
 
