@@ -53,8 +53,8 @@ export default function WhyExchange() {
     <section className={styles.section} id="why-exchange">
       <div className={styles.inner}>
         <div className={styles.header}>
-          <span className={styles.eyebrow}>buying vs exchanging</span>
-          <h2 className={styles.title}>why lenden beats buying</h2>
+          <span className={styles.eyebrow}>Buying Vs Exchanging</span>
+          <h2 className={styles.title}>Why lenden beats buying</h2>
         </div>
 
         <div
@@ -64,7 +64,7 @@ export default function WhyExchange() {
           {/* ── Left: Buying ── */}
           <div className={`${styles.card} ${styles.cardBuying}`}>
             <span className={`${styles.tag} ${styles.tagBad}`}>the old way</span>
-            <h3 className={styles.cardTitle}>buying it</h3>
+            <h3 className={styles.cardTitle}>Buying it</h3>
             <div className={styles.list}>
               {BUYING.map((text, i) => (
                 <div
@@ -87,7 +87,7 @@ export default function WhyExchange() {
           {/* ── Right: LenDen ── */}
           <div className={`${styles.card} ${styles.cardLenden}`}>
             <span className={`${styles.tag} ${styles.tagGood}`}>the lenden way</span>
-            <h3 className={styles.cardTitle}>exchanging it</h3>
+            <h3 className={styles.cardTitle}>Exchanging it</h3>
             <div className={styles.list}>
               {EXCHANGING.map((text, i) => (
                 <div
