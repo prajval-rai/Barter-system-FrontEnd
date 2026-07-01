@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import styles from "./Appshell.module.css";
 import { useAuth } from "@/context/AuthContext";
 import Image from "next/image";
@@ -28,16 +28,19 @@ function Avatar({ image, name, size = 32 }: { image: string | null; name: string
   );
 }
 
+/* ── Nav config ──
+   showInBottom controls the mobile bottom nav: Home, Marketplace, Messages, Bookmarks only.
+   Profile is no longer a bottom-nav tab — it's now the dropdown trigger in the mobile top bar. */
 const NAV_ITEMS = [
-  { label: "Home",          href: "/swap",          badge: null, showInBottom: false, comingSoon: false, icon: ["M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z", "M9 22V12h6v10"] },
+  { label: "Home",          href: "/swap",          badge: null, showInBottom: true,  comingSoon: false, icon: ["M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z", "M9 22V12h6v10"] },
   { label: "Marketplace",   href: "/marketplace",   badge: null, showInBottom: true,  comingSoon: false, icon: ["M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z", "M3 6h18", "M16 10a4 4 0 01-8 0"] },
   { label: "My Listings",   href: "/listings",      badge: null, showInBottom: false, comingSoon: false, icon: ["M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2", "M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2", "M9 12h6M9 16h4"] },
   { label: "My Swaps",      href: "/swaps",         badge: null, showInBottom: false, comingSoon: false, icon: ["M7 16V4m0 0L3 8m4-4l4 4", "M17 8v12m0 0l4-4m-4 4l-4-4"] },
   { label: "Messages",      href: "/messages",      badge: 2,    showInBottom: true,  comingSoon: false, icon: ["M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"] },
-  { label: "Offers",        href: "/offers",        badge: null, showInBottom: true,  comingSoon: true,  icon: ["M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"] },
-  { label: "Bookmarks",     href: "/bookmarks",     badge: null, showInBottom: false, comingSoon: false, icon: ["M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"] },
+  { label: "Offers",        href: "/offers",        badge: null, showInBottom: false, comingSoon: true,  icon: ["M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"] },
+  { label: "Bookmarks",     href: "/bookmarks",     badge: null, showInBottom: true,  comingSoon: false, icon: ["M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"] },
   { label: "Notifications", href: "/notifications", badge: null, showInBottom: false, comingSoon: false, icon: ["M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9", "M13.73 21a2 2 0 01-3.46 0"] },
-  { label: "Profile",       href: "/profile",       badge: null, showInBottom: true,  comingSoon: false, icon: ["M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2", "M12 11a4 4 0 100-8 4 4 0 000 8z"] },
+  { label: "Profile",       href: "/profile",       badge: null, showInBottom: false, comingSoon: false, icon: ["M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2", "M12 11a4 4 0 100-8 4 4 0 000 8z"] },
   { label: "Settings",      href: "/settings",      badge: null, showInBottom: false, comingSoon: true,  icon: ["M12 15a3 3 0 100-6 3 3 0 000 6z", "M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"] },
 ];
 
@@ -47,10 +50,13 @@ const NAV_SECTIONS = [
   { label: "Account",  items: ["Profile", "Settings"] },
 ];
 
+/* Items shown in the mobile profile dropdown */
+const PROFILE_MENU_LABELS = ["Home", "My Listings", "Profile", "Settings"];
+const getNavItem = (label: string) => NAV_ITEMS.find((i) => i.label === label)!;
+
 function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
-  const getNavItem = (label: string) => NAV_ITEMS.find((i) => i.label === label)!;
 
   return (
     <aside className={`${styles.sidebar} ${collapsed ? styles.sidebarCollapsed : ""}`}>
@@ -169,7 +175,47 @@ function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => 
 }
 
 function MobileTopBar() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  /* Close profile menu on outside click */
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handleClick = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [menuOpen]);
+
+  /* Expanded search mode replaces the whole row */
+  if (searchOpen) {
+    return (
+      <header className={styles.mobileTopbar}>
+        <button className={styles.iconBtn} onClick={() => setSearchOpen(false)} aria-label="Close search">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <div className={styles.mobileSearchWrap}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
+          </svg>
+          <input
+            autoFocus
+            type="text"
+            placeholder="Search items, users or categories..."
+            className={styles.mobileSearchInput}
+          />
+        </div>
+      </header>
+    );
+  }
+
   return (
     <header className={styles.mobileTopbar}>
       <Link href="/dashboard" className={styles.mobileLogoLink}>
@@ -182,12 +228,14 @@ function MobileTopBar() {
           priority
         />
       </Link>
+
       <div className={styles.mobileTopbarRight}>
-        <Link href="/search" className={styles.iconBtn} aria-label="Search">
+        <button className={styles.iconBtn} onClick={() => setSearchOpen(true)} aria-label="Search">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
           </svg>
-        </Link>
+        </button>
+
         <Link href="/notifications" className={styles.iconBtn} aria-label="Notifications">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
@@ -195,11 +243,56 @@ function MobileTopBar() {
           </svg>
           <span className={styles.notifBadge}>3</span>
         </Link>
-        <Link href="/profile" className={styles.mobileAvatarBtn} aria-label="Profile">
-          <div className={styles.avatarRing} style={{ width: 34, height: 34 }}>
-            <Avatar image={user?.image ?? null} name={user?.name ?? "U"} size={28} />
-          </div>
-        </Link>
+
+        {/* Profile — click opens dropdown instead of navigating directly */}
+        <div className={styles.mobileProfileWrap} ref={menuRef}>
+          <button
+            className={styles.mobileAvatarBtn}
+            onClick={() => setMenuOpen((v) => !v)}
+            aria-label="Profile menu"
+            aria-expanded={menuOpen}
+          >
+            <div className={styles.avatarRing} style={{ width: 34, height: 34 }}>
+              <Avatar image={user?.image ?? null} name={user?.name ?? "U"} size={28} />
+            </div>
+          </button>
+
+          {menuOpen && (
+            <div className={styles.mobileProfileMenu} role="menu">
+              {PROFILE_MENU_LABELS.map((label) => {
+                const item = getNavItem(label);
+                const displayLabel = label === "Home" ? "My LenDen" : label;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={styles.mobileProfileMenuItem}
+                    onClick={() => setMenuOpen(false)}
+                    role="menuitem"
+                  >
+                    <span className={styles.navIcon}><Icon paths={item.icon} size={16} /></span>
+                    {displayLabel}
+                  </Link>
+                );
+              })}
+              <div className={styles.mobileProfileMenuDivider} />
+              <button
+                className={styles.mobileProfileMenuItem}
+                onClick={() => { setMenuOpen(false); logout(); }}
+                role="menuitem"
+              >
+                <span className={styles.navIcon}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
+                    <polyline points="16 17 21 12 16 7" />
+                    <line x1="21" y1="12" x2="9" y2="12" />
+                  </svg>
+                </span>
+                Logout
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );
