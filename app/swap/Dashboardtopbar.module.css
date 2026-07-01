@@ -1,3 +1,46 @@
+/* Profile completion ring */
+.progressBtn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1.5px solid rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  transition: background var(--duration-fast), box-shadow var(--duration-fast);
+}
+
+.progressBtn:hover {
+  background: var(--color-white);
+  box-shadow: var(--shadow-md);
+}
+
+.progressSvg {
+  position: absolute;
+  inset: 0;
+}
+
+.progressTrack {
+  stroke: var(--color-border);
+}
+
+.progressFill {
+  stroke: var(--color-primary);
+  transition: stroke-dashoffset 0.5s ease;
+}
+
+.progressText {
+  position: relative;
+  font-family: var(--font-body);
+  font-size: 9px;
+  font-weight: var(--font-bold);
+  color: var(--color-primary);
+}
+
 .topbar {
   display: flex;
   align-items: center;
