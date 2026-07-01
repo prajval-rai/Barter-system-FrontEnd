@@ -23,9 +23,9 @@ async function fetchDashboardData() {
       cache: 'no-store',
     }),
     fetch(`${baseUrl}/api/completion`, {
-      headers: { cookie: cookieHeader },
-      cache: 'no-store',
-    }),
+  headers: { cookie: cookieHeader },
+  cache: 'no-store',
+}),
   ]);
 
   if (productsRes.status === 401) {
