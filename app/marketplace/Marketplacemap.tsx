@@ -3,8 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./Marketplacemap.module.css";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
+import CategoryFilter from "../../components/Categoryfilter/Categoryfilter"; // adjust path if needed
 
 interface Category {
   id: number;
@@ -37,25 +36,27 @@ interface Props {
   categories: Category[];
 }
 
-// ─── Constants ────────────────────────────────────────────────────────────────
+interface ClusterGroup {
+  lat: number;
+  lng: number;
+  products: Product[];
+}
 
 const PRODUCTS_API = `/api/marketplace`;
 const INDIA_CENTER: [number, number] = [22.5937, 78.9629];
 const INDIA_ZOOM = 5;
 
-// ─── Component ────────────────────────────────────────────────────────────────
-
 export default function MarketplaceMap({ categories }: Props) {
   const router = useRouter();
-  const mapRef          = useRef<HTMLDivElement>(null);
-  const leafletMap      = useRef<any>(null);
-  const markersLayer    = useRef<any>(null);
-  const spiderLayer     = useRef<any>(null);
-  const locationMarker  = useRef<any>(null);
-  const boundaryLayer   = useRef<any>(null); // ← NEW: holds the GeoJSON overlay
-  const pendingPlot     = useRef<Product[] | null>(null);
-  const mapInitialized  = useRef(false);
-  const allBounds       = useRef<[number, number][]>([]);
+  const mapRef         = useRef<HTMLDivElement>(null);
+  const leafletMap     = useRef<any>(null);
+  const clusterLayer   = useRef<any>(null);
+  const locationMarker = useRef<any>(null);
+  const boundaryLayer  = useRef<any>(null);
+  const mapInitialized = useRef(false);
+  const productsRef    = useRef<Product[]>([]);
+  const zoomTimeout    = useRef<any>(null);
+  const fitToAllOnce   = useRef(false);
 
   const [products,          setProducts         ] = useState<Product[]>([]);
   const [selectedCategory,  setSelectedCategory ] = useState<number | null>(null);
@@ -89,179 +90,184 @@ export default function MarketplaceMap({ categories }: Props) {
       popupAnchor: [0, -84],
     });
 
-    const marker = L.marker([lat, lng], { icon });
-    marker.on("click", () => setActiveProduct(product));
+    const marker = L.marker([lat, lng], { icon, zIndexOffset: 100 });
+    marker.on("click", (e: any) => {
+      e.originalEvent?.stopPropagation();
+      setActiveProduct(product);
+    });
     return marker;
   }, []);
 
-  // ── Plot markers ──────────────────────────────────────────────────────────
+  // ── Group products into pixel-grid clusters at the CURRENT zoom level ─────
 
-  const plotMarkers = useCallback(async (productList: Product[]) => {
-    if (!mapInitialized.current || !leafletMap.current || !markersLayer.current) {
-      pendingPlot.current = productList;
-      return;
-    }
+  const buildClusters = useCallback((L: any, map: any, list: Product[]): ClusterGroup[] => {
+    const valid = list.filter((p) => p.owner_latitude != null && p.owner_longitude != null);
+    if (valid.length === 0) return [];
+
+    const isMobile = window.innerWidth <= 640;
+    const gridSize = isMobile ? 46 : 62;
+    const zoom = map.getZoom();
+
+    const cellMap = new Map<string, ClusterGroup>();
+    const clusters: ClusterGroup[] = [];
+
+    valid.forEach((p) => {
+      const point = map.project([p.owner_latitude!, p.owner_longitude!], zoom);
+      const cellX = Math.floor(point.x / gridSize);
+      const cellY = Math.floor(point.y / gridSize);
+      const key = `${cellX}_${cellY}`;
+
+      let cell = cellMap.get(key);
+      if (!cell) {
+        cell = { lat: p.owner_latitude!, lng: p.owner_longitude!, products: [] };
+        cellMap.set(key, cell);
+        clusters.push(cell);
+      }
+      cell.products.push(p);
+    });
+
+    clusters.forEach((c) => {
+      const latSum = c.products.reduce((s, p) => s + p.owner_latitude!, 0);
+      const lngSum = c.products.reduce((s, p) => s + p.owner_longitude!, 0);
+      c.lat = latSum / c.products.length;
+      c.lng = lngSum / c.products.length;
+    });
+
+    return clusters;
+  }, []);
+
+  // ── Plot clusters/pins on the map ──────────────────────────────────────────
+
+  const plotClusters = useCallback(async (list: Product[]) => {
+    if (!mapInitialized.current || !leafletMap.current || !clusterLayer.current) return;
 
     const L = await import("leaflet");
-    markersLayer.current.clearLayers();
+    const map = leafletMap.current;
+    clusterLayer.current.clearLayers();
 
-    if (spiderLayer.current) {
-      spiderLayer.current.clearLayers();
-    } else {
-      spiderLayer.current = L.layerGroup().addTo(leafletMap.current);
-    }
+    const clusters = buildClusters(L, map, list);
 
-    const valid = productList.filter(
-      (p) => p.owner_latitude != null && p.owner_longitude != null
-    );
-
-    if (valid.length === 0) {
-      leafletMap.current.setView(INDIA_CENTER, INDIA_ZOOM);
-      return;
-    }
-
-    const groups = new Map<string, Product[]>();
-    valid.forEach((p) => {
-      const key = `${p.owner_latitude!.toFixed(4)},${p.owner_longitude!.toFixed(4)}`;
-      if (!groups.has(key)) groups.set(key, []);
-      groups.get(key)!.push(p);
-    });
-
-    const bounds: [number, number][] = [];
-
-    groups.forEach((groupProducts, key) => {
-      const [baseLat, baseLng] = key.split(",").map(Number);
-
-      if (groupProducts.length === 1) {
-        const marker = buildPinMarker(L, groupProducts[0], baseLat, baseLng);
-        marker.addTo(markersLayer.current);
-        bounds.push([baseLat, baseLng]);
-      } else {
-        const clusterIcon = L.divIcon({
-          className: "",
-          html: `<div class="${styles.cluster}">
-                   <span class="${styles.clusterInner}">
-                     <span class="${styles.clusterCount}">${groupProducts.length}</span>
-                     <span class="${styles.clusterLabel}">items</span>
-                   </span>
-                 </div>`,
-          iconSize:   [52, 52],
-          iconAnchor: [26, 26],
-        });
-
-        const clusterMarker = L.marker([baseLat, baseLng], {
-          icon: clusterIcon,
-          zIndexOffset: 200,
-        });
-
-        let spiderfied     = false;
-        const spiderMarkers: any[] = [];
-        const spiderLines:   any[] = [];
-
-        const collapse = () => {
-          spiderMarkers.forEach((m) => spiderLayer.current?.removeLayer(m));
-          spiderLines.forEach((l)   => spiderLayer.current?.removeLayer(l));
-          spiderMarkers.length = 0;
-          spiderLines.length   = 0;
-          spiderfied = false;
-          if (allBounds.current.length > 0) {
-            leafletMap.current.fitBounds(allBounds.current, {
-              padding: [80, 80], maxZoom: 13, animate: true,
-            });
-          }
-        };
-
-        const expand = () => {
-          const count      = groupProducts.length;
-          const radiusDeg  = 0.0005 + 0.00012 * count;
-          const startAngle = -Math.PI / 2;
-
-          groupProducts.forEach((product, i) => {
-            const angle = startAngle + (2 * Math.PI * i) / count;
-            const sLat  = baseLat + radiusDeg * Math.cos(angle);
-            const sLng  = baseLng + radiusDeg * Math.sin(angle) * 1.5;
-
-            const line = L.polyline(
-              [[baseLat, baseLng], [sLat, sLng]],
-              { color: "#3b82f6", weight: 1.5, opacity: 0.6, dashArray: "5 5" }
-            ).addTo(spiderLayer.current);
-            spiderLines.push(line);
-
-            const m = buildPinMarker(L, product, sLat, sLng);
-            m.addTo(spiderLayer.current);
-            spiderMarkers.push(m);
-          });
-
-          spiderfied = true;
-          leafletMap.current.setView([baseLat, baseLng], 16, { animate: true });
-        };
-
-        clusterMarker.on("click", () => {
-          if (spiderfied) {
-            collapse();
-          } else {
-            spiderLayer.current?.clearLayers();
-            spiderfied = false;
-            expand();
-          }
-        });
-
-        leafletMap.current.on("click", collapse);
-        clusterMarker.addTo(markersLayer.current);
-        bounds.push([baseLat, baseLng]);
+    clusters.forEach((cluster) => {
+      if (cluster.products.length === 1) {
+        const marker = buildPinMarker(L, cluster.products[0], cluster.lat, cluster.lng);
+        marker.addTo(clusterLayer.current);
+        return;
       }
+
+      const count = cluster.products.length;
+      const size = count > 20 ? 60 : count > 8 ? 54 : 46;
+
+      const clusterIcon = L.divIcon({
+        className: "",
+        html: `<div class="${styles.cluster}" style="width:${size}px;height:${size}px">
+                 <span class="${styles.clusterInner}">
+                   <span class="${styles.clusterCount}">${count}</span>
+                   <span class="${styles.clusterLabel}">items</span>
+                 </span>
+               </div>`,
+        iconSize:   [size, size],
+        iconAnchor: [size / 2, size / 2],
+      });
+
+      const clusterMarker = L.marker([cluster.lat, cluster.lng], {
+        icon: clusterIcon,
+        zIndexOffset: 200,
+      });
+
+      clusterMarker.on("click", (e: any) => {
+        e.originalEvent?.stopPropagation();
+        const lats = cluster.products.map((p) => p.owner_latitude!);
+        const lngs = cluster.products.map((p) => p.owner_longitude!);
+        const latSpread = Math.max(...lats) - Math.min(...lats);
+        const lngSpread = Math.max(...lngs) - Math.min(...lngs);
+
+        if (latSpread < 0.001 && lngSpread < 0.001) {
+          map.setView([cluster.lat, cluster.lng], Math.min(map.getZoom() + 4, 18), {
+            animate: true,
+          });
+        } else {
+          const bounds = L.latLngBounds(
+            cluster.products.map((p) => [p.owner_latitude!, p.owner_longitude!])
+          );
+          map.fitBounds(bounds, { padding: [70, 70], maxZoom: 18, animate: true });
+        }
+      });
+
+      clusterMarker.addTo(clusterLayer.current);
     });
 
-    allBounds.current = bounds;
-    if (bounds.length > 0) {
-      leafletMap.current.fitBounds(bounds, { padding: [80, 80], maxZoom: 13 });
+    if (clusters.length === 0) {
+      map.setView(INDIA_CENTER, INDIA_ZOOM);
     }
-  }, [buildPinMarker]);
+  }, [buildClusters, buildPinMarker]);
 
-  // ── Load India boundary GeoJSON overlay ──────────────────────────────────
-  // ✅ NEW — fetches /india-boundary.geojson from public/ and draws it on top
-  // of the OSM tile layer. Runs once after map init. Silently skips if the
-  // file is missing (e.g. during local dev before you add it).
+  const fitBoundsToAll = useCallback((L: any, map: any, list: Product[]) => {
+    const valid = list.filter((p) => p.owner_latitude != null && p.owner_longitude != null);
+    if (valid.length === 0) return;
+    const bounds = L.latLngBounds(valid.map((p) => [p.owner_latitude!, p.owner_longitude!]));
+    map.fitBounds(bounds, { padding: [80, 80], maxZoom: 13, animate: false });
+  }, []);
+
+  // ── India boundary overlay ──────────────────────────────────────────────
 
   const loadIndiaBoundary = useCallback(async (L: any, map: any) => {
     try {
       const res = await fetch("/india-boundary.geojson");
-      if (!res.ok) {
-        console.warn("[MarketplaceMap] india-boundary.geojson not found in public/ — skipping boundary overlay.");
-        return;
-      }
+      if (!res.ok) return;
       const geojson = await res.json();
 
       boundaryLayer.current = L.geoJSON(geojson, {
         style: {
-          // Solid dark line = India's claimed territory
-          color:       "#2563eb",   // near-black
-          weight:      2,
-          opacity:     0.85,
-          fill:        false,       // outline only, no fill
-          dashArray:   undefined,   // solid = our border
-          lineCap:     "round",
-          lineJoin:    "round",
+          color: "#2563eb",
+          weight: 2,
+          opacity: 0.85,
+          fill: false,
+          lineCap: "round",
+          lineJoin: "round",
         },
-        // Make it non-interactive — clicks should fall through to markers
         interactive: false,
-        // Render above tiles but below markers
-        pane:        "overlayPane",
+        pane: "overlayPane",
       }).addTo(map);
 
-      // Bring markers above the boundary line
-      if (markersLayer.current) markersLayer.current.bringToFront();
-      if (spiderLayer.current)  spiderLayer.current.bringToFront();
-
+      if (clusterLayer.current) clusterLayer.current.bringToFront();
     } catch (err) {
-      // Non-fatal — OSM tiles still render fine without the overlay
       console.warn("[MarketplaceMap] Failed to load India boundary:", err);
     }
   }, []);
 
-  // ── Locate user ───────────────────────────────────────────────────────────
+  // ── Locate user ────────────────────────────────────────────────────────
 
-  const locateUser = useCallback(async () => {
+  const placeYouMarker = useCallback(async (lat: number, lng: number, openPopup: boolean) => {
+    const L = await import("leaflet");
+    if (locationMarker.current && leafletMap.current) {
+      leafletMap.current.removeLayer(locationMarker.current);
+    }
+    const youIcon = L.divIcon({
+      className: "",
+      html: `<div class="${styles.youDot}">
+               <div class="${styles.youPulse}"></div>
+               <div class="${styles.youCore}"></div>
+             </div>`,
+      iconSize:   [36, 36],
+      iconAnchor: [18, 18],
+    });
+    const marker = L.marker([lat, lng], { icon: youIcon, zIndexOffset: 500 });
+    if (openPopup) {
+      marker.bindPopup(
+        `<div style="font-family:'DM Sans',sans-serif;padding:6px 4px;text-align:center">
+           <strong style="font-size:0.85rem">📍 You are here</strong>
+         </div>`,
+        { maxWidth: 160 }
+      );
+    }
+    if (leafletMap.current) {
+      marker.addTo(leafletMap.current);
+      locationMarker.current = marker;
+      if (openPopup) marker.openPopup();
+    }
+  }, []);
+
+  const locateUser = useCallback(() => {
     if (!("geolocation" in navigator)) {
       setLocationError("Geolocation is not supported by your browser.");
       return;
@@ -272,35 +278,9 @@ export default function MarketplaceMap({ categories }: Props) {
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         const { latitude: lat, longitude: lng } = pos.coords;
-        const L = await import("leaflet");
-
-        if (locationMarker.current && leafletMap.current) {
-          leafletMap.current.removeLayer(locationMarker.current);
-        }
-
-        const youIcon = L.divIcon({
-          className: "",
-          html: `<div class="${styles.youDot}">
-                   <div class="${styles.youPulse}"></div>
-                   <div class="${styles.youCore}"></div>
-                 </div>`,
-          iconSize:   [36, 36],
-          iconAnchor: [18, 18],
-        });
-
-        const marker = L.marker([lat, lng], { icon: youIcon, zIndexOffset: 500 });
-        marker.bindPopup(
-          `<div style="font-family:'DM Sans',sans-serif;padding:6px 4px;text-align:center">
-             <strong style="font-size:0.85rem">📍 You are here</strong>
-           </div>`,
-          { maxWidth: 160 }
-        );
-
+        await placeYouMarker(lat, lng, true);
         if (leafletMap.current) {
-          marker.addTo(leafletMap.current);
-          locationMarker.current = marker;
           leafletMap.current.setView([lat, lng], 14, { animate: true });
-          marker.openPopup();
         }
         setLocating(false);
       },
@@ -319,48 +299,16 @@ export default function MarketplaceMap({ categories }: Props) {
       },
       { enableHighAccuracy: true, timeout: 10000 }
     );
-  }, []);
+  }, [placeYouMarker]);
 
-  // ── Silent locate on mount ────────────────────────────────────────────────
-
-  const silentLocate = useCallback(async () => {
+  const silentLocate = useCallback(() => {
     if (!("geolocation" in navigator)) return;
     navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const { latitude: lat, longitude: lng } = pos.coords;
-        const L = await import("leaflet");
-
-        if (locationMarker.current && leafletMap.current) {
-          leafletMap.current.removeLayer(locationMarker.current);
-        }
-
-        const youIcon = L.divIcon({
-          className: "",
-          html: `<div class="${styles.youDot}">
-                   <div class="${styles.youPulse}"></div>
-                   <div class="${styles.youCore}"></div>
-                 </div>`,
-          iconSize:   [36, 36],
-          iconAnchor: [18, 18],
-        });
-
-        const marker = L.marker([lat, lng], { icon: youIcon, zIndexOffset: 500 });
-        marker.bindPopup(
-          `<div style="font-family:'DM Sans',sans-serif;padding:6px 4px;text-align:center">
-             <strong style="font-size:0.85rem">📍 You are here</strong>
-           </div>`,
-          { maxWidth: 160 }
-        );
-
-        if (leafletMap.current) {
-          marker.addTo(leafletMap.current);
-          locationMarker.current = marker;
-        }
-      },
-      () => { /* silent */ },
+      (pos) => placeYouMarker(pos.coords.latitude, pos.coords.longitude, false),
+      () => {},
       { enableHighAccuracy: true, timeout: 8000 }
     );
-  }, []);
+  }, [placeYouMarker]);
 
   // ── Init Leaflet map ONCE ─────────────────────────────────────────────────
 
@@ -368,10 +316,10 @@ export default function MarketplaceMap({ categories }: Props) {
     if (typeof window === "undefined" || leafletMap.current) return;
 
     if (!document.getElementById("leaflet-css")) {
-      const link    = document.createElement("link");
-      link.id       = "leaflet-css";
-      link.rel      = "stylesheet";
-      link.href     = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+      const link = document.createElement("link");
+      link.id = "leaflet-css";
+      link.rel = "stylesheet";
+      link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
       document.head.appendChild(link);
     }
 
@@ -385,32 +333,41 @@ export default function MarketplaceMap({ categories }: Props) {
         shadowUrl:     "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
       });
 
-      const map = L.map(mapRef.current, {
+      const isMobile = window.innerWidth <= 640;
+
+      // `tap` isn't in the current @types/leaflet MapOptions typing,
+      // so build the options object as `any` and cast on use.
+      const mapOptions: any = {
         center:      INDIA_CENTER,
-        zoom:        INDIA_ZOOM,
+        zoom:        isMobile ? INDIA_ZOOM - 1 : INDIA_ZOOM,
         zoomControl: false,
-      });
+        tap:         true,
+      };
+
+      const map = L.map(mapRef.current, mapOptions as L.MapOptions);
 
       L.control.zoom({ position: "bottomright" }).addTo(map);
 
-      // OSM tile layer — unchanged, free forever
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         maxZoom: 19,
       }).addTo(map);
 
-      markersLayer.current   = L.layerGroup().addTo(map);
-      spiderLayer.current    = L.layerGroup().addTo(map);
+      clusterLayer.current   = L.layerGroup().addTo(map);
       leafletMap.current     = map;
       mapInitialized.current = true;
 
-      // ✅ Draw India boundary overlay on top of OSM tiles
       loadIndiaBoundary(L, map);
 
-      if (pendingPlot.current !== null) {
-        const queued        = pendingPlot.current;
-        pendingPlot.current = null;
-        plotMarkers(queued);
+      map.on("zoomend", () => {
+        if (zoomTimeout.current) clearTimeout(zoomTimeout.current);
+        zoomTimeout.current = setTimeout(() => {
+          plotClusters(productsRef.current);
+        }, 80);
+      });
+
+      if (productsRef.current.length > 0) {
+        plotClusters(productsRef.current);
       }
 
       silentLocate();
@@ -423,17 +380,17 @@ export default function MarketplaceMap({ categories }: Props) {
     return () => {
       if (leafletMap.current) {
         (leafletMap.current as any)._resizeObserver?.disconnect();
+        leafletMap.current.off("zoomend");
         leafletMap.current.remove();
         leafletMap.current     = null;
-        markersLayer.current   = null;
-        spiderLayer.current    = null;
+        clusterLayer.current   = null;
         locationMarker.current = null;
-        boundaryLayer.current  = null; // ← clean up boundary ref too
+        boundaryLayer.current  = null;
         mapInitialized.current = false;
-        pendingPlot.current    = null;
       }
+      if (zoomTimeout.current) clearTimeout(zoomTimeout.current);
     };
-  }, [plotMarkers, silentLocate, loadIndiaBoundary]);
+  }, [plotClusters, silentLocate, loadIndiaBoundary]);
 
   // ── Fetch products ────────────────────────────────────────────────────────
 
@@ -448,17 +405,24 @@ export default function MarketplaceMap({ categories }: Props) {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.json();
       })
-      .then((data: ApiResponse) => {
+      .then(async (data: ApiResponse) => {
         const list = data.results ?? [];
+        productsRef.current = list;
         setProducts(list);
-        plotMarkers(list);
+        await plotClusters(list);
+
+        if (!fitToAllOnce.current && mapInitialized.current) {
+          const L = await import("leaflet");
+          fitBoundsToAll(L, leafletMap.current, list);
+          fitToAllOnce.current = true;
+        }
         setLoading(false);
       })
       .catch((err) => {
         console.error("MarketplaceMap fetch error:", err);
         setLoading(false);
       });
-  }, [selectedCategory, plotMarkers]);
+  }, [selectedCategory, plotClusters, fitBoundsToAll]);
 
   // ── Global nav handler ────────────────────────────────────────────────────
 
@@ -467,42 +431,32 @@ export default function MarketplaceMap({ categories }: Props) {
     return () => { delete (window as any).__mapGoTo; };
   }, [router]);
 
-  // ─── Render ───────────────────────────────────────────────────────────────
+  const validOnMapCount = products.filter(
+    (p) => p.owner_latitude != null && p.owner_longitude != null
+  ).length;
 
   return (
     <div className={styles.wrapper}>
+      {/* Full-bleed map fills the entire area behind everything */}
+      <div className={styles.mapWrap}>
+        <div ref={mapRef} className={styles.map} />
 
-      {/* Top bar */}
-      <div className={styles.topBar}>
-        <div className={styles.topLeft}>
-          <h2 className={styles.heading}>Listings Near You</h2>
-          <span className={styles.count}>
-            {loading ? "Loading…" : `${products.filter((p) => p.owner_latitude).length} on map`}
+        {/* Floating top-left info pill */}
+        <div className={styles.infoPill}>
+          <span className={styles.infoHeading}>Listings Near You</span>
+          <span className={styles.infoCount}>
+            {loading ? "Loading…" : `${validOnMapCount} on map`}
           </span>
         </div>
 
-        <div className={styles.filters}>
-          <button
-            className={`${styles.chip} ${selectedCategory === null ? styles.chipActive : ""}`}
-            onClick={() => setSelectedCategory(null)}
-          >
-            All
-          </button>
-          {categories.map((cat) => (
-            <button
-              key={cat.id}
-              className={`${styles.chip} ${selectedCategory === cat.id ? styles.chipActive : ""}`}
-              onClick={() => setSelectedCategory(cat.id)}
-            >
-              {cat.name}
-            </button>
-          ))}
+        {/* Category filter — floats top-right on mobile, full bar handled by its own CSS */}
+        <div className={styles.categoryFilterOverlay}>
+          <CategoryFilter
+            categories={categories}
+            selectedCategory={selectedCategory}
+            onSelectCategory={setSelectedCategory}
+          />
         </div>
-      </div>
-
-      {/* Map */}
-      <div className={styles.mapWrap}>
-        <div ref={mapRef} className={styles.map} />
 
         {/* Locate Me button */}
         <button
@@ -521,10 +475,8 @@ export default function MarketplaceMap({ categories }: Props) {
               </svg>
             )
           }
-          <span>{locating ? "Locating…" : "My Location"}</span>
         </button>
 
-        {/* Location error toast */}
         {locationError && (
           <div className={styles.locationToast}>
             <span>⚠️ {locationError}</span>
@@ -539,7 +491,15 @@ export default function MarketplaceMap({ categories }: Props) {
           </div>
         )}
 
-        {/* Side card */}
+        {!loading && validOnMapCount === 0 && (
+          <div className={styles.emptyMapOverlay}>
+            <span className={styles.emptyMapIcon}>📍</span>
+            <p className={styles.emptyMapText}>No listings with a saved location yet.</p>
+            <p className={styles.emptyMapSubtext}>Sellers need to add their address for items to appear here.</p>
+          </div>
+        )}
+
+        {/* Side card / bottom sheet on pin click */}
         {activeProduct && (
           <div className={styles.sideCard}>
             <button className={styles.closeBtn} onClick={() => setActiveProduct(null)} aria-label="Close">

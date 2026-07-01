@@ -1,89 +1,208 @@
 /* ─── MarketplaceMap.module.css ─────────────────────────────────────────────── */
 
 .wrapper {
-  display: flex;
-  flex-direction: column;
+  position: relative;
   height: calc(100vh - 64px);
   overflow: hidden;
   font-family: 'DM Sans', 'Segoe UI', sans-serif;
 }
 
-.topBar {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 12px 20px;
-  background: #fff;
-  border-bottom: 1px solid #efefef;
-  flex-shrink: 0;
-  flex-wrap: wrap;
-}
-
-.topLeft {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  flex-shrink: 0;
-}
-
-.heading {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #111;
-  margin: 0;
-  letter-spacing: -0.3px;
-  white-space: nowrap;
-}
-
-.count {
-  font-size: 0.78rem;
-  color: #999;
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-.filters {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  flex: 1;
-}
-
-.chip {
-  padding: 5px 14px;
-  border-radius: 999px;
-  border: 1.5px solid #e0e0e0;
-  background: #fff;
-  color: #555;
-  font-size: 0.8rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.16s ease;
-  white-space: nowrap;
-  font-family: inherit;
-}
-
-.chip:hover {
-  border-color: #3b82f6;
-  color: #3b82f6;
-}
-
-.chipActive {
-  background: #3b82f6;
-  border-color: #3b82f6;
-  color: #fff;
-}
-
 .mapWrap {
   position: relative;
-  flex: 1;
-  min-height: 0;
+  width: 100%;
+  height: 100%;
 }
 
 .map {
   width: 100%;
   height: 100%;
 }
+
+/* ── Floating top-left info pill ──────────────────────────────────────────── */
+
+.infoPill {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 900;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 12px;
+  padding: 8px 14px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  max-width: calc(100vw - 160px);
+}
+
+.infoHeading {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #111;
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.infoCount {
+  font-size: 0.68rem;
+  color: #999;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* ── Floating filter button ───────────────────────────────────────────────── */
+
+.filterBtn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 9px 14px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.14);
+  color: #3b82f6;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  max-width: 130px;
+}
+
+.filterBtnText {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.filterDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #3b82f6;
+  flex-shrink: 0;
+}
+
+/* ── Category drawer ──────────────────────────────────────────────────────── */
+
+.drawerBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 1400;
+  animation: fadeIn 0.18s ease;
+}
+
+.drawer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1500;
+  background: #fff;
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 -8px 32px rgba(0,0,0,0.18);
+  padding: 8px 0 max(16px, env(safe-area-inset-bottom));
+  max-height: 70vh;
+  overflow-y: auto;
+  animation: drawerUp 0.24s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+@keyframes drawerUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.drawerHandle {
+  width: 36px;
+  height: 4px;
+  border-radius: 999px;
+  background: #e0e0e0;
+  margin: 6px auto 10px;
+}
+
+.drawerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px 10px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.drawerTitle {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #111;
+  margin: 0;
+}
+
+.drawerClose {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: #f4f4f4;
+  color: #666;
+  font-size: 0.75rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.drawerList {
+  padding: 8px 12px 4px;
+  display: flex;
+  flex-direction: column;
+}
+
+.drawerItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  text-align: left;
+  padding: 13px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #333;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.drawerItem:hover {
+  background: #f5f8ff;
+}
+
+.drawerItemActive {
+  background: #eef4ff;
+  color: #3b82f6;
+  font-weight: 700;
+}
+
+.drawerCheck {
+  color: #3b82f6;
+  font-weight: 700;
+}
+
+/* ── Loading / empty overlays ─────────────────────────────────────────────── */
 
 .loadingOverlay {
   position: absolute;
@@ -95,7 +214,7 @@
   align-items: center;
   justify-content: center;
   gap: 12px;
-  z-index: 1000;
+  z-index: 800;
 }
 
 .spinner {
@@ -117,37 +236,67 @@
   to { transform: rotate(360deg); }
 }
 
-/* ── Locate Me button ───────────────────────────────────────────────────────── */
+.emptyMapOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(248, 250, 255, 0.9);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  z-index: 700;
+  text-align: center;
+  padding: 24px;
+  pointer-events: none;
+}
+
+.emptyMapIcon {
+  font-size: 36px;
+  margin-bottom: 4px;
+}
+
+.emptyMapText {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #333;
+  margin: 0;
+}
+
+.emptyMapSubtext {
+  font-size: 0.76rem;
+  color: #888;
+  margin: 0;
+  max-width: 240px;
+}
+
+/* ── Locate Me button (icon-only on mobile, expands on desktop) ─────────────── */
 
 .locateBtn {
   position: absolute;
-  bottom: 96px;
-  right: 16px;
-  z-index: 1100;
+  bottom: 24px;
+  right: 12px;
+  z-index: 900;
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 14px 8px 10px;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
   background: #fff;
-  border: 1.5px solid #e0e0e0;
-  border-radius: 999px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.12);
-  font-family: 'DM Sans', sans-serif;
-  font-size: 0.8rem;
-  font-weight: 600;
+  border: none;
+  border-radius: 50%;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.16);
   color: #333;
   cursor: pointer;
   transition: all 0.18s ease;
 }
 
 .locateBtn:hover {
-  border-color: #3b82f6;
   color: #3b82f6;
-  box-shadow: 0 4px 16px rgba(59,130,246,0.2);
+  box-shadow: 0 4px 16px rgba(59,130,246,0.25);
 }
 
 .locateBtnLoading {
-  border-color: #3b82f6;
   color: #3b82f6;
   pointer-events: none;
 }
@@ -160,15 +309,15 @@
   border-top-color: #3b82f6;
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
-  flex-shrink: 0;
 }
 
 /* ── Location error toast ───────────────────────────────────────────────────── */
 
 .locationToast {
   position: absolute;
-  bottom: 144px;
-  right: 16px;
+  bottom: 78px;
+  right: 12px;
+  left: 12px;
   z-index: 1200;
   display: flex;
   align-items: center;
@@ -181,8 +330,7 @@
   font-weight: 500;
   color: #856404;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  max-width: 260px;
-  animation: slideIn 0.22s ease;
+  animation: slideUp 0.22s ease;
 }
 
 .locationToast button {
@@ -194,6 +342,12 @@
   flex-shrink: 0;
   padding: 0;
   line-height: 1;
+  margin-left: auto;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 /* ── "You are here" pulsing dot ─────────────────────────────────────────────── */
@@ -277,7 +431,6 @@
   line-height: 1.2;
 }
 
-/* Downward-pointing triangle tip */
 .pinTip {
   position: absolute;
   bottom: -9px;
@@ -290,8 +443,6 @@
   border-top: 9px solid #3b82f6;
   pointer-events: none;
 }
-
-/* ── Pin without image ───────────────────────────────────────────────────────── */
 
 .pinNoImg {
   position: relative;
@@ -333,11 +484,9 @@
   pointer-events: none;
 }
 
-/* ── Cluster marker ─────────────────────────────────────────────────────────── */
+/* ── Cluster marker (size set inline per-count) ──────────────────────────────── */
 
 .cluster {
-  width: 52px;
-  height: 52px;
   border-radius: 50%;
   background: #fff;
   border: 2.5px solid #3b82f6;
@@ -377,19 +526,19 @@
   font-family: 'DM Sans', sans-serif;
 }
 
-/* ── Side card — only detail panel shown on pin click ───────────────────────── */
+/* ── Side card — product detail panel ─────────────────────────────────────── */
 
 .sideCard {
   position: absolute;
-  top: 16px;
-  right: 16px;
-  width: 270px;
+  top: 64px;
+  right: 12px;
+  width: 260px;
   background: #fff;
   border-radius: 16px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.16);
   border: 1px solid #eee;
   overflow: hidden;
-  z-index: 1100;
+  z-index: 1000;
   animation: slideIn 0.22s cubic-bezier(0.34, 1.4, 0.64, 1);
 }
 
@@ -423,7 +572,7 @@
 
 .sideImg {
   width: 100%;
-  height: 150px;
+  height: 140px;
   object-fit: cover;
 }
 
@@ -432,7 +581,7 @@
 }
 
 .sideCat {
-  font-size: 0.68rem;
+  font-size: 0.66rem;
   font-weight: 700;
   letter-spacing: 0.07em;
   text-transform: uppercase;
@@ -440,7 +589,7 @@
 }
 
 .sideTitle {
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 700;
   color: #111;
   margin: 4px 0 8px;
@@ -448,20 +597,20 @@
 }
 
 .sideDesc {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: #555;
   margin: 0 0 8px;
   line-height: 1.5;
 }
 
 .sideAddress {
-  font-size: 0.76rem;
+  font-size: 0.74rem;
   color: #666;
   margin: 0 0 4px;
 }
 
 .sideOwner {
-  font-size: 0.76rem;
+  font-size: 0.74rem;
   color: #aaa;
   margin: 0 0 14px;
 }
@@ -473,7 +622,7 @@
   color: #fff;
   border: none;
   border-radius: 10px;
-  font-size: 0.85rem;
+  font-size: 0.83rem;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s;
@@ -485,18 +634,56 @@
   background: #3b82f6;
 }
 
-/* ── Responsive ─────────────────────────────────────────────────────────────── */
+/* ── Responsive: mobile ───────────────────────────────────────────────────── */
 
 @media (max-width: 640px) {
   .wrapper {
     height: calc(100dvh - 56px);
   }
 
-  .topBar {
-    padding: 10px 14px;
-    gap: 10px;
+  .infoPill {
+    top: 10px;
+    left: 10px;
+    padding: 7px 12px;
+    max-width: calc(100vw - 130px);
   }
 
+  .infoHeading {
+    font-size: 0.78rem;
+  }
+
+  .infoCount {
+    font-size: 0.64rem;
+  }
+
+  .filterBtn {
+    top: 10px;
+    right: 10px;
+    padding: 8px 12px;
+    max-width: 110px;
+    font-size: 0.72rem;
+  }
+
+  .locateBtn {
+    bottom: 20px;
+    right: 10px;
+    width: 42px;
+    height: 42px;
+  }
+
+  .pin, .pinNoImg {
+    transform: scale(0.85);
+  }
+
+  .clusterCount {
+    font-size: 14px;
+  }
+
+  .clusterLabel {
+    font-size: 8px;
+  }
+
+  /* Product detail becomes a bottom sheet on small screens */
   .sideCard {
     top: auto;
     bottom: 0;
@@ -504,23 +691,30 @@
     left: 0;
     width: 100%;
     border-radius: 20px 20px 0 0;
-    max-height: 60vh;
+    max-height: 55vh;
     overflow-y: auto;
-  }
-
-  .locateBtn {
-    bottom: 104px;
-    right: 12px;
-  }
-
-  .locationToast {
-    right: 12px;
-    bottom: 152px;
-    max-width: calc(100vw - 24px);
   }
 
   @keyframes slideIn {
     from { opacity: 0; transform: translateY(40px); }
     to   { opacity: 1; transform: translateY(0); }
   }
+}
+/* ── Force CategoryFilter to render as a floating trigger inside the map ── */
+.categoryFilterOverlay {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 950;
+}
+
+/* Kill the component's own responsive layout — always show the trigger pill */
+.categoryFilterOverlay :global(.desktopBar) {
+  display: none !important;
+}
+
+.categoryFilterOverlay :global(.mobileTriggerBar) {
+  display: flex !important;
+  padding: 0 !important;
+  justify-content: flex-end !important;
 }

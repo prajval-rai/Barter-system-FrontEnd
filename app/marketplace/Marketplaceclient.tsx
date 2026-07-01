@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import styles from "./Marketplace.module.css";
 import ProductCard from "./Productcard";
+import CategoryFilter from "../../components/Categoryfilter/Categoryfilter";
 import { Product, Category } from "./page";
 
 interface Props {
@@ -82,37 +83,11 @@ export default function MarketplaceClient({
 
   return (
     <main className={styles.page}>
-      <header className={styles.header}>
-        <div className={styles.headerInner}>
-          <div className={styles.headerText}>
-            <span className={styles.badge}>Marketplace</span>
-            <h1 className={styles.heading}>Trade What You Have</h1>
-            <p className={styles.subheading}>
-              {total} item{total !== 1 ? "s" : ""} available for barter
-            </p>
-          </div>
-        </div>
-      </header>
-
-      <section className={styles.filterBar}>
-        <div className={styles.filterScroll}>
-          <button
-            className={`${styles.filterChip} ${selectedCategory === null ? styles.filterChipActive : ""}`}
-            onClick={() => setSelectedCategory(null)}
-          >
-            All
-          </button>
-          {categories.map((cat) => (
-            <button
-              key={cat.id}
-              className={`${styles.filterChip} ${selectedCategory === cat.id ? styles.filterChipActive : ""}`}
-              onClick={() => setSelectedCategory(selectedCategory === cat.id ? null : cat.id)}
-            >
-              {cat.name}
-            </button>
-          ))}
-        </div>
-      </section>
+      <CategoryFilter
+        categories={categories}
+        selectedCategory={selectedCategory}
+        onSelectCategory={setSelectedCategory}
+      />
 
       <section className={styles.grid}>
         {products.length === 0 && !loading ? (
