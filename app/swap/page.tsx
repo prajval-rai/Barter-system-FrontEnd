@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import AppShell from "@/components/AppShell/Appshell ";
 import DashboardTopBar from "./Dashboardtopbar";
@@ -23,16 +22,16 @@ export default function DashboardPage() {
   const base_url    = process.env.NEXT_PUBLIC_BACKEND_URL;
 
   const fetchCompletion = async () => {
-  try {
-    const res  = await fetch(`/api/completion`); // ← same origin, no CORS
-    const data = await res.json();
-    setCompletionPercentage(data.completion_percentage ?? 0);
-    setIncompleteFields(data.incomplete_fields ?? []);
-  } catch {
-    setCompletionPercentage(0);
-    setIncompleteFields([]);
-  }
-};
+    try {
+      const res  = await fetch(`/api/completion`); // ← same origin, no CORS
+      const data = await res.json();
+      setCompletionPercentage(data.completion_percentage ?? 0);
+      setIncompleteFields(data.incomplete_fields ?? []);
+    } catch {
+      setCompletionPercentage(0);
+      setIncompleteFields([]);
+    }
+  };
 
   useEffect(() => {
     const checkProducts = async () => {
@@ -44,7 +43,6 @@ export default function DashboardPage() {
         setHasProducts(false);
       }
     };
-
     checkProducts();
     fetchCompletion();
   }, []);
@@ -63,7 +61,7 @@ export default function DashboardPage() {
     return (
       <AppShell>
         <div className={styles.emptyPage}>
-          <DashboardTopBar />
+          <DashboardTopBar completionPercentage={completionPercentage} />
           <EmptyWelcomeHero />
           <ProfileCompletionBanner
             progress={completionPercentage}
@@ -87,7 +85,7 @@ export default function DashboardPage() {
     <AppShell>
       <div className={styles.page}>
         <div className={styles.heroBg}>
-          <DashboardTopBar />
+          <DashboardTopBar completionPercentage={completionPercentage} />
           <DashboardHero />
         </div>
         <div className={styles.pageBody}>
