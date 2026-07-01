@@ -5,7 +5,6 @@ import DashboardTopBar from "./Dashboardtopbar";
 import DashboardHero from "./Dashboardhero";
 import styles from "./Dashboard.module.css";
 import SwapRequests from "./Swaprequests";
-import ProfileCompletionBanner from "./Profilecompletionbanner";
 import MoreMatches from "./Morematches";
 import BrowseByCategory from "./Browsebycategory";
 import YourListings from "./Yourlistings";
@@ -18,7 +17,6 @@ import EmptyWhyUs from "./empty/Emptywhyus";
 export default function DashboardPage() {
   const [hasProducts, setHasProducts]               = useState<boolean | null>(null);
   const [completionPercentage, setCompletionPercentage] = useState<number>(0);
-  const [incompleteFields, setIncompleteFields]     = useState<string[]>([]);
   const base_url    = process.env.NEXT_PUBLIC_BACKEND_URL;
 
   const fetchCompletion = async () => {
@@ -26,10 +24,8 @@ export default function DashboardPage() {
       const res  = await fetch(`/api/completion`); // ← same origin, no CORS
       const data = await res.json();
       setCompletionPercentage(data.completion_percentage ?? 0);
-      setIncompleteFields(data.incomplete_fields ?? []);
     } catch {
       setCompletionPercentage(0);
-      setIncompleteFields([]);
     }
   };
 
@@ -63,11 +59,6 @@ export default function DashboardPage() {
         <div className={styles.emptyPage}>
           <DashboardTopBar completionPercentage={completionPercentage} />
           <EmptyWelcomeHero />
-          <ProfileCompletionBanner
-            progress={completionPercentage}
-            incompleteFields={incompleteFields}
-            onProfileSaved={fetchCompletion}
-          />
           <EmptyHowItWorks />
           <div className={styles.emptyBottomGrid}>
             <EmptyNoItems />
@@ -89,11 +80,6 @@ export default function DashboardPage() {
           <DashboardHero />
         </div>
         <div className={styles.pageBody}>
-          <ProfileCompletionBanner
-            progress={completionPercentage}
-            incompleteFields={incompleteFields}
-            onProfileSaved={fetchCompletion}
-          />
           <SwapRequests />
           <MoreMatches />
           <BrowseByCategory />
