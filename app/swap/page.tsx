@@ -1,6 +1,6 @@
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
-import DashboardClient from '@/components/Dashboard/DashboardClient';
+import DashboardClient from '@/components/DashboardClient';
 
 export const metadata = {
   title: 'Dashboard — LenDen',
