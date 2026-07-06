@@ -1,4 +1,4 @@
-import { cookies, headers } from "next/headers";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import MarketplaceToggleView from "./Marketplacetoggleview";
 import AppShell from "@/components/AppShell/Appshell ";
@@ -42,10 +42,6 @@ export interface Category {
   name: string;
 }
 
-// ── Helpers calling our own Next.js proxy routes ──────────────────────────────
-// Server component can call /api/* routes using the absolute internal URL.
-// We derive the host from the incoming request headers so it works on every env.
-
 async function getBaseUrl(): Promise<string> {
   const headersList = await headers();
   const host = headersList.get("host") ?? "localhost:3000";
@@ -53,14 +49,11 @@ async function getBaseUrl(): Promise<string> {
   return `${protocol}://${host}`;
 }
 
-async function fetchInitialProducts(
-  baseUrl: string
-): Promise<MarketplaceResponse> {
+async function fetchInitialProducts(baseUrl: string): Promise<MarketplaceResponse> {
   try {
-    const res = await fetch(
-      `${baseUrl}/api/marketplace?page=1&page_size=12&sort=newest`,
-      { cache: "no-store" }
-    );
+    const res = await fetch(`${baseUrl}/api/marketplace?page=1&page_size=12&sort=newest`, {
+      cache: "no-store",
+    });
     if (res.status === 401) redirect("/login");
     if (!res.ok)
       return { results: [], page: 1, page_size: 12, total: 0, has_next: false };
@@ -72,9 +65,7 @@ async function fetchInitialProducts(
 
 async function fetchCategories(baseUrl: string): Promise<Category[]> {
   try {
-    const res = await fetch(`${baseUrl}/api/categories`, {
-      cache: "no-store",
-    });
+    const res = await fetch(`${baseUrl}/api/categories`, { cache: "no-store" });
     if (res.status === 401) redirect("/login");
     if (!res.ok) return [];
     return res.json();
@@ -83,7 +74,6 @@ async function fetchCategories(baseUrl: string): Promise<Category[]> {
   }
 }
 
-// ── Page ──────────────────────────────────────────────────────────────────────
 export default async function MarketplacePage() {
   const baseUrl = await getBaseUrl();
 
@@ -99,6 +89,8 @@ export default async function MarketplacePage() {
         initialHasNext={initialData.has_next}
         initialTotal={initialData.total}
         categories={categories}
+        initialCategory={null}
+        initialView="map"
       />
     </AppShell>
   );

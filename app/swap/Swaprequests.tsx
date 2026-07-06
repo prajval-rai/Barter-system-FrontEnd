@@ -45,7 +45,6 @@ function mapApiItem(item: any): SwapMatch {
     item.match_breakdown?.top_label ?? "Matched by category";
   const description = `Matched via ${topLabel.toLowerCase()} · Score ${score}/100`;
 
-  // Tags for their item (the candidate / "you get")
   const theirTags: string[] = [];
   if (item.status)
     theirTags.push(
@@ -54,7 +53,6 @@ function mapApiItem(item: any): SwapMatch {
   if (item.purchase_year) theirTags.push(`Year ${item.purchase_year}`);
   if (item.category) theirTags.push(item.category);
 
-  // FIX: Tags for YOUR item — show meaningful product attributes, NOT replace_options
   const yourTags: string[] = [];
   if (item.my_product_status)
     yourTags.push(
@@ -63,7 +61,6 @@ function mapApiItem(item: any): SwapMatch {
     );
   if (item.my_product_year) yourTags.push(`Year ${item.my_product_year}`);
   if (item.my_product_category) yourTags.push(item.my_product_category);
-  // Fallback: use matched_via category/type if no product meta
   if (yourTags.length === 0 && item.matched_via?.category)
     yourTags.push(item.matched_via.category);
 
@@ -74,7 +71,6 @@ function mapApiItem(item: any): SwapMatch {
     user: {
       name: item.owner_name ?? "Unknown",
       badge: `Match score · ${score}%`,
-      // FIX: store city separately so we don't repeat distance
       location: item.owner_city ?? item.owner_location ?? "",
       distanceKm: item.distance_km ?? 0,
     },
@@ -110,7 +106,7 @@ function SkeletonCard() {
                 height: 14,
                 width: w,
                 borderRadius: 6,
-                background: "var(--skeleton, #e5e7eb)",
+                background: "#e5e7eb",
                 marginBottom: 12,
                 animation: "pulse 1.4s ease-in-out infinite",
                 animationDelay: `${i * 0.1}s`,
@@ -127,7 +123,7 @@ function SkeletonCard() {
                   width: "100%",
                   aspectRatio: "1 / 1",
                   borderRadius: 8,
-                  background: "var(--skeleton, #e5e7eb)",
+                  background: "#e5e7eb",
                   animation: "pulse 1.4s ease-in-out infinite",
                   animationDelay: `${i * 0.15}s`,
                 }}
@@ -140,7 +136,7 @@ function SkeletonCard() {
   );
 }
 
-// ── Empty state ──────────────────────────────────────────────────────────────
+// ── Empty state (search ran, found nothing / errored) ───────────────────────
 function EmptyState({ message }: { message: string }) {
   return (
     <div
@@ -157,10 +153,50 @@ function EmptyState({ message }: { message: string }) {
       }}
     >
       <span style={{ fontSize: 48 }}>🔍</span>
-      <p style={{ fontWeight: 600, fontSize: 16, margin: 0 }}>No matches found</p>
-      <p style={{ color: "var(--text-muted, #6b7280)", fontSize: 14, margin: 0 }}>
-        {message}
+      <p style={{ fontWeight: 600, fontSize: 16, margin: 0, color: "#0f1e3d" }}>
+        No matches found
       </p>
+      <p style={{ color: "#6b7fa3", fontSize: 14, margin: 0 }}>{message}</p>
+    </div>
+  );
+}
+
+// ── No products yet — user hasn't listed anything to swap ───────────────────
+function NoProductsState({ onAddItem }: { onAddItem?: () => void }) {
+  return (
+    <div className={`${styles.card} ${styles.noProductsCard}`}>
+      <div className={styles.noProductsIcon} aria-hidden="true">
+        <svg
+          width="26"
+          height="26"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="#1a56db"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M21 8v13H3V8" />
+          <path d="M1 3h22v5H1z" />
+          <path d="M10 12h4" />
+        </svg>
+      </div>
+
+      <p className={styles.noProductsTitle}>Tell us what you're looking for</p>
+      <p className={styles.noProductsDesc}>
+        Add an item you'd like to borrow, rent, or swap for — we'll match you
+        with people nearby who have it.
+      </p>
+
+      <button
+        className={styles.btnPrimary}
+        onClick={onAddItem ?? (() => (window.location.href = "/add-item"))}
+      >
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 5v14M5 12h14" />
+        </svg>
+        Add what you want
+      </button>
     </div>
   );
 }
@@ -190,7 +226,7 @@ function MatchBar({ score }: { score: number }) {
           style={{
             fontSize: 11,
             fontWeight: 600,
-            color: "var(--color-text-muted, #6b7fa3)",
+            color: "#6b7fa3",
             textTransform: "uppercase",
             letterSpacing: "0.05em",
           }}
@@ -226,6 +262,7 @@ interface Props {
   onChat?: (id: string) => void;
   onStartExchange?: (id: string) => void;
   apiUrl?: string;
+  hasProducts?: boolean;
 }
 
 export default function SwapRequests({
@@ -233,6 +270,7 @@ export default function SwapRequests({
   onChat,
   onStartExchange,
   apiUrl = `/api/scan`,
+  hasProducts = true,
 }: Props) {
   const [matches, setMatches] = useState<SwapMatch[]>([]);
   const [loading, setLoading] = useState(true);
@@ -240,6 +278,11 @@ export default function SwapRequests({
   const [idx, setIdx] = useState(0);
 
   useEffect(() => {
+    if (!hasProducts) {
+      setLoading(false);
+      return;
+    }
+
     let cancelled = false;
 
     async function fetchMatches() {
@@ -283,7 +326,7 @@ export default function SwapRequests({
     return () => {
       cancelled = true;
     };
-  }, [apiUrl]);
+  }, [apiUrl, hasProducts]);
 
   const match = matches[idx];
   const total = matches.length;
@@ -294,13 +337,15 @@ export default function SwapRequests({
       <div className={styles.topRow}>
         <div className={styles.matchBadge}>
           <span className={styles.pulseDot} aria-hidden="true" />
-          {loading
+          {!hasProducts
+            ? "Waiting on you"
+            : loading
             ? "Scanning…"
             : error
             ? "Error"
             : `${total} match${total !== 1 ? "es" : ""} found`}
         </div>
-        {match && (
+        {hasProducts && match && (
           <div className={styles.timeBadge}>
             <svg
               width="13"
@@ -321,20 +366,20 @@ export default function SwapRequests({
         )}
       </div>
 
-      {loading && <SkeletonCard />}
-      {!loading && error && <EmptyState message={error} />}
-      {!loading && !error && total === 0 && (
+      {!hasProducts && <NoProductsState />}
+
+      {hasProducts && loading && <SkeletonCard />}
+      {hasProducts && !loading && error && <EmptyState message={error} />}
+      {hasProducts && !loading && !error && total === 0 && (
         <EmptyState message="Try expanding your radius or adding more products." />
       )}
 
       {/* ── Main card ── */}
-      {!loading && !error && match && (
+      {hasProducts && !loading && !error && match && (
         <div className={styles.card} key={match.id}>
           <div className={styles.cardBody}>
-
             {/* ── Left: title + trust signals ── */}
             <div className={styles.left}>
-              {/* Score pill */}
               {match.matchScore !== undefined && (
                 <div
                   style={{
@@ -377,7 +422,6 @@ export default function SwapRequests({
               <h2 className={styles.matchTitle}>{match.title}</h2>
               <p className={styles.matchDesc}>{match.description}</p>
 
-              {/* Owner */}
               <div className={styles.trustItem}>
                 <div className={styles.trustIcon}>
                   <svg
@@ -401,7 +445,6 @@ export default function SwapRequests({
                 </div>
               </div>
 
-              {/* FIX: Distance — show distance once; sub-label shows city if available */}
               <div className={styles.trustItem}>
                 <div className={styles.trustIcon}>
                   <svg
@@ -429,19 +472,17 @@ export default function SwapRequests({
                 </div>
               </div>
 
-              {/* Match strength bar — fills vertical space meaningfully */}
               {match.matchScore !== undefined && (
                 <MatchBar score={match.matchScore} />
               )}
 
-              {/* FIX: Replace options only shown once here, NOT duplicated in item tags */}
               {match.replaceOptions && match.replaceOptions.length > 0 && (
                 <div style={{ marginTop: 14 }}>
                   <p
                     style={{
                       fontSize: 11,
                       fontWeight: 600,
-                      color: "var(--text-muted, #6b7280)",
+                      color: "#6b7fa3",
                       marginBottom: 4,
                       textTransform: "uppercase",
                       letterSpacing: "0.05em",
@@ -470,12 +511,10 @@ export default function SwapRequests({
               )}
             </div>
 
-            {/* FIX: Vertical divider between left info and right swap visual */}
             <div className={styles.divider} aria-hidden="true" />
 
             {/* ── Right: swap visual ── */}
             <div className={styles.right}>
-              {/* Your item */}
               <div className={styles.itemCard}>
                 <p className={styles.itemLabel}>Your item</p>
                 {match.yourItem.imageUrl ? (
@@ -499,7 +538,6 @@ export default function SwapRequests({
                 </div>
               </div>
 
-              {/* Swap arrow */}
               <div className={styles.swapMid}>
                 <div className={styles.swapCircle} aria-hidden="true">
                   <svg
@@ -523,7 +561,6 @@ export default function SwapRequests({
                 </p>
               </div>
 
-              {/* Their item */}
               <div className={styles.itemCard}>
                 <p className={styles.itemLabel}>You get</p>
                 {match.theirItem.imageUrl ? (
@@ -550,61 +587,55 @@ export default function SwapRequests({
           </div>
 
           {/* ── Action bar ── */}
-<div className={styles.actions}>
-  <button
-    className={styles.btnPrimary}
-    onClick={() => window.location.href = `/products/${match.theirItem && match.matchedVia ? match.id : match.id}`}
-  >
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M1 12S5 5 12 5s11 7 11 7-4 7-11 7S1 12 1 12z" />
-      <circle cx="12" cy="12" r="3" />
-    </svg>
-    View details
-  </button>
+          <div className={styles.actions}>
+            <button
+              className={styles.btnPrimary}
+              onClick={() => (window.location.href = `/products/${match.id}`)}
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M1 12S5 5 12 5s11 7 11 7-4 7-11 7S1 12 1 12z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+              View details
+            </button>
 
-  <nav className={styles.nav} aria-label="Browse matches">
-    <button
-      className={styles.navBtn}
-      onClick={() => setIdx((i) => Math.max(0, i - 1))}
-      disabled={idx === 0}
-      aria-label="Previous match"
-    >
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M15 18l-6-6 6-6" />
-      </svg>
-    </button>
-    <span className={styles.navCount}>{idx + 1} / {total}</span>
-    <button
-      className={styles.navBtn}
-      onClick={() => setIdx((i) => Math.min(total - 1, i + 1))}
-      disabled={idx === total - 1}
-      aria-label="Next match"
-    >
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M9 18l6-6-6-6" />
-      </svg>
-    </button>
-  </nav>
-</div>
+            <nav className={styles.nav} aria-label="Browse matches">
+              <button
+                className={styles.navBtn}
+                onClick={() => setIdx((i) => Math.max(0, i - 1))}
+                disabled={idx === 0}
+                aria-label="Previous match"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M15 18l-6-6 6-6" />
+                </svg>
+              </button>
+              <span className={styles.navCount}>{idx + 1} / {total}</span>
+              <button
+                className={styles.navBtn}
+                onClick={() => setIdx((i) => Math.min(total - 1, i + 1))}
+                disabled={idx === total - 1}
+                aria-label="Next match"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 18l6-6-6-6" />
+                </svg>
+              </button>
+            </nav>
+          </div>
         </div>
       )}
 
       {/* Dot indicators */}
-      {!loading && !error && total > 0 && (
-        <div
-          className={styles.dots}
-          role="tablist"
-          aria-label="Match indicators"
-        >
+      {hasProducts && !loading && !error && total > 0 && (
+        <div className={styles.dots} role="tablist" aria-label="Match indicators">
           {matches.map((_, i) => (
             <button
               key={i}
               role="tab"
               aria-selected={i === idx}
               aria-label={`Match ${i + 1}`}
-              className={`${styles.dotPip} ${
-                i === idx ? styles.dotPipActive : ""
-              }`}
+              className={`${styles.dotPip} ${i === idx ? styles.dotPipActive : ""}`}
               onClick={() => setIdx(i)}
             />
           ))}

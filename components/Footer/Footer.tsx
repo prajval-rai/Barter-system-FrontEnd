@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import styles from './Footer.module.css';
+import LenDenLogo from "@/components/logo";
 
 const QUICK_LINKS = [
   { label: 'Home',         href: '/#home' },
@@ -65,10 +66,8 @@ export default function Footer() {
           {/* Brand */}
           <div className={styles.brand}>
             <Link href="/" className={styles.logo}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" strokeWidth="2.5" strokeLinecap="round">
-                <path d="M7 16L3 12M3 12L7 8M3 12H15M17 8L21 12M21 12L17 16M21 12H9"/>
-              </svg>
-              LenDen
+              
+              <LenDenLogo width={140} />
             </Link>
             <p className={styles.tagline}>Exchange what you have. Get what you need.</p>
           </div>

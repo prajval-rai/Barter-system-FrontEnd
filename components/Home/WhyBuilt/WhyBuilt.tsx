@@ -15,7 +15,7 @@ const CARDS = [
         <circle cx="12" cy="12" r="9" />
       </svg>
     ),
-    title: "Borrow Instead of Buy",
+    title: "Borrow. Use. Return.",
     desc: "Need something for a day or a week? Borrow it from someone nearby instead of spending thousands.",
   },
   {
@@ -32,7 +32,7 @@ const CARDS = [
         <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" />
       </svg>
     ),
-    title: "Earn From What You Own",
+    title: "Your Product Work for You",
     desc: "Your idle camera, drill, or tent is money sitting unused. Lend it out and earn while you sleep.",
   },
   {
@@ -48,7 +48,7 @@ const CARDS = [
         <path d="M16 3.13a4 4 0 0 1 0 7.75" />
       </svg>
     ),
-    title: "Trust Your Neighbourhood",
+    title: "Safe Exchanges Start Nearby",
     desc: "Real people, real items, real locality. LenDen connects you with verified neighbours you can trust.",
   },
   {
@@ -62,7 +62,7 @@ const CARDS = [
         <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
       </svg>
     ),
-    title: "Less Waste, More Planet",
+    title: "Less Waste. More Impact",
     desc: "Every borrow is one less product manufactured. Small choices, big impact on the environment.",
   },
 ];

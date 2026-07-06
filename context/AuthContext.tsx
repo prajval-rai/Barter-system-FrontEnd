@@ -21,6 +21,7 @@ interface AuthContextValue {
   login: (googleIdToken: string) => Promise<void>;
   logout: () => Promise<void>;
   setUser: (user: AuthUser | null) => void;
+  updateUser: (patch: Partial<AuthUser>) => void;
 }
 
 const defaultValue: AuthContextValue = {
@@ -29,6 +30,7 @@ const defaultValue: AuthContextValue = {
   login: async () => {},
   logout: async () => {},
   setUser: () => {},
+  updateUser: () => {},
 };
 
 const AuthContext = createContext<AuthContextValue>(defaultValue);
@@ -111,8 +113,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     sessionStorage.removeItem("LenDen_user");
   };
 
+  // Merge partial updates (e.g. after a profile save) into both state and
+  // sessionStorage, so the rest of the app sees fresh data without a reload.
+  const updateUser = (patch: Partial<AuthUser>) => {
+    setUser((prev) => {
+      if (!prev) return prev;
+      const next = { ...prev, ...patch };
+      sessionStorage.setItem("LenDen_user", JSON.stringify(next));
+      return next;
+    });
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, setUser }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, setUser, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

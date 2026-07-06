@@ -34,6 +34,8 @@ interface ApiResponse {
 
 interface Props {
   categories: Category[];
+  selectedCategory: number | null;
+  onSelectCategory: (id: number | null) => void;
 }
 
 interface ClusterGroup {
@@ -46,7 +48,7 @@ const PRODUCTS_API = `/api/marketplace`;
 const INDIA_CENTER: [number, number] = [22.5937, 78.9629];
 const INDIA_ZOOM = 5;
 
-export default function MarketplaceMap({ categories }: Props) {
+export default function MarketplaceMap({ categories, selectedCategory, onSelectCategory }: Props) {
   const router = useRouter();
   const mapRef         = useRef<HTMLDivElement>(null);
   const leafletMap     = useRef<any>(null);
@@ -59,7 +61,6 @@ export default function MarketplaceMap({ categories }: Props) {
   const fitToAllOnce   = useRef(false);
 
   const [products,          setProducts         ] = useState<Product[]>([]);
-  const [selectedCategory,  setSelectedCategory ] = useState<number | null>(null);
   const [loading,           setLoading          ] = useState(true);
   const [activeProduct,     setActiveProduct    ] = useState<Product | null>(null);
   const [locating,          setLocating         ] = useState(false);
@@ -452,10 +453,10 @@ export default function MarketplaceMap({ categories }: Props) {
         {/* Category filter — floats top-right on mobile, full bar handled by its own CSS */}
         <div className={styles.categoryFilterOverlay}>
           <CategoryFilter
-            categories={categories}
-            selectedCategory={selectedCategory}
-            onSelectCategory={setSelectedCategory}
-          />
+  categories={categories}
+  selectedCategory={selectedCategory}
+  onSelectCategory={onSelectCategory}
+/>
         </div>
 
         {/* Locate Me button */}

@@ -232,6 +232,7 @@
   padding: 12px 28px;
   background: var(--color-primary);
   color: var(--color-white);
+  border:none;
   border-radius: var(--radius-full);
   font-family: var(--font-display);
   font-size: var(--text-sm);
@@ -249,4 +250,57 @@
 
 .emptyAction:active {
   transform: translateY(0);
+}
+
+.emptyEmojiPulse {
+  font-size: 32px;
+  display: inline-block;
+  animation: pinPulse 1.8s ease-in-out infinite;
+}
+
+@keyframes pinPulse {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-5px); }
+}
+.emptyActionWithRing {
+  margin-top: var(--space-3);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 24px;
+  background: var(--color-primary);
+  color: var(--color-white);
+  border: none;
+  border-radius: var(--radius-full);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+  appearance: none;
+  transition:
+    background var(--duration-fast) var(--ease-smooth),
+    transform var(--duration-fast) var(--ease-smooth);
+}
+
+.emptyActionWithRing:hover {
+  transform: translateY(-1px);
+}
+
+.progressRing {
+  transform: rotate(-90deg);
+  flex-shrink: 0;
+}
+
+.progressTrack {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.3);
+  stroke-width: 2.5;
+}
+
+.progressFill {
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
 }

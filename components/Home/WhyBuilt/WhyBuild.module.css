@@ -180,8 +180,10 @@
 
 .statLabel {
   font-size: 12px;
-  color: var(--color-text-muted);
-  margin-top: 2px;
+  font-weight: 600;
+  color: #64748b;
+  margin-top: 4px;
+  letter-spacing: 0.2px;
 }
 
 .cardFooter {

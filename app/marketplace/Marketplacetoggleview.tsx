@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import styles from "./Marketplacetoggleview.module.css";
 import MarketplaceClient from "./Marketplaceclient";
 import MarketplaceMap from "./Marketplacemap";
+import { toSlug } from "./slug";
 import { Product, Category } from "./page";
 
 interface Props {
@@ -11,6 +13,8 @@ interface Props {
   initialHasNext: boolean;
   initialTotal: number;
   categories: Category[];
+  initialCategory: number | null;
+  initialView: "grid" | "map";
 }
 
 type View = "grid" | "map";
@@ -20,21 +24,44 @@ export default function MarketplaceToggleView({
   initialHasNext,
   initialTotal,
   categories,
+  initialCategory,
+  initialView,
 }: Props) {
-  // ✅ FIX 1: Default view is now "map" as requested
-  const [view, setView] = useState<View>("map");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // view stays a lightweight query param — it's a display toggle, not a distinct page
+  const view: View = (searchParams.get("view") as View) ?? initialView;
+  const selectedCategory = initialCategory;
+
+  const setView = useCallback(
+    (v: View) => {
+      const base = selectedCategory
+        ? `/marketplace/${toSlug(categories.find((c) => c.id === selectedCategory)?.name ?? "")}`
+        : "/marketplace";
+      router.push(`${base}?view=${v}`, { scroll: false });
+    },
+    [router, selectedCategory, categories]
+  );
+
+  const setSelectedCategory = useCallback(
+    (categoryId: number | null) => {
+      const path = categoryId
+        ? `/marketplace/${toSlug(categories.find((c) => c.id === categoryId)?.name ?? "")}`
+        : "/marketplace";
+      router.push(`${path}?view=${view}`, { scroll: false });
+    },
+    [router, categories, view]
+  );
 
   return (
     <div className={styles.wrapper}>
-      {/* ── Toggle Bar ── */}
       <div className={styles.toggleBar}>
         <div className={styles.toggleTrack}>
-          {/* sliding pill */}
           <span
             className={styles.pill}
             style={{ transform: view === "map" ? "translateX(100%)" : "translateX(0)" }}
           />
-
           <button
             className={`${styles.toggleBtn} ${view === "grid" ? styles.toggleBtnActive : ""}`}
             onClick={() => setView("grid")}
@@ -43,7 +70,6 @@ export default function MarketplaceToggleView({
             <GridIcon />
             <span>Grid</span>
           </button>
-
           <button
             className={`${styles.toggleBtn} ${view === "map" ? styles.toggleBtnActive : ""}`}
             onClick={() => setView("map")}
@@ -55,14 +81,6 @@ export default function MarketplaceToggleView({
         </div>
       </div>
 
-      {/* ── Views ── */}
-      {/*
-        ✅ FIX 2: Both views are ALWAYS mounted (no conditional rendering).
-        We toggle CSS visibility so:
-          - Grid state (scroll position, loaded pages) is never lost on toggle
-          - Map Leaflet instance is never destroyed & re-created on toggle
-            (which was causing double-init flickers and lost marker state)
-      */}
       <div className={styles.viewWrap}>
         <div className={view === "grid" ? styles.viewVisible : styles.viewHidden}>
           <MarketplaceClient
@@ -70,19 +88,22 @@ export default function MarketplaceToggleView({
             initialHasNext={initialHasNext}
             initialTotal={initialTotal}
             categories={categories}
+            selectedCategory={selectedCategory}
+            onSelectCategory={setSelectedCategory}
           />
         </div>
 
-        {/* Map is always mounted once the component loads */}
         <div className={view === "map" ? styles.viewVisible : styles.viewHidden}>
-          <MarketplaceMap categories={categories} />
+          <MarketplaceMap
+            categories={categories}
+            selectedCategory={selectedCategory}
+            onSelectCategory={setSelectedCategory}
+          />
         </div>
       </div>
     </div>
   );
 }
-
-/* ── Inline SVG icons ─────────────────────────────────────────────────────── */
 
 function GridIcon() {
   return (

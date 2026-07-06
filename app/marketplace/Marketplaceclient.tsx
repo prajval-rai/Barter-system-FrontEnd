@@ -11,6 +11,8 @@ interface Props {
   initialHasNext: boolean;
   initialTotal: number;
   categories: Category[];
+  selectedCategory: number | null;
+  onSelectCategory: (id: number | null) => void;
 }
 
 export default function MarketplaceClient({
@@ -18,21 +20,22 @@ export default function MarketplaceClient({
   initialHasNext,
   initialTotal,
   categories,
+  selectedCategory,
+  onSelectCategory,
 }: Props) {
-  const [products, setProducts]               = useState<Product[]>(initialProducts);
-  const [hasNext, setHasNext]                 = useState(initialHasNext);
-  const [page, setPage]                       = useState(1);
-  const [loading, setLoading]                 = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
-  const [total, setTotal]                     = useState(initialTotal);
-  const loaderRef                             = useRef<HTMLDivElement>(null);
-  const isFirstRender                         = useRef(true);
+  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const [hasNext, setHasNext] = useState(initialHasNext);
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [total, setTotal] = useState(initialTotal);
+  const loaderRef = useRef<HTMLDivElement>(null);
+  const isFirstRender = useRef(true);
+  const lastFetchedCategory = useRef(selectedCategory);
 
   const fetchProducts = useCallback(
     async (pageNum: number, categoryId: number | null, reset = false) => {
       setLoading(true);
       try {
-        // ✅ Call our own Next.js proxy route — no CORS, cookies handled server-side
         let url = `/api/marketplace?page=${pageNum}&page_size=12&sort=newest`;
         if (categoryId) url += `&category=${categoryId}`;
 
@@ -57,12 +60,15 @@ export default function MarketplaceClient({
     []
   );
 
-  // Category change → reset to page 1
+  // Category changed via URL → refetch, unless it's the same category
+  // the server already fetched for us on initial load
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
       return;
     }
+    if (selectedCategory === lastFetchedCategory.current) return;
+    lastFetchedCategory.current = selectedCategory;
     fetchProducts(1, selectedCategory, true);
   }, [selectedCategory, fetchProducts]);
 
@@ -86,7 +92,7 @@ export default function MarketplaceClient({
       <CategoryFilter
         categories={categories}
         selectedCategory={selectedCategory}
-        onSelectCategory={setSelectedCategory}
+        onSelectCategory={onSelectCategory}
       />
 
       <section className={styles.grid}>

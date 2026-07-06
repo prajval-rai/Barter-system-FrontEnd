@@ -9,9 +9,6 @@ import BrowseByCategory from "./Browsebycategory";
 import YourListings from "./Yourlistings";
 import NearbyItems from "./Nearbyitems";
 import EmptyWelcomeHero from "./empty/Emptywelcomehero";
-import EmptyHowItWorks from "./empty/Emptyhowitworks";
-import EmptyNoItems from "./empty/Emptynoitems";
-import EmptyWhyUs from "./empty/Emptywhyus";
 
 interface DashboardClientProps {
   hasProducts: boolean;
@@ -19,38 +16,19 @@ interface DashboardClientProps {
 }
 
 export default function DashboardClient({ hasProducts, completionPercentage }: DashboardClientProps) {
-  if (!hasProducts) {
-    return (
-      <AppShell>
-        <div className={styles.emptyPage}>
-          <DashboardTopBar completionPercentage={completionPercentage} />
-          <EmptyWelcomeHero />
-          <EmptyHowItWorks />
-          <div className={styles.emptyBottomGrid}>
-            <EmptyNoItems />
-            <EmptyWhyUs />
-          </div>
-          <div className={styles.pageBody}>
-            <NearbyItems />
-          </div>
-        </div>
-      </AppShell>
-    );
-  }
-
   return (
     <AppShell>
       <div className={styles.page}>
         <div className={styles.heroBg}>
           <DashboardTopBar completionPercentage={completionPercentage} />
-          <DashboardHero />
+          {hasProducts ? <DashboardHero /> : <EmptyWelcomeHero />}
         </div>
         <div className={styles.pageBody}>
-          <SwapRequests />
+          <SwapRequests hasProducts={hasProducts} />
           <MoreMatches />
           <BrowseByCategory />
           <YourListings />
-          <NearbyItems />
+          <NearbyItems completionPercentage={completionPercentage} />
         </div>
       </div>
     </AppShell>

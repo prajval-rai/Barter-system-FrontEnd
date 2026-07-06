@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import styles from "./ProfileCompleteModal.module.css";
+import { useAuth } from "@/context/AuthContext"; // adjust to your actual path
 
 interface ProfileCompleteModalProps {
   isOpen: boolean;
@@ -20,7 +21,15 @@ const FIELD_META: Record<string, { label: string; type: string; placeholder: str
   contact_number: { label: "Contact Number",   type: "tel",      placeholder: "10-digit mobile number" },
 };
 
+// These are captured silently via GPS — never rendered as visible inputs
+const HIDDEN_FIELDS = ["latitude", "longitude"];
 const LOCATION_FIELDS = ["address", "city", "pincode", "latitude", "longitude"];
+
+// Maps this form's field keys to the keys used on AuthUser / in context
+const CONTEXT_KEY_MAP: Record<string, string> = {
+  latitude: "lat",
+  longitude: "long",
+};
 
 export default function ProfileCompleteModal({
   isOpen,
@@ -28,6 +37,7 @@ export default function ProfileCompleteModal({
   incompleteFields,
   onSaved,
 }: ProfileCompleteModalProps) {
+  const { updateUser } = useAuth();
   const [form, setForm]             = useState<Record<string, string>>({});
   const [locLoading, setLocLoading] = useState(false);
   const [locError, setLocError]     = useState<string | null>(null);
@@ -35,7 +45,6 @@ export default function ProfileCompleteModal({
   const [saving, setSaving]         = useState(false);
   const [saveError, setSaveError]   = useState<string | null>(null);
   const overlayRef                  = useRef<HTMLDivElement>(null);
-  const base_url    = process.env.NEXT_PUBLIC_BACKEND_URL;
 
   useEffect(() => {
     if (isOpen) {
@@ -69,7 +78,6 @@ export default function ProfileCompleteModal({
           longitude: String(longitude),
         }));
 
-        // Reverse geocode via Nominatim (free, no key)
         try {
           const res = await fetch(
             `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
@@ -102,34 +110,48 @@ export default function ProfileCompleteModal({
   };
 
   const handleSave = async () => {
-  const payload: Record<string, string> = {};
-  for (const key of incompleteFields) {
-    if (form[key]?.trim()) payload[key] = form[key].trim();
-  }
-  if (Object.keys(payload).length === 0) return;
+    const payload: Record<string, string> = {};
+    for (const key of incompleteFields) {
+      if (form[key]?.trim()) payload[key] = form[key].trim();
+    }
+    if (Object.keys(payload).length === 0) return;
 
-  setSaving(true);
-  setSaveError(null);
-  try {
-    const res = await fetch(`/api/profile`, {   // ← proxy, no CORS
-      method:  "PUT",
-      headers: { "Content-Type": "application/json" },
-      body:    JSON.stringify(payload),
-    });
-    if (!res.ok) throw new Error("Failed to update profile.");
-    onSaved?.();
-    onClose();
-  } catch (err: any) {
-    setSaveError(err.message || "Something went wrong.");
-  } finally {
-    setSaving(false);
-  }
-};
+    setSaving(true);
+    setSaveError(null);
+    try {
+      const res = await fetch(`/api/profile`, {
+        method:  "PUT",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error("Failed to update profile.");
+
+      // Push the saved fields straight into AuthContext so hasLocation /
+      // completion checks reflect reality immediately, without needing a
+      // reload or re-login. Map form field names to AuthUser field names,
+      // and coerce lat/long to numbers since AuthUser types them as number.
+      const contextPatch: Record<string, string | number> = {};
+      for (const [key, value] of Object.entries(payload)) {
+        const mappedKey = CONTEXT_KEY_MAP[key] ?? key;
+        contextPatch[mappedKey] =
+          mappedKey === "lat" || mappedKey === "long" ? Number(value) : value;
+      }
+      updateUser(contextPatch);
+
+      onSaved?.();
+      onClose();
+    } catch (err: any) {
+      setSaveError(err.message || "Something went wrong.");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   if (!isOpen) return null;
 
-  // Show GPS button if any location-related field is incomplete
   const needsLocation = incompleteFields.some((f) => LOCATION_FIELDS.includes(f));
+  // Only render fields that have UI — GPS coordinates are captured but stay invisible
+  const visibleFields = incompleteFields.filter((f) => !HIDDEN_FIELDS.includes(f));
 
   return (
     <div className={styles.overlay} ref={overlayRef} onClick={handleOverlayClick}>
@@ -138,7 +160,7 @@ export default function ProfileCompleteModal({
         {/* Header */}
         <div className={styles.header}>
           <div className={styles.headerLeft}>
-            <span className={styles.headerIcon}>⚡</span>
+            <span className={styles.headerIcon}>👤</span>
             <div>
               <h2 className={styles.headerTitle}>Complete your profile</h2>
               <p className={styles.headerSub}>Fill in the missing fields below</p>
@@ -177,23 +199,17 @@ export default function ProfileCompleteModal({
             </div>
           )}
 
-          {/* Fields */}
+          {/* Fields — GPS coordinates excluded, captured silently in the background */}
           <div className={styles.fields}>
-            {incompleteFields.map((key) => {
+            {visibleFields.map((key) => {
               const meta = FIELD_META[key];
               if (!meta) return null;
 
-              const isGpsField = key === "latitude" || key === "longitude";
-              const isFilled   = Boolean(form[key]);
+              const isFilled = Boolean(form[key]);
 
               return (
                 <div className={styles.fieldGroup} key={key}>
-                  <label className={styles.label}>
-                    {meta.label}
-                    {isGpsField && (
-                      <span className={styles.gpsTag}>GPS</span>
-                    )}
-                  </label>
+                  <label className={styles.label}>{meta.label}</label>
 
                   {meta.type === "textarea" ? (
                     <textarea
@@ -210,7 +226,6 @@ export default function ProfileCompleteModal({
                       placeholder={meta.placeholder}
                       value={form[key] || ""}
                       onChange={(e) => handleChange(key, e.target.value)}
-                      readOnly={isGpsField}
                     />
                   )}
                 </div>

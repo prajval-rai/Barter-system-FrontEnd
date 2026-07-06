@@ -73,12 +73,12 @@ export default function Hero() {
 
           <div className={styles.actions}>
             <button className={styles.primaryBtn} type="button" onClick={handleProtectedAction}>
-              find what you need
+              Find what you need
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M5 12h14M13 6l6 6-6 6" />
               </svg>
             </button>
-            <button className={styles.outlineBtn} type="button">how it works</button>
+            <button className={styles.outlineBtn} type="button">How it works</button>
           </div>
         </div>
 
