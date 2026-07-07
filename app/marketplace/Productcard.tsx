@@ -44,40 +44,36 @@ export default function ProductCard({ product }: Props) {
         )}
       </div>
 
-      {/* Swap row: Offering ↔ Wants */}
+      {/* Swap statement: single readable line instead of two columns */}
       <div className={styles.swapRow}>
-        <div className={styles.swapSide}>
-          <span className={styles.swapLabel}>Offering</span>
-          <div className={styles.swapItem}>
-            <span className={styles.swapItemText}>{product.title}</span>
-          </div>
-        </div>
-
-        <div className={styles.swapArrow}>
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+        <div className={styles.swapBadge}>
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
             <path d="M2 5.5H14M14 5.5L10.5 2M14 5.5L10.5 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             <path d="M14 10.5H2M2 10.5L5.5 7M2 10.5L5.5 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
+          SWAP
         </div>
 
-        <div className={`${styles.swapSide} ${styles.swapSideRight}`}>
-          <span className={styles.swapLabel}>Wants</span>
-          <div className={styles.swapWantsList}>
-            {product.replace_options?.length > 0 ? (
-              product.replace_options.slice(0, 3).map((opt) => (
-                <div key={opt.id} className={styles.swapWantItem}>
-                  <IconifyImg icon={opt.icon || "noto:package"} size={16} />
-                  <span className={styles.swapItemText}>{opt.title}</span>
-                </div>
-              ))
-            ) : (
-              <span className={styles.swapItemText}>Open to offers</span>
-            )}
-            {product.replace_options?.length > 3 && (
-              <span className={styles.swapMore}>+{product.replace_options.length - 3} more</span>
-            )}
-          </div>
-        </div>
+        <p className={styles.swapSentence}>
+          Trade for{" "}
+          {product.replace_options?.length > 0 ? (
+            <>
+              {product.replace_options.slice(0, 2).map((opt) => (
+                <span key={opt.id} className={styles.swapWantChip}>
+                  <IconifyImg icon={opt.icon || "noto:package"} size={13} />
+                  {opt.title}
+                </span>
+              ))}
+              {product.replace_options.length > 2 && (
+                <span className={styles.swapMore}>
+                  +{product.replace_options.length - 2}
+                </span>
+              )}
+            </>
+          ) : (
+            <span className={styles.swapWantChip}>anything you offer</span>
+          )}
+        </p>
       </div>
     </div>
   );

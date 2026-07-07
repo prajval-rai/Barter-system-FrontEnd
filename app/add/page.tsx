@@ -54,7 +54,7 @@ const CONDITIONS_EMOJI: Record<string, string> = {
 
 const STEP_QUESTIONS: Record<Step, string> = {
   category:        "Hello! 👋\nLet's list your item for exchange.\n\nPlease choose a **category** to get started.",
-  title:           "Great choice! ✨ What's the **name or model** of your item?\n_e.g. Sony WH-1000XM5, iPhone 13, Trek Bicycle_",
+  title:           "Great choice! ✨ What's the **name or model** of your item?\n_e.g. Camera xyz model, abc book, Trek Bicycle_",
   description:     "Nice! Now tell us a bit more — condition, why you're selling, any issues?\n_e.g. 6 months old, minor scratch on back, works perfectly_",
   condition:       "How would you describe the **condition** of your item?",
   purchase_year:   "When did you buy it? 📅 Enter the year or type **skip** if you're not sure.",

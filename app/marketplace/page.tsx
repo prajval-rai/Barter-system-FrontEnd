@@ -20,7 +20,7 @@ export interface Product {
   category_name: string;
   status: string;
   created_at: string;
-  purchase_year: number;
+  purchase_year: number | null;
   owner_name: string;
   thumbnail: string;
   owner_latitude: number | null;
@@ -49,10 +49,21 @@ async function getBaseUrl(): Promise<string> {
   return `${protocol}://${host}`;
 }
 
+// NEW: grab the cookie header from the incoming request so we can
+// forward it to our own API route — server-to-server fetches do NOT
+// carry the browser's cookies automatically.
+async function getAuthHeaders(): Promise<HeadersInit> {
+  const headersList = await headers();
+  const cookie = headersList.get("cookie");
+  return cookie ? { cookie } : {};
+}
+
 async function fetchInitialProducts(baseUrl: string): Promise<MarketplaceResponse> {
   try {
+    const authHeaders = await getAuthHeaders();
     const res = await fetch(`${baseUrl}/api/marketplace?page=1&page_size=12&sort=newest`, {
       cache: "no-store",
+      headers: authHeaders,
     });
     if (res.status === 401) redirect("/login");
     if (!res.ok)
@@ -65,7 +76,11 @@ async function fetchInitialProducts(baseUrl: string): Promise<MarketplaceRespons
 
 async function fetchCategories(baseUrl: string): Promise<Category[]> {
   try {
-    const res = await fetch(`${baseUrl}/api/categories`, { cache: "no-store" });
+    const authHeaders = await getAuthHeaders();
+    const res = await fetch(`${baseUrl}/api/categories`, {
+      cache: "no-store",
+      headers: authHeaders,
+    });
     if (res.status === 401) redirect("/login");
     if (!res.ok) return [];
     return res.json();
@@ -90,7 +105,7 @@ export default async function MarketplacePage() {
         initialTotal={initialData.total}
         categories={categories}
         initialCategory={null}
-        initialView="map"
+        initialView="grid"
       />
     </AppShell>
   );

@@ -23,11 +23,13 @@ export default function MarketplaceClient({
   selectedCategory,
   onSelectCategory,
 }: Props) {
-  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const [products, setProducts] = useState<Product[]>(initialProducts ?? []);
   const [hasNext, setHasNext] = useState(initialHasNext);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [total, setTotal] = useState(initialTotal);
+
   const loaderRef = useRef<HTMLDivElement>(null);
   const isFirstRender = useRef(true);
   const lastFetchedCategory = useRef(selectedCategory);
@@ -35,9 +37,13 @@ export default function MarketplaceClient({
   const fetchProducts = useCallback(
     async (pageNum: number, categoryId: number | null, reset = false) => {
       setLoading(true);
+      setError(null);
       try {
         let url = `/api/marketplace?page=${pageNum}&page_size=12&sort=newest`;
-        if (categoryId) url += `&category=${categoryId}`;
+        // fixed: category id 0 is a valid id, don't treat it as falsy
+        if (categoryId !== null && categoryId !== undefined) {
+          url += `&category=${categoryId}`;
+        }
 
         const res = await fetch(url);
         if (res.status === 401) {
@@ -47,12 +53,15 @@ export default function MarketplaceClient({
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
         const data = await res.json();
-        setProducts((prev) => (reset ? data.results : [...prev, ...data.results]));
-        setHasNext(data.has_next);
+        const results: Product[] = Array.isArray(data.results) ? data.results : [];
+
+        setProducts((prev) => (reset ? results : [...prev, ...results]));
+        setHasNext(Boolean(data.has_next));
         setTotal(data.total ?? data.count ?? 0);
         setPage(pageNum);
       } catch (err) {
         console.error("Failed to fetch products", err);
+        setError("Couldn't load products. Please try again.");
       } finally {
         setLoading(false);
       }
@@ -84,8 +93,11 @@ export default function MarketplaceClient({
     );
     const el = loaderRef.current;
     if (el) observer.observe(el);
-    return () => { if (el) observer.unobserve(el); };
+    return () => {
+      if (el) observer.unobserve(el);
+    };
   }, [hasNext, loading, page, selectedCategory, fetchProducts]);
+    console.log("MarketplaceClient RENDER:", { products, loading, error })
 
   return (
     <main className={styles.page}>
@@ -95,6 +107,15 @@ export default function MarketplaceClient({
         onSelectCategory={onSelectCategory}
       />
 
+      {error && (
+        <div className={styles.errorBanner}>
+          <span>{error}</span>
+          <button onClick={() => fetchProducts(1, selectedCategory, true)}>
+            Retry
+          </button>
+        </div>
+      )}
+
       <section className={styles.grid}>
         {products.length === 0 && !loading ? (
           <div className={styles.empty}>
@@ -102,16 +123,21 @@ export default function MarketplaceClient({
             <p>No products found in this category.</p>
           </div>
         ) : (
-          products.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))
+          products.map((product) => {
+            // Defensive guard: skip malformed entries instead of letting
+            // one bad record throw and blank the whole grid.
+            if (!product || product.id == null) return null;
+            return <ProductCard key={product.id} product={product} />;
+          })
         )}
       </section>
 
       <div ref={loaderRef} className={styles.loaderSentinel}>
         {loading && (
           <div className={styles.spinner}>
-            <span /><span /><span />
+            <span />
+            <span />
+            <span />
           </div>
         )}
         {!hasNext && products.length > 0 && !loading && (
