@@ -2,7 +2,8 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import Providers from "@/app/Providers";
-import FCMListener from "@/components/FCMListener"; // ✅ add this
+import FCMListener from "@/components/FCMListener";
+import WhatsAppFloatButton from "@/components/WhatsAppFloatButton/WhatsAppFloatButton"; // ✅ add this
 
 export const metadata: Metadata = {
   title: "LenDen – Trade · Exchange · Deal",
@@ -19,10 +20,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <Providers>
-          <FCMListener />  {/* ✅ add this */}
+          <FCMListener />
           <main className="appMain">
             {children}
           </main>
+          <WhatsAppFloatButton />  {/* ✅ add this — renders on every page */}
         </Providers>
       </body>
     </html>
