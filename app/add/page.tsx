@@ -52,17 +52,20 @@ const CONDITIONS_EMOJI: Record<string, string> = {
   "Brand New": "✨", "Like New": "💫", "Good": "👍", "Fair": "🤷",
 };
 
+const CURRENT_YEAR = new Date().getFullYear();
+const YEARS: number[] = Array.from({ length: CURRENT_YEAR - 1990 + 1 }, (_, i) => CURRENT_YEAR - i);
+
 const STEP_QUESTIONS: Record<Step, string> = {
-  category:        "Hello! 👋\nLet's list your item for exchange.\n\nPlease choose a **category** to get started.",
-  title:           "Great choice! ✨ What's the **name or model** of your item?\n_e.g. Camera xyz model, abc book, Trek Bicycle_",
-  description:     "Nice! Now tell us a bit more — condition, why you're selling, any issues?\n_e.g. 6 months old, minor scratch on back, works perfectly_",
-  condition:       "How would you describe the **condition** of your item?",
-  purchase_year:   "When did you buy it? 📅 Enter the year or type **skip** if you're not sure.",
-  images:          "Add some photos! 📸 Good photos get faster deals. _(max 5 photos)_",
-  ask_replace:     "Almost done! 🎯 Do you want something specific in exchange, or is anything fine?",
-  replace_options: "What would you like in return? 💱 You can add more than one item!",
-  confirm:         "Looking great! 🔥 Here's your listing summary. Everything look good?",
-  done:            "🎉 Your item is now live and under review. Wait for offers to roll in! 💸",
+  category:        "Hi! 👋 Let's list your item. First, choose the category.",
+  title:           "Great! 😊 What's the name of your item? For example: iPhone 13 or Hero Bicycle.",
+  description:     "Tell us a little about your item 📝 Add some details so others can know more about it. 😊",
+  condition:       "How is the condition of your item? Please choose the best option.",
+  purchase_year:   "When did you buy it? 📅 Select the purchase year, or tap Skip if you don't remember.",
+  images:          "Please upload some photos 📸. Clear photos help you get better offers. You can add up to 5 photos.",
+  ask_replace:     "What would you like in exchange? Or are you okay with any item?",
+  replace_options: "Tell us what you'd like in exchange. 💱 You can add more than one item if you want.",
+  confirm:         "Almost done! 😊 Please check your listing once before submitting.",
+  done:            "🎉 Done! Your item has been submitted and is under review. You'll start receiving offers soon.",
 };
 
 const STEP_ORDER: Step[] = [
@@ -83,8 +86,8 @@ function formatTime(d: Date) {
 function getErrorEmoji(msg: string): string {
   if (msg.includes("photo") || msg.includes("📸")) return "📸";
   if (msg.includes("name") || msg.includes("product")) return "🤔";
-  if (msg.includes("year") || msg.includes("skip")) return "📅";
-  if (msg.includes("description")) return "✍️";
+  if (msg.includes("year") || msg.includes("skip") || msg.includes("Skip")) return "📅";
+  if (msg.includes("description") || msg.includes("details")) return "✍️";
   if (msg.includes("item") || msg.includes("add")) return "📦";
   return "⚠️";
 }
@@ -93,7 +96,7 @@ function getErrorEmoji(msg: string): string {
 
 async function validateWithAI(step: Step, value: string): Promise<{ ok: boolean; message: string }> {
   const prompts: Partial<Record<Step, string>> = {
-    title: `You are SwapBot, a friendly assistant for an Indian barter marketplace. Speak in simple, casual English.
+    title: `You are SwapBot, a friendly assistant for an Indian barter marketplace. Speak in simple, casual Indian English.
       The user entered this as a product name for their listing: "${value}".
       Rules:
       - If it looks like a real product name (phone, laptop, book, clothes, cycle, etc.) → ok: true, message: ""
@@ -103,11 +106,11 @@ async function validateWithAI(step: Step, value: string): Promise<{ ok: boolean;
       - Keep messages under 12 words, max 1 emoji, friendly tone
       Return only JSON (no markdown): {"ok": true/false, "message": "..."}`,
 
-    description: `You are SwapBot, a friendly assistant for an Indian barter marketplace. Speak in simple, casual English.
+    description: `You are SwapBot, a friendly assistant for an Indian barter marketplace. Speak in simple, casual Indian English.
       The user entered this description: "${value}".
       Rules:
       - If it's a real description with condition, features, or reason for selling → ok: true, message: ""
-      - If under 10 characters → ok: false, message: "That's too short! Add a little more detail 🙏"
+      - If under 10 characters → ok: false, message: "Please add a few more details (minimum 10 characters). 🙏"
       - If just "good", "nice", "ok" → ok: false, message: "Can you add a bit more info? Buyers love details! 😊"
       - If a greeting → ok: false, message: "That's a greeting, not a description 😄 Tell us about the item!"
       - If gibberish → ok: false, message: "That doesn't look right 🙈 Please describe your item properly."
@@ -333,7 +336,7 @@ export default function AddListingPage() {
     if (!val) return;
 
     if (step === "title") {
-      if (val.length < 3) return showError("Name is too short! Please add a bit more. 😅");
+      if (val.length < 3) return showError("The item name is too short. Please enter a proper name. 😅");
       setAiValidating(true);
       const { ok, message } = await validateWithAI("title", val);
       setAiValidating(false);
@@ -344,7 +347,7 @@ export default function AddListingPage() {
       await advance("title");
 
     } else if (step === "description") {
-      if (val.length < 10) return showError("Too short! Please add at least 10 characters 🙏");
+      if (val.length < 10) return showError("Please add a few more details (minimum 10 characters). 🙏");
       setAiValidating(true);
       const { ok, message } = await validateWithAI("description", val);
       setAiValidating(false);
@@ -353,16 +356,6 @@ export default function AddListingPage() {
       setForm(f => ({ ...f, description: val }));
       setInput("");
       await advance("description");
-
-    } else if (step === "purchase_year") {
-      const isSkip = val.toLowerCase() === "skip";
-      const yr     = parseInt(val);
-      if (!isSkip && (isNaN(yr) || yr < 1990 || yr > new Date().getFullYear()))
-        return showError(`Please enter a year between 1990 and ${new Date().getFullYear()}, or type 'skip' 😊`);
-      addUser(isSkip ? "Skipped 🤷" : `${val} 📅`);
-      setForm(f => ({ ...f, purchase_year: isSkip ? "" : val }));
-      setInput("");
-      await advance("purchase_year");
     }
   }, [input, step, advance, showError]);
 
@@ -379,6 +372,13 @@ export default function AddListingPage() {
     await advance("condition");
   }, [advance]);
 
+  // ── Purchase year: select a year or Skip ──
+  const handlePurchaseYear = useCallback(async (year: string | null) => {
+    addUser(year ? `${year} 📅` : "Skip 🤷");
+    setForm(f => ({ ...f, purchase_year: year ?? "" }));
+    await advance("purchase_year");
+  }, [advance]);
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []).slice(0, 5);
     setForm(f => ({ ...f, images: files }));
@@ -386,7 +386,7 @@ export default function AddListingPage() {
   };
 
   const handleImagesDone = useCallback(async () => {
-    if (form.images.length === 0) return showError("Please add at least 1 photo! 📸");
+    if (form.images.length === 0) return showError("Please upload at least one photo. 📸");
     addUser(`${form.images.length} photo${form.images.length > 1 ? "s" : ""} uploaded 📸✓`);
     await advance("images");
   }, [form.images, advance, showError]);
@@ -404,8 +404,8 @@ export default function AddListingPage() {
   }, [sendBot]);
 
   const handleAddReplace = async () => {
-    if (!replaceForm.title.trim()) return showError("Please enter the item name! 📝");
-    if (!replaceForm.category)     return showError("Please choose a category too 🏷️");
+    if (!replaceForm.title.trim()) return showError("Please enter the item name. 📝");
+    if (!replaceForm.category)     return showError("Please select a category. 🏷️");
     setIconLoading(true);
     const icon = await getIconForItem(replaceForm.title.trim(), replaceForm.categoryName);
     setIconLoading(false);
@@ -421,7 +421,7 @@ export default function AddListingPage() {
   };
 
   const handleReplaceDone = useCallback(async () => {
-    if (replaceOptions.length === 0) return showError("Please add at least one item! 🙏");
+    if (replaceOptions.length === 0) return showError("Please add at least one item. 🙏");
     addUser(`Want in exchange: ${replaceOptions.map(o => o.title).join(", ")} ✓`);
     setStep("confirm");
     await sendBot("confirm");
@@ -478,7 +478,7 @@ export default function AddListingPage() {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
   };
 
-  const showTextInput = ["title", "description", "purchase_year"].includes(step);
+  const showTextInput = ["title", "description"].includes(step);
   const progressPct  = Math.round((STEP_ORDER.indexOf(step) / (STEP_ORDER.length - 1)) * 100);
 
   // ── Profile checking loader ──
@@ -648,6 +648,25 @@ export default function AddListingPage() {
               </div>
             )}
 
+            {/* ── STEP: Purchase year (select a year, or skip) ── */}
+            {step === "purchase_year" && !botTyping && (
+              <div className={styles.actionsArea}>
+                <select
+                  className={styles.replaceSelect}
+                  defaultValue=""
+                  onChange={e => { if (e.target.value) handlePurchaseYear(e.target.value); }}
+                >
+                  <option value="" disabled>Select purchase year…</option>
+                  {YEARS.map(y => (
+                    <option key={y} value={y}>{y}</option>
+                  ))}
+                </select>
+                <button className={styles.chip} onClick={() => handlePurchaseYear(null)}>
+                  Skip 🤷
+                </button>
+              </div>
+            )}
+
             {/* ── STEP: Images ── */}
             {step === "images" && !botTyping && (
               <div className={styles.actionsArea}>
@@ -806,9 +825,7 @@ export default function AddListingPage() {
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder={
-                  step === "title"         ? "Enter item name…"
-                  : step === "description" ? "Describe your item…"
-                  : "Enter year like 2022 or type skip"
+                  step === "title" ? "Enter item name…" : "Describe your item…"
                 }
                 disabled={botTyping || aiValidating}
               />
