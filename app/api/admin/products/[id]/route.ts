@@ -9,7 +9,7 @@ export async function GET(
   const { id } = await params;
   const cookie = req.headers.get("cookie") ?? "";
 
-  const res = await fetch(`${BACKEND_URL}/products/${id}`, {
+  const res = await fetch(`${BACKEND_URL}products/${id}`, {
     headers: { cookie },
     cache: "no-store",
   });

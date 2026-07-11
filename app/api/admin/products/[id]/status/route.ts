@@ -17,7 +17,7 @@ export async function POST(
   }
 
   const res = await fetch(
-    `${BACKEND_URL}/products/change_product_status/?product_id=${id}&status=${status}`,
+    `${BACKEND_URL}products/change_product_status/?product_id=${id}&status=${status}`,
     { method: "POST", headers: { cookie }, cache: "no-store" }
   );
 
