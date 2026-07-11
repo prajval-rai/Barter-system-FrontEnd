@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
   const cookie = req.headers.get("cookie") ?? "";
 
   const res = await fetch(
-    `${BACKEND_URL}products/admin_products_by_status?status=${encodeURIComponent(status)}`,
+    `${BACKEND_URL}/products/admin_products_by_status?status=${encodeURIComponent(status)}`,
     { headers: { cookie }, cache: "no-store" }
   );
 
