@@ -1,26 +1,31 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import styles from "./HowItWorks.module.css";
 
 const STEPS = [
   {
     number: "01",
+    image: "/Image/LandingPage/howItWork-1.png",
     title: "List your item",
     desc: "Snap a photo of what you don't need every day.",
   },
   {
     number: "02",
+    image: "/Image/LandingPage/howItWork-2.png",
     title: "Find a match",
     desc: "We surface people nearby looking for exactly that.",
   },
   {
     number: "03",
+    image: "/Image/LandingPage/howItWork-3.png",
     title: "Connect & chat",
     desc: "Work out the details and confirm the exchange.",
   },
   {
     number: "04",
+    image: "/Image/LandingPage/howItWork-4.png",
     title: "Hand it over",
     desc: "Meet up, exchange, and get back what you actually needed.",
   },
@@ -71,9 +76,15 @@ export default function HowItWorks() {
               key={step.number}
               style={{ ["--i" as string]: i }}
             >
-              <span className={styles.bigNumber} aria-hidden="true">
-                {step.number}
-              </span>
+              <div className={styles.bigNumber} aria-hidden="true">
+                <Image
+                  src={step.image}
+                  alt=""
+                  fill
+                  sizes="(max-width: 768px) 25vw, 120px"
+                  style={{ objectFit: "contain" }}
+                />
+              </div>
               <div className={styles.stopBody}>
                 <h3 className={styles.stepTitle}>{step.title}</h3>
                 <p className={styles.stepDesc}>{step.desc}</p>
