@@ -361,6 +361,7 @@
 }
 
 .chip {
+  position: relative;   /* anchor for .comingSoonTag badge */
   padding: 7px 14px;
   border-radius: 99px;
   border: 1.5px solid var(--color-primary);
@@ -383,6 +384,43 @@
   color: #fff;
   box-shadow: 0 3px 10px var(--color-primary-shadow);
   transform: translateY(-1px);
+}
+
+/* ── Disabled / "coming soon" chip variant ── */
+.chipDisabled {
+  border-color: var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+  box-shadow: none;
+  opacity: 0.75;
+  padding-right: 18px; /* leave a little room so the badge doesn't crowd the label */
+}
+
+.chipDisabled:hover,
+.chipDisabled:active {
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  box-shadow: none;
+  transform: none;
+}
+
+.comingSoonTag {
+  position: absolute;
+  top: -9px;
+  right: -8px;
+  background: #F59E0B;
+  color: #fff;
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  text-transform: uppercase;
+  padding: 3px 7px;
+  border-radius: 99px;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(245, 158, 11, 0.4);
+  border: 1.5px solid var(--color-white);
+  font-family: var(--font-body);
 }
 
 /* ─── Actions Area ────────────────────────────────────────────────────────── */
