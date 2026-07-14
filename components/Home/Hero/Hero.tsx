@@ -78,7 +78,16 @@ export default function Hero() {
                 <path d="M5 12h14M13 6l6 6-6 6" />
               </svg>
             </button>
-            <button className={styles.outlineBtn} type="button">How it works</button>
+            <button
+  className={styles.outlineBtn}
+  type="button"
+  onClick={() => {
+    document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" });
+    history.pushState(null, "", "#how-it-works");
+  }}
+>
+  How it works
+</button>
           </div>
         </div>
 
