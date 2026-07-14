@@ -38,9 +38,9 @@ interface ProductForm {
   images: File[];
 }
 
-// ── NEW ORDER: category is first ──
+// ── NEW ORDER: intent (exchange/rent/want) comes first, then category ──
 type Step =
-  | "category" | "title" | "description" | "condition"
+  | "intent" | "category" | "title" | "description" | "condition"
   | "purchase_year" | "images" | "ask_replace"
   | "replace_options" | "confirm" | "done";
 
@@ -56,7 +56,8 @@ const CURRENT_YEAR = new Date().getFullYear();
 const YEARS: number[] = Array.from({ length: CURRENT_YEAR - 1990 + 1 }, (_, i) => CURRENT_YEAR - i);
 
 const STEP_QUESTIONS: Record<Step, string> = {
-  category:        "Hi! 👋 Let's list your item. First, choose the category.",
+  intent:          "Hi! 👋 What would you like to do today?",
+  category:        "Great, let's list your item for exchange! 😊 First, choose the category.",
   title:           "Great! 😊 What's the name of your item? For example: Phone (Company name model name) or Camera (Company name model name)",
   description:     "Tell us a little about your item 📝 Add some details so others can know more about it. 😊",
   condition:       "How is the condition of your item? Please choose the best option.",
@@ -69,7 +70,7 @@ const STEP_QUESTIONS: Record<Step, string> = {
 };
 
 const STEP_ORDER: Step[] = [
-  "category", "title", "description", "condition",
+  "intent", "category", "title", "description", "condition",
   "purchase_year", "images", "ask_replace", "replace_options", "confirm", "done",
 ];
 
@@ -202,7 +203,7 @@ export default function AddListingPage() {
   const router = useRouter();
 
   const [messages, setMessages]               = useState<ChatMessage[]>([]);
-  const [step, setStep]                       = useState<Step>("category");
+  const [step, setStep]                       = useState<Step>("intent");
   const [form, setForm]                       = useState<ProductForm>({
     title: "", description: "", category: null,
     categoryName: "", condition: "", purchase_year: "", images: [],
@@ -218,6 +219,11 @@ export default function AddListingPage() {
   const [imagePreviews, setImagePreviews]     = useState<string[]>([]);
   const [loading, setLoading]                 = useState(false);
   const [iconLoading, setIconLoading]         = useState(false);
+
+  // ── Fixes the "question flashes before loader" race: a step's action
+  // UI (chips/buttons/inputs) only renders once its bot bubble has
+  // actually landed in `messages`. Never before, never mid-loader. ──
+  const [stepReady, setStepReady]             = useState(false);
 
   // ── Profile gate ──
   const [profileChecking, setProfileChecking]   = useState(true);
@@ -242,16 +248,20 @@ export default function AddListingPage() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, botTyping, step]);
 
+  // ── Sequence is now strict: hide step UI -> wait -> show loader ->
+  // wait -> hide loader -> show bot message -> THEN reveal step UI. ──
   const sendBot = useCallback(async (s: Step, delay = 300) => {
+    setStepReady(false);
     await sleep(delay);
     setBotTyping(true);
     await sleep(800);
     setBotTyping(false);
     setMessages(prev => [...prev, { id: uid(), role: "bot", text: STEP_QUESTIONS[s], timestamp: new Date() }]);
+    setStepReady(true);
     setTimeout(() => inputRef.current?.focus(), 100);
   }, []);
 
-  // ── Profile check + bot init (starts at "category" now) ──
+  // ── Profile check + bot init (starts at "intent" now) ──
   useEffect(() => {
     if (initialized.current) return;
     initialized.current = true;
@@ -271,12 +281,12 @@ export default function AddListingPage() {
         } else {
           setProfileBlocked(false);
           setProfileChecking(false);
-          sendBot("category");
+          sendBot("intent");
         }
       } catch {
         setProfileBlocked(false);
         setProfileChecking(false);
-        sendBot("category");
+        sendBot("intent");
       }
     };
 
@@ -298,11 +308,11 @@ export default function AddListingPage() {
       } else {
         setIncompleteFields([]);
         setProfileBlocked(false);
-        sendBot("category");
+        sendBot("intent");
       }
     } catch {
       setProfileBlocked(false);
-      sendBot("category");
+      sendBot("intent");
     }
   }, [sendBot]);
 
@@ -359,7 +369,12 @@ export default function AddListingPage() {
     }
   }, [input, step, advance, showError]);
 
-  // ── Category is now first ──
+  // ── Intent: only "Exchange" is live. Rent / Want Something are locked. ──
+  const handleIntent = useCallback(async () => {
+    addUser("Exchange an item 🔄");
+    await advance("intent");
+  }, [advance]);
+
   const handleCategory = useCallback(async (cat: Category) => {
     addUser(`${cat.name} 🏷️`);
     setForm(f => ({ ...f, category: cat.id, categoryName: cat.name }));
@@ -626,8 +641,25 @@ export default function AddListingPage() {
               </div>
             )}
 
-            {/* ── STEP: Category (first step now) ── */}
-            {step === "category" && !botTyping && (
+            {/* ── STEP: Intent (brand new first step) ── */}
+            {step === "intent" && stepReady && (
+              <div className={styles.chipsArea}>
+                <button className={styles.chip} onClick={handleIntent}>
+                  🔄 Exchange an item
+                </button>
+                <button className={`${styles.chip} ${styles.chipDisabled}`} disabled type="button">
+                  🏠 Rent an item
+                  <span className={styles.comingSoonTag}>Coming soon</span>
+                </button>
+                <button className={`${styles.chip} ${styles.chipDisabled}`} disabled type="button">
+                  🎁 I want something
+                  <span className={styles.comingSoonTag}>Coming soon</span>
+                </button>
+              </div>
+            )}
+
+            {/* ── STEP: Category ── */}
+            {step === "category" && stepReady && (
               <div className={styles.chipsArea}>
                 {categories.map(cat => (
                   <button key={cat.id} className={styles.chip} onClick={() => handleCategory(cat)}>
@@ -638,7 +670,7 @@ export default function AddListingPage() {
             )}
 
             {/* ── STEP: Condition ── */}
-            {step === "condition" && !botTyping && (
+            {step === "condition" && stepReady && (
               <div className={styles.chipsArea}>
                 {CONDITIONS.map(c => (
                   <button key={c} className={styles.chip} onClick={() => handleCondition(c)}>
@@ -649,7 +681,7 @@ export default function AddListingPage() {
             )}
 
             {/* ── STEP: Purchase year (select a year, or skip) ── */}
-            {step === "purchase_year" && !botTyping && (
+            {step === "purchase_year" && stepReady && (
               <div className={styles.actionsArea}>
                 <select
                   className={styles.replaceSelect}
@@ -668,7 +700,7 @@ export default function AddListingPage() {
             )}
 
             {/* ── STEP: Images ── */}
-            {step === "images" && !botTyping && (
+            {step === "images" && stepReady && (
               <div className={styles.actionsArea}>
                 <input ref={fileRef} type="file" accept="image/*" multiple style={{ display: "none" }} onChange={handleImageChange} />
                 <button className={styles.uploadBtn} onClick={() => fileRef.current?.click()}>
@@ -690,7 +722,7 @@ export default function AddListingPage() {
             )}
 
             {/* ── STEP: Ask replace ── */}
-            {step === "ask_replace" && !botTyping && (
+            {step === "ask_replace" && stepReady && (
               <div className={styles.chipsArea}>
                 <button className={styles.chip} onClick={() => handleAskReplace(true)}>
                   🎯 Yes, I want something specific
@@ -702,7 +734,7 @@ export default function AddListingPage() {
             )}
 
             {/* ── STEP: Replace options ── */}
-            {step === "replace_options" && !botTyping && (
+            {step === "replace_options" && stepReady && (
               <div className={styles.actionsArea}>
                 {replaceOptions.length > 0 && (
                   <div className={styles.replaceList}>
@@ -764,7 +796,7 @@ export default function AddListingPage() {
             )}
 
             {/* ── STEP: Confirm — now with image previews ── */}
-            {step === "confirm" && !botTyping && (
+            {step === "confirm" && stepReady && (
               <div className={styles.summaryCard}>
 
                 {/* ── Image preview strip at top of summary ── */}
@@ -800,7 +832,7 @@ export default function AddListingPage() {
             )}
 
             {/* ── STEP: Done ── */}
-            {step === "done" && !botTyping && (
+            {step === "done" && stepReady && (
               <div className={styles.actionsArea}>
                 <button className={styles.primaryBtn} onClick={() => router.push("/swap")}>
                   Go to Dashboard 🏠
@@ -816,7 +848,7 @@ export default function AddListingPage() {
           </div>
 
           {/* Input bar */}
-          {showTextInput && !profileBlocked && (
+          {showTextInput && stepReady && !profileBlocked && (
             <div className={styles.inputBar}>
               <input
                 ref={inputRef}
