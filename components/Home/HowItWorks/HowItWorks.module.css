@@ -134,7 +134,7 @@
   .rail {
     grid-template-columns: 1fr;
     border-top: none;
-    padding-left: var(--space-6);
+    padding-left: 0;
   }
   .railLine {
     /* vertical draw instead of horizontal when stacked */
@@ -150,33 +150,30 @@
     height: 100%;
   }
 
-  /* stop becomes a horizontal row: big image on the left, text on the right,
-     so the image is the first thing the eye lands on */
+  /* stop stays stacked: big image on top, text centered below it,
+     same visual order as desktop — image is what the eye hits first */
   .stop {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: var(--space-5);
-    padding: var(--space-6) var(--space-4) var(--space-6) var(--space-6);
+    padding: var(--space-8) var(--space-4);
     border-right: none;
     border-top: 1.5px solid var(--color-border);
   }
   .stop:first-child {
     border-top: none;
-    padding-top: var(--space-2);
   }
 
-  /* image is the visual anchor: large, fixed, doesn't shrink */
+  /* image is the visual anchor: large, centered above the text */
   .bigNumber {
-    width: 130px;
-    height: 130px;
-    margin: 0;
+    width: 140px;
+    height: 140px;
+    margin: 0 auto var(--space-3);
     flex: 0 0 auto;
   }
 
   .stopBody {
-    flex: 1 1 auto;
-    min-width: 0;
-    text-align: left;
+    text-align: center;
   }
 
   .stepTitle {
