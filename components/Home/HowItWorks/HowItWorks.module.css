@@ -147,8 +147,14 @@
     width: 2.5px;
     height: 100%;
   }
+
+  /* stop becomes a horizontal row: big image on the left, text on the right,
+     so the image is the first thing the eye lands on */
   .stop {
-    padding: var(--space-6) 0 var(--space-6) var(--space-6);
+    display: flex;
+    align-items: center;
+    gap: var(--space-5);
+    padding: var(--space-6) var(--space-4) var(--space-6) var(--space-6);
     border-right: none;
     border-top: 1.5px solid var(--color-border);
   }
@@ -156,16 +162,36 @@
     border-top: none;
     padding-top: var(--space-2);
   }
+
+  /* image is now the visual anchor: larger, fixed, doesn't shrink */
   .bigNumber {
-    width: 56px;
-    height: 56px;
-    margin-bottom: var(--space-1);
+    width: 108px;
+    height: 108px;
+    margin-bottom: 0;
+    flex: 0 0 auto;
   }
+
+  .stopBody {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
   .stepTitle {
     font-size: var(--text-base);
   }
   .stepDesc {
     padding-bottom: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  /* on the smallest screens push the image even more dominant */
+  .bigNumber {
+    width: 96px;
+    height: 96px;
+  }
+  .stepDesc {
+    font-size: var(--text-xs, 0.8rem);
   }
 }
 
