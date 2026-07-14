@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import styles from "./WhyBuild.module.css";
 
 const CARDS = [
@@ -68,141 +68,115 @@ const CARDS = [
 ];
 
 export default function WhyBuilt() {
-  const sectionRef = useRef<HTMLElement>(null);
-  const [activeIndex, setActiveIndex] = useState(0);
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   useEffect(() => {
-    const handleScroll = () => {
-      const section = sectionRef.current;
-      if (!section) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add(styles.cardActive);
+            observer.unobserve(entry.target); // reveal once, don't replay
+          }
+        });
+      },
+      { threshold: 0.2, rootMargin: "0px 0px -60px 0px" }
+    );
 
-      const rect = section.getBoundingClientRect();
-      const vh = window.innerHeight;
-
-      // total scrollable distance inside the pinned section
-      const total = section.offsetHeight - vh;
-      if (total <= 0) return;
-
-      // how far we've scrolled into the section (0 -> total)
-      const scrolled = -rect.top;
-      const progress = Math.min(Math.max(scrolled / total, 0), 1);
-
-      const index = Math.min(
-        CARDS.length - 1,
-        Math.floor(progress * CARDS.length)
-      );
-
-      setActiveIndex(index);
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
-    return () => window.removeEventListener("scroll", handleScroll);
+    cardRefs.current.forEach((el) => el && observer.observe(el));
+    return () => observer.disconnect();
   }, []);
 
   return (
-    <section
-      ref={sectionRef}
-      className={styles.section}
-      style={{ height: `${CARDS.length * 100}vh` }}
-    >
-      <div className={styles.sticky}>
-        <div className={styles.inner}>
-          <div className={styles.heading}>
-            <h2 className={styles.title}>
-              Why We Built <span className={styles.highlight}>LenDen?</span>
-            </h2>
-            <p className={styles.body}>
-              Most things we buy are used a handful of times, then forgotten.
-              Meanwhile, someone nearby needs exactly that thing — right now.
-            </p>
-            <p className={styles.sub}>
-              <span className={styles.subBlue}>We built LenDen</span>{" "}
-              <strong className={styles.subBold}>
-                to turn your neighbourhood into a shared inventory.
-              </strong>
-            </p>
-          </div>
+    <section className={styles.section}>
+      <div className={styles.inner}>
+        <div className={styles.heading}>
+          <h2 className={styles.title}>
+            Why We Built <span className={styles.highlight}>LenDen?</span>
+          </h2>
+          <p className={styles.body}>
+            Most things we buy are used a handful of times, then forgotten.
+            Meanwhile, someone nearby needs exactly that thing — right now.
+          </p>
+          <p className={styles.sub}>
+            <span className={styles.subBlue}>We built LenDen</span>{" "}
+            <strong className={styles.subBold}>
+              to turn your neighbourhood into a shared inventory.
+            </strong>
+          </p>
+        </div>
 
-          <div className={styles.cardStage}>
-            {CARDS.map((card, i) => (
-              <div
-                key={card.title}
-                className={`${styles.card} ${
-                  i === activeIndex ? styles.cardActive : ""
-                }`}
-                style={{ ["--accent" as string]: card.accent }}
-              >
-                <span className={styles.cardNumber}>{card.number}</span>
+        <div className={styles.cardGrid}>
+          {CARDS.map((card, i) => (
+            <div
+              key={card.title}
+              ref={(el) => {
+                cardRefs.current[i] = el;
+              }}
+              className={styles.card}
+              style={{
+                ["--accent" as string]: card.accent,
+                ["--i" as string]: i,
+              }}
+            >
+              <span className={styles.cardNumber}>{card.number}</span>
 
-                {/* unique animated decoration per step */}
-                <div className={`${styles.decor} ${styles["decor" + i]}`} aria-hidden="true">
-                  {i === 0 && (
-                    <svg viewBox="0 0 60 60" className={styles.decorSvg}>
-                      <circle cx="30" cy="30" r="22" fill="none" stroke="currentColor" strokeWidth="3" strokeDasharray="6 8" className={styles.spin} />
-                      <circle cx="30" cy="8" r="4" fill="currentColor" className={styles.spin} />
-                    </svg>
-                  )}
-                  {i === 1 && (
-                    <svg viewBox="0 0 60 60" className={styles.decorSvg}>
-                      <circle cx="20" cy="36" r="9" fill="currentColor" opacity="0.85" className={styles.coinFloat1} />
-                      <circle cx="40" cy="22" r="7" fill="currentColor" opacity="0.6" className={styles.coinFloat2} />
-                      <circle cx="46" cy="42" r="5" fill="currentColor" opacity="0.4" className={styles.coinFloat3} />
-                    </svg>
-                  )}
-                  {i === 2 && (
-                    <svg viewBox="0 0 60 60" className={styles.decorSvg}>
-                      <circle cx="14" cy="30" r="5" fill="currentColor" className={styles.nodePulse1} />
-                      <circle cx="46" cy="14" r="5" fill="currentColor" className={styles.nodePulse2} />
-                      <circle cx="46" cy="46" r="5" fill="currentColor" className={styles.nodePulse3} />
-                      <line x1="14" y1="30" x2="46" y2="14" stroke="currentColor" strokeWidth="2" opacity="0.35" />
-                      <line x1="14" y1="30" x2="46" y2="46" stroke="currentColor" strokeWidth="2" opacity="0.35" />
-                    </svg>
-                  )}
-                  {i === 3 && (
-                    <svg viewBox="0 0 60 60" className={styles.decorSvg}>
-                      <path
-                        d="M30 50C30 50 14 38 14 24a16 16 0 0 1 32 0c0 14-16 26-16 26z"
-                        fill="currentColor"
-                        opacity="0.85"
-                        className={styles.leafSway}
-                      />
-                    </svg>
-                  )}
-                </div>
+              {/* unique animated decoration per step */}
+              <div className={`${styles.decor} ${styles["decor" + i]}`} aria-hidden="true">
+                {i === 0 && (
+                  <svg viewBox="0 0 60 60" className={styles.decorSvg}>
+                    <circle cx="30" cy="30" r="22" fill="none" stroke="currentColor" strokeWidth="3" strokeDasharray="6 8" className={styles.spin} />
+                    <circle cx="30" cy="8" r="4" fill="currentColor" className={styles.spin} />
+                  </svg>
+                )}
+                {i === 1 && (
+                  <svg viewBox="0 0 60 60" className={styles.decorSvg}>
+                    <circle cx="20" cy="36" r="9" fill="currentColor" opacity="0.85" className={styles.coinFloat1} />
+                    <circle cx="40" cy="22" r="7" fill="currentColor" opacity="0.6" className={styles.coinFloat2} />
+                    <circle cx="46" cy="42" r="5" fill="currentColor" opacity="0.4" className={styles.coinFloat3} />
+                  </svg>
+                )}
+                {i === 2 && (
+                  <svg viewBox="0 0 60 60" className={styles.decorSvg}>
+                    <circle cx="14" cy="30" r="5" fill="currentColor" className={styles.nodePulse1} />
+                    <circle cx="46" cy="14" r="5" fill="currentColor" className={styles.nodePulse2} />
+                    <circle cx="46" cy="46" r="5" fill="currentColor" className={styles.nodePulse3} />
+                    <line x1="14" y1="30" x2="46" y2="14" stroke="currentColor" strokeWidth="2" opacity="0.35" />
+                    <line x1="14" y1="30" x2="46" y2="46" stroke="currentColor" strokeWidth="2" opacity="0.35" />
+                  </svg>
+                )}
+                {i === 3 && (
+                  <svg viewBox="0 0 60 60" className={styles.decorSvg}>
+                    <path
+                      d="M30 50C30 50 14 38 14 24a16 16 0 0 1 32 0c0 14-16 26-16 26z"
+                      fill="currentColor"
+                      opacity="0.85"
+                      className={styles.leafSway}
+                    />
+                  </svg>
+                )}
+              </div>
 
-                <div className={styles.cardLeft}>
-                  <div className={styles.iconWrap}>{card.icon}</div>
-                  <div className={styles.statBlock}>
-                    <span className={styles.statValue}>{card.stat}</span>
-                    <span className={styles.statLabel}>{card.statLabel}</span>
-                  </div>
-                </div>
-
-                <div className={styles.cardRight}>
-                  <h3 className={styles.cardTitle}>{card.title}</h3>
-                  <p className={styles.cardDesc}>{card.desc}</p>
-
-                  <div className={styles.cardFooter}>
-                    <span className={styles.cardTag}>
-                      {i + 1} of {CARDS.length}
-                    </span>
-                  </div>
+              <div className={styles.cardLeft}>
+                <div className={styles.iconWrap}>{card.icon}</div>
+                <div className={styles.statBlock}>
+                  <span className={styles.statValue}>{card.stat}</span>
+                  <span className={styles.statLabel}>{card.statLabel}</span>
                 </div>
               </div>
-            ))}
-          </div>
 
-          <div className={styles.dots}>
-            {CARDS.map((_, i) => (
-              <span
-                key={i}
-                className={`${styles.dot} ${
-                  i === activeIndex ? styles.dotActive : ""
-                }`}
-              />
-            ))}
-          </div>
+              <div className={styles.cardRight}>
+                <h3 className={styles.cardTitle}>{card.title}</h3>
+                <p className={styles.cardDesc}>{card.desc}</p>
+
+                <div className={styles.cardFooter}>
+                  <span className={styles.cardTag}>
+                    {i + 1} of {CARDS.length}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </section>
