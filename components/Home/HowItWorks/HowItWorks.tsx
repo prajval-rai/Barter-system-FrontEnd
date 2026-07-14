@@ -26,7 +26,7 @@ const STEPS = [
   {
     number: "04",
     image: "/Image/LandingPage/howItWork-4.png",
-    title: "Hand it over",
+    title: "Exchange It",
     desc: "Meet up, exchange, and get back what you actually needed.",
   },
 ];
