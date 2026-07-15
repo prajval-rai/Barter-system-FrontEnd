@@ -19,7 +19,7 @@ interface Props {
 }
 
 type View = "grid" | "map";
-type ListingType = "exchange" | "rental" | "want";
+type ListingType = ""
 
 const LISTING_TYPES: { id: ListingType; label: string; comingSoon: boolean }[] = [
   { id: "exchange", label: "Exchange", comingSoon: false },
@@ -66,29 +66,7 @@ export default function MarketplaceToggleView({
     <div className={styles.wrapper}>
       {/* Row 1: Exchange/Rental/Want + Grid/Map toggle */}
       <div className={styles.filterRow}>
-        <div className={styles.typeTrack}>
-          {LISTING_TYPES.map((t) =>
-            t.comingSoon ? (
-              <div
-                key={t.id}
-                className={`${styles.typeBtn} ${styles.typeBtnDisabled}`}
-                title={`${t.label} — Coming soon`}
-              >
-                <span>{t.label}</span>
-                <span className={styles.typeSoonPill}>Soon</span>
-              </div>
-            ) : (
-              <button
-                key={t.id}
-                className={`${styles.typeBtn} ${listingType === t.id ? styles.typeBtnActive : ""}`}
-                aria-pressed={listingType === t.id}
-              >
-                <span>{t.label}</span>
-              </button>
-            )
-          )}
-        </div>
-
+        
         <div className={styles.toggleTrack}>
           <span
             className={styles.pill}
