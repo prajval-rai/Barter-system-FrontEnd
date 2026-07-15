@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 export default function WhatsAppFloatButton() {
   const phoneNumber = "918850005260";
@@ -8,6 +9,12 @@ export default function WhatsAppFloatButton() {
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
 
   const [showTooltip, setShowTooltip] = useState(false);
+  const pathname = usePathname();
+
+  // Marketplace map view has its own zoom controls (+/-) pinned to the
+  // bottom-right corner, same spot our button normally sits in.
+  // Switch to bottom-left only on that route to avoid the collision.
+  const avoidMapControls = pathname?.startsWith("/marketplace") ?? false;
 
   useEffect(() => {
     const lastDismissed = localStorage.getItem("wa_tooltip_dismissed_at");
@@ -28,9 +35,9 @@ export default function WhatsAppFloatButton() {
 
   return (
     <>
-      <div className="wa-float-wrapper">
+      <div className={`wa-float-wrapper ${avoidMapControls ? "wa-float-left" : ""}`}>
         {showTooltip && (
-          <a
+          
             href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
@@ -47,7 +54,7 @@ export default function WhatsAppFloatButton() {
           </a>
         )}
 
-          <a        
+        
           href={whatsappUrl}
           target="_blank"
           rel="noopener noreferrer"
@@ -63,17 +70,25 @@ export default function WhatsAppFloatButton() {
       <style>{`
         .wa-float-wrapper {
           position: fixed;
-          z-index: 25; /* below the mobileProfileMenu (50) but above page content */
+          z-index: 25;
           display: flex;
           flex-direction: column;
           align-items: flex-end;
           gap: 8px;
 
-          /* Desktop: no bottom nav / FAB stack, plain bottom-right corner */
+          /* Default: bottom-right, stacked above the mobile "+" FAB */
           bottom: 24px;
           right: 24px;
           left: auto;
           top: auto;
+        }
+
+        /* Marketplace map route: flip to bottom-left to avoid the
+           map's own zoom (+/-) controls, which sit bottom-right */
+        .wa-float-left {
+          align-items: flex-start;
+          right: auto;
+          left: 24px;
         }
 
         .wa-float-btn {
@@ -126,23 +141,30 @@ export default function WhatsAppFloatButton() {
           to   { opacity: 1; transform: translateY(0); }
         }
 
-        /* Mobile: stacked directly above the "+" FAB.
-           FAB sits at right:16px, width:48px, with its bottom edge
-           12px above the nav bar (which is 64px tall + safe-area inset).
-           So this button sits another (48px fab height + 12px gap) above that. */
+        /* Mobile default: stacked directly above the "+" FAB (right: 16px) */
         @media (max-width: 768px) {
           .wa-float-wrapper {
             bottom: calc(
-              64px +                          /* --mobile-bottomnav-height */
+              64px +
               env(safe-area-inset-bottom, 0px) +
-              12px +                          /* gap between nav and fab */
-              48px +                          /* fab height */
-              12px                            /* gap between fab and this button */
+              12px +
+              48px +
+              12px
             );
-            right: 16px;                      /* matches .mobileFab's right offset exactly */
+            right: 16px;
             left: auto;
             top: auto;
           }
+
+          /* On marketplace map (mobile too), flip to bottom-left,
+             and since there's no FAB to stack above there in the same
+             way, just clear the bottom nav bar with normal spacing */
+          .wa-float-wrapper.wa-float-left {
+            bottom: calc(64px + env(safe-area-inset-bottom, 0px) + 16px);
+            right: auto;
+            left: 16px;
+          }
+
           .wa-float-tooltip {
             white-space: normal;
             max-width: 190px;
