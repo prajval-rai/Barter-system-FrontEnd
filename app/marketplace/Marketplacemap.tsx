@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./Marketplacemap.module.css";
-import CategoryFilter from "../../components/Categoryfilter/Categoryfilter"; // adjust path if needed
 
 interface Category {
   id: number;
@@ -448,15 +447,6 @@ export default function MarketplaceMap({ categories, selectedCategory, onSelectC
           <span className={styles.infoCount}>
             {loading ? "Loading…" : `${validOnMapCount} on map`}
           </span>
-        </div>
-
-        {/* Category filter — floats top-right on mobile, full bar handled by its own CSS */}
-        <div className={styles.categoryFilterOverlay}>
-          <CategoryFilter
-  categories={categories}
-  selectedCategory={selectedCategory}
-  onSelectCategory={onSelectCategory}
-/>
         </div>
 
         {/* Locate Me button */}
