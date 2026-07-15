@@ -157,9 +157,9 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ── Mobile: stack type filter and grid/map toggle as two clean rows
-   inside the same card, instead of relying on flex-wrap (which caused
-   an awkward split/seam look with mismatched alignment) ──────────────── */
+/* ── Mobile: stack type filter and grid/map toggle as two clean rows,
+   and let the type filter row scroll horizontally instead of wrapping
+   (wrapping caused "Want More" to drop to its own half-empty line) ────── */
 @media (max-width: 640px) {
   .filterRow {
     flex-direction: column;
@@ -170,6 +170,19 @@
 
   .typeTrack {
     width: 100%;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+
+  .typeTrack::-webkit-scrollbar {
+    display: none;
+  }
+
+  .typeBtn {
+    flex-shrink: 0;
   }
 
   .toggleTrack {
