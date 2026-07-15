@@ -37,7 +37,7 @@ export default function WhatsAppFloatButton() {
     <>
       <div className={`wa-float-wrapper ${avoidMapControls ? "wa-float-left" : ""}`}>
         {showTooltip && (
-          
+          <a
             href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
@@ -54,7 +54,7 @@ export default function WhatsAppFloatButton() {
           </a>
         )}
 
-        
+        <a
           href={whatsappUrl}
           target="_blank"
           rel="noopener noreferrer"
