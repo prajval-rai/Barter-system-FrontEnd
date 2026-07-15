@@ -14,19 +14,12 @@ import {
   X,
   Check,
   SlidersHorizontal,
-  Map as MapIcon,
-  Grid3x3,
 } from "lucide-react";
-
-type View = "grid" | "map";
-type ListingType = "exchange" | "rental" | "want";
 
 interface Props {
   categories: Category[];
   selectedCategory: number | null;
   onSelectCategory: (id: number | null) => void;
-  view: View;
-  onSelectView: (v: View) => void;
 }
 
 const CATEGORY_ICONS: Record<string, any> = {
@@ -40,23 +33,13 @@ const CATEGORY_ICONS: Record<string, any> = {
 const getIcon = (name: string) => CATEGORY_ICONS[name] || Package;
 const QUICK_LIMIT = 9;
 
-const LISTING_TYPES: { id: ListingType; label: string; comingSoon: boolean }[] = [
-  { id: "exchange", label: "Exchange", comingSoon: false },
-  { id: "rental", label: "Rental", comingSoon: true },
-  { id: "want", label: "Want More", comingSoon: true },
-];
-
 export default function CategoryFilter({
   categories,
   selectedCategory,
   onSelectCategory,
-  view,
-  onSelectView,
 }: Props) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [showAllModal, setShowAllModal] = useState(false);
-
-  const listingType: ListingType = "exchange";
 
   const quickCategories = categories.slice(0, QUICK_LIMIT);
   const hasMore = categories.length > quickCategories.length;
@@ -108,79 +91,24 @@ export default function CategoryFilter({
 
   return (
     <>
-      <div className={`${styles.floatingFilters} ${view === "grid" ? styles.staticFilters : ""}`}>
-        {/* Row 1: Grid / Map toggle */}
-        <div className={styles.filterRowTop}>
-          <div className={styles.viewToggleTrack}>
-            <span
-              className={styles.viewToggleSlide}
-              style={{ transform: view === "map" ? "translateX(100%)" : "translateX(0)" }}
-            />
-            <button
-              type="button"
-              className={`${styles.viewToggleBtn} ${view === "grid" ? styles.viewToggleBtnActive : ""}`}
-              onClick={() => onSelectView("grid")}
-              aria-pressed={view === "grid"}
-            >
-              <Grid3x3 size={14} strokeWidth={2.25} />
-              <span>Grid</span>
-            </button>
-            <button
-              type="button"
-              className={`${styles.viewToggleBtn} ${view === "map" ? styles.viewToggleBtnActive : ""}`}
-              onClick={() => onSelectView("map")}
-              aria-pressed={view === "map"}
-            >
-              <MapIcon size={14} strokeWidth={2.25} />
-              <span>Map</span>
-            </button>
-          </div>
-        </div>
+      {/* Mobile: pill-style trigger */}
+      <div className={styles.mobileTriggerBar}>
+        <button
+          type="button"
+          className={styles.filterTrigger}
+          onClick={() => setIsDrawerOpen(true)}
+        >
+          <SlidersHorizontal size={14} strokeWidth={2.25} />
+          {activeCategoryName}
+          <span className={styles.triggerDot} />
+        </button>
+      </div>
 
-        {/* Row 2: Exchange / Rental / Want More */}
-        <div className={styles.typeTrack}>
-          {LISTING_TYPES.map((t) =>
-            t.comingSoon ? (
-              <div
-                key={t.id}
-                className={`${styles.typeBtn} ${styles.typeBtnDisabled}`}
-                title={`${t.label} — Coming soon`}
-              >
-                <span>{t.label}</span>
-                <span className={styles.typeSoonPill}>Soon</span>
-              </div>
-            ) : (
-              <button
-                key={t.id}
-                type="button"
-                className={`${styles.typeBtn} ${listingType === t.id ? styles.typeBtnActive : ""}`}
-                aria-pressed={listingType === t.id}
-              >
-                <span>{t.label}</span>
-              </button>
-            )
-          )}
-        </div>
-
-        {/* Row 3: Mobile trigger pill (opens drawer) */}
-        <div className={styles.mobileTriggerBar}>
-          <button
-            type="button"
-            className={styles.filterTrigger}
-            onClick={() => setIsDrawerOpen(true)}
-          >
-            <SlidersHorizontal size={14} strokeWidth={2.25} />
-            {activeCategoryName}
-            <span className={styles.triggerDot} />
-          </button>
-        </div>
-
-        {/* Row 3 (desktop): full horizontal category bar */}
-        <div className={styles.desktopBar}>
-          <div className={styles.scrollRow}>
-            {renderPill(null, "All", LayoutGrid)}
-            {categories.map((cat) => renderPill(cat.id, cat.name, getIcon(cat.name)))}
-          </div>
+      {/* Desktop: full horizontal bar */}
+      <div className={styles.desktopBar}>
+        <div className={styles.scrollRow}>
+          {renderPill(null, "All", LayoutGrid)}
+          {categories.map((cat) => renderPill(cat.id, cat.name, getIcon(cat.name)))}
         </div>
       </div>
 
