@@ -18,6 +18,13 @@ interface Props {
 }
 
 type View = "grid" | "map";
+type ListingType = "exchange" | "rental" | "want";
+
+const LISTING_TYPES: { id: ListingType; label: string; comingSoon: boolean }[] = [
+  { id: "exchange", label: "Exchange", comingSoon: false },
+  { id: "rental", label: "Rental", comingSoon: true },
+  { id: "want", label: "Want More", comingSoon: true },
+];
 
 export default function MarketplaceToggleView({
   initialProducts,
@@ -33,6 +40,11 @@ export default function MarketplaceToggleView({
   // view stays a lightweight query param — it's a display toggle, not a distinct page
   const view: View = (searchParams.get("view") as View) ?? initialView;
   const selectedCategory = initialCategory;
+
+  // Only "exchange" is functional right now; others are disabled, so this
+  // is effectively locked, but kept as state-driven for when rental/want
+  // are wired up later.
+  const listingType: ListingType = "exchange";
 
   const setView = useCallback(
     (v: View) => {
@@ -56,6 +68,32 @@ export default function MarketplaceToggleView({
 
   return (
     <div className={styles.wrapper}>
+      {/* Listing type filter — Exchange / Rental / Want More */}
+      <div className={styles.typeBar}>
+        <div className={styles.typeTrack}>
+          {LISTING_TYPES.map((t) =>
+            t.comingSoon ? (
+              <div
+                key={t.id}
+                className={`${styles.typeBtn} ${styles.typeBtnDisabled}`}
+                title={`${t.label} — Coming soon`}
+              >
+                <span>{t.label}</span>
+                <span className={styles.typeSoonPill}>Soon</span>
+              </div>
+            ) : (
+              <button
+                key={t.id}
+                className={`${styles.typeBtn} ${listingType === t.id ? styles.typeBtnActive : ""}`}
+                aria-pressed={listingType === t.id}
+              >
+                <span>{t.label}</span>
+              </button>
+            )
+          )}
+        </div>
+      </div>
+
       <div className={styles.toggleBar}>
         <div className={styles.toggleTrack}>
           <span
