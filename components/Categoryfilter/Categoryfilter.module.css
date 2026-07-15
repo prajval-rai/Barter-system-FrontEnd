@@ -1,12 +1,141 @@
-/* ─── Shared pill (desktop bar) ──────────────────────────────── */
+/* ─── Floating filter stack wrapper ──────────────────────────── */
+.floatingFilters {
+  position: absolute;
+  top: 14px;
+  left: 16px;
+  right: 16px;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.filterRowTop {
+  display: flex;
+  justify-content: flex-end;
+  pointer-events: none;
+}
+
+/* ─── Row 1: Grid / Map toggle ───────────────────────────────── */
+.viewToggleTrack {
+  position: relative;
+  display: flex;
+  background: #fff;
+  border-radius: 10px;
+  padding: 3px;
+  flex-shrink: 0;
+  pointer-events: auto;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.12);
+}
+
+.viewToggleSlide {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: calc(50% - 3px);
+  height: calc(100% - 6px);
+  background: #F1F5FB;
+  border-radius: 8px;
+  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.viewToggleBtn {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #888;
+  cursor: pointer;
+  transition: color 0.18s ease;
+  white-space: nowrap;
+  font-family: inherit;
+  min-width: 72px;
+  justify-content: center;
+}
+
+.viewToggleBtn:hover { color: #333; }
+.viewToggleBtnActive { color: #111; font-weight: 600; }
+
+/* ─── Row 2: Exchange / Rental / Want More ───────────────────── */
+.typeTrack {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  pointer-events: auto;
+  max-width: 100%;
+}
+
+.typeTrack::-webkit-scrollbar { display: none; }
+
+.typeBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: none;
+  background: #fff;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #666;
+  cursor: pointer;
+  transition: background 120ms, color 120ms, box-shadow 120ms;
+  font-family: inherit;
+  white-space: nowrap;
+  flex-shrink: 0;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.12);
+}
+
+.typeBtn:hover:not(.typeBtnDisabled) {
+  box-shadow: 0 3px 14px rgba(15, 23, 42, 0.18);
+}
+
+.typeBtnActive {
+  background: #1A56DB;
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 3px 14px rgba(26, 86, 219, 0.4);
+}
+
+.typeBtnDisabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  pointer-events: none;
+  background: #fff;
+  color: #aaa;
+}
+
+.typeSoonPill {
+  font-size: 9.5px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: #faeeda;
+  color: #854f0b;
+  line-height: 1.4;
+}
+
+/* ─── Shared pill (desktop category bar) ─────────────────────── */
 .pill {
   display: flex;
   align-items: center;
   gap: 6px;
   flex-shrink: 0;
-  padding: 6px 14px;
+  padding: 7px 15px;
   border-radius: var(--radius-full, 9999px);
-  border: 1px solid var(--color-border, #E2E8F0);
+  border: none;
   background: var(--color-white, #fff);
   color: var(--color-text-body, #475569);
   font-family: var(--font-body, 'DM Sans', sans-serif);
@@ -15,48 +144,47 @@
   cursor: pointer;
   transition: all 0.18s ease;
   white-space: nowrap;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.12);
 }
 
 .pill:hover {
-  border-color: var(--color-primary, #1A56DB);
   color: var(--color-primary, #1A56DB);
-  background: var(--color-primary-light, #EBF2FF);
 }
 
 .pillActive {
   background: var(--color-primary, #1A56DB);
-  border-color: var(--color-primary, #1A56DB);
   color: #fff;
   font-weight: 600;
+  box-shadow: 0 3px 14px rgba(26, 86, 219, 0.4);
 }
 
 .pillActive:hover {
   background: var(--color-primary-dark, #1447C0);
-  border-color: var(--color-primary-dark, #1447C0);
   color: #fff;
 }
 
-/* ─── Mobile trigger pill (like the map page "Books" filter) ──── */
+/* ─── Mobile trigger pill ─────────────────────────────────────── */
 .mobileTriggerBar {
   display: flex;
-  justify-content: flex-end;
-  padding: 10px 16px;
+  justify-content: flex-start;
+  pointer-events: none;
 }
 
 .filterTrigger {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 7px 14px;
+  padding: 8px 16px;
   border-radius: var(--radius-full, 9999px);
-  border: 1px solid var(--color-border, #E2E8F0);
+  border: none;
   background: var(--color-white, #fff);
   color: var(--color-primary, #1A56DB);
   font-family: var(--font-body, 'DM Sans', sans-serif);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.12);
+  pointer-events: auto;
 }
 
 .triggerDot {
@@ -69,15 +197,13 @@
 /* ─── Desktop bar (hidden on mobile) ─────────────────────────── */
 .desktopBar {
   display: none;
+  pointer-events: auto;
 }
 
 .scrollRow {
-  max-width: var(--container-max, 1200px);
-  margin: 0 auto;
   display: flex;
   gap: 8px;
   overflow-x: auto;
-  padding: 10px 0;
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -86,17 +212,7 @@
 
 @media (min-width: 769px) {
   .mobileTriggerBar { display: none; }
-  .desktopBar {
-    display: block;
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    background: rgba(255, 255, 255, 0.92);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--color-border, #E2E8F0);
-    padding: 0 24px;
-  }
+  .desktopBar { display: block; }
 }
 
 /* ─── Mobile bottom drawer (top 9 categories) ────────────────── */
@@ -278,5 +394,14 @@
 }
 
 @media (max-width: 480px) {
-  .mobileTriggerBar { padding: 10px 12px; }
+  .mobileTriggerBar { padding: 0; }
+
+  .filterRowTop {
+    justify-content: flex-start;
+  }
+
+  .typeBtn {
+    padding: 7px 14px;
+    font-size: 0.78rem;
+  }
 }
