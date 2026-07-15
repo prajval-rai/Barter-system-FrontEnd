@@ -56,7 +56,7 @@ export default function CategoryFilter({
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [showAllModal, setShowAllModal] = useState(false);
 
-  const listingType: ListingType = "exchange"; // only functional type for now
+  const listingType: ListingType = "exchange";
 
   const quickCategories = categories.slice(0, QUICK_LIMIT);
   const hasMore = categories.length > quickCategories.length;
