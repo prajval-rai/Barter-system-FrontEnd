@@ -6,6 +6,7 @@ import { useState, useEffect, useRef } from "react";
 import styles from "./Appshell.module.css";
 import { useAuth } from "@/context/AuthContext";
 import Image from "next/image";
+import WhatsAppFloatButton from "@/components/WhatsAppFloatButton/WhatsAppFloatButton";
 
 function Icon({ paths, size = 20 }: { paths: string[]; size?: number }) {
   return (
@@ -301,9 +302,27 @@ function MobileTopBar() {
 function MobileBottomNav() {
   const pathname = usePathname();
   const bottomItems = NAV_ITEMS.filter((i) => i.showInBottom);
+  const navRef = useRef<HTMLElement>(null);
+
+  /* Measure the actual rendered height of this bar and expose it as a
+     CSS variable so floating elements (like WhatsAppFloatButton) can
+     position themselves relative to it instead of using a guessed offset. */
+  useEffect(() => {
+    const setNavHeight = () => {
+      if (navRef.current) {
+        document.documentElement.style.setProperty(
+          "--bottom-nav-height",
+          `${navRef.current.offsetHeight}px`
+        );
+      }
+    };
+    setNavHeight();
+    window.addEventListener("resize", setNavHeight);
+    return () => window.removeEventListener("resize", setNavHeight);
+  }, []);
 
   return (
-    <nav className={styles.mobileBottomNav} aria-label="Bottom navigation">
+    <nav ref={navRef} className={styles.mobileBottomNav} aria-label="Bottom navigation">
       {bottomItems.map((item) => {
         if (item.comingSoon) {
           return (
@@ -352,6 +371,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         <main className={styles.mobileContent}>{children}</main>
         <MobileBottomNav />
       </div>
+
+      {/* Rendered once, outside both shells, so it's not duplicated.
+          Positioning (desktop bottom-right vs mobile above bottom nav)
+          is handled entirely in WhatsAppFloatButton's own CSS. */}
+      <WhatsAppFloatButton />
     </>
   );
 }
