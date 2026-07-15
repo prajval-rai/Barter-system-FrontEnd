@@ -64,6 +64,15 @@ export default function MarketplaceMap({ categories, selectedCategory, onSelectC
   const [activeProduct,     setActiveProduct    ] = useState<Product | null>(null);
   const [locating,          setLocating         ] = useState(false);
   const [locationError,     setLocationError    ] = useState<string | null>(null);
+  const [isFilterOpen,      setIsFilterOpen     ] = useState(false);
+
+  const activeCategoryName =
+    categories.find((c) => c.id === selectedCategory)?.name ?? "All Categories";
+
+  const handleSelectCategory = (id: number | null) => {
+    onSelectCategory(id);
+    setIsFilterOpen(false);
+  };
 
   // ── Build a single pin marker ─────────────────────────────────────────────
 
@@ -448,6 +457,56 @@ export default function MarketplaceMap({ categories, selectedCategory, onSelectC
             {loading ? "Loading…" : `${validOnMapCount} on map`}
           </span>
         </div>
+
+        {/* Floating filter button — native to the map, single source of truth */}
+        <button
+          className={styles.filterBtn}
+          onClick={() => setIsFilterOpen(true)}
+          aria-haspopup="dialog"
+          aria-expanded={isFilterOpen}
+        >
+          {selectedCategory !== null && <span className={styles.filterDot} />}
+          <span className={styles.filterBtnText}>{activeCategoryName}</span>
+        </button>
+
+        {/* Category drawer */}
+        {isFilterOpen && (
+          <>
+            <div className={styles.drawerBackdrop} onClick={() => setIsFilterOpen(false)} />
+            <div className={styles.drawer} role="dialog" aria-modal="true" aria-label="Filter by category">
+              <div className={styles.drawerHandle} />
+              <div className={styles.drawerHeader}>
+                <h3 className={styles.drawerTitle}>Filter by category</h3>
+                <button
+                  className={styles.drawerClose}
+                  onClick={() => setIsFilterOpen(false)}
+                  aria-label="Close"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className={styles.drawerList}>
+                <button
+                  className={`${styles.drawerItem} ${selectedCategory === null ? styles.drawerItemActive : ""}`}
+                  onClick={() => handleSelectCategory(null)}
+                >
+                  <span>All Categories</span>
+                  {selectedCategory === null && <span className={styles.drawerCheck}>✓</span>}
+                </button>
+                {categories.map((cat) => (
+                  <button
+                    key={cat.id}
+                    className={`${styles.drawerItem} ${selectedCategory === cat.id ? styles.drawerItemActive : ""}`}
+                    onClick={() => handleSelectCategory(cat.id)}
+                  >
+                    <span>{cat.name}</span>
+                    {selectedCategory === cat.id && <span className={styles.drawerCheck}>✓</span>}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
 
         {/* Locate Me button */}
         <button
