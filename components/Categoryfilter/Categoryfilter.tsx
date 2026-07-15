@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import styles from "./Categoryfilter.module.css";
-import { Category } from "../../app/marketplace/page";
+import { Category } from "@/app/marketplace/page";
 import {
   LayoutGrid,
   Shirt,
