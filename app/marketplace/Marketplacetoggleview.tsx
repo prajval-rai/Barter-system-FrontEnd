@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import styles from "./Marketplacetoggleview.module.css";
 import MarketplaceClient from "./Marketplaceclient";
 import MarketplaceMap from "./Marketplacemap";
-import CategoryFilter from "./CategoryFilter";
+import CategoryFilter from "@/components/Categoryfilter/Categoryfilter"
 import { toSlug } from "./slug";
 import { Product, Category } from "./page";
 
