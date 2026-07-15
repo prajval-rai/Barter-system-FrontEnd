@@ -41,9 +41,9 @@ export default function MarketplaceToggleView({
   const view: View = (searchParams.get("view") as View) ?? initialView;
   const selectedCategory = initialCategory;
 
-  // Only "exchange" is functional right now; others are disabled, so this
-  // is effectively locked, but kept as state-driven for when rental/want
-  // are wired up later.
+  // Only "exchange" is functional right now; others are disabled.
+  // Kept as a plain constant for now — swap to real state once
+  // rental/want are wired up.
   const listingType: ListingType = "exchange";
 
   const setView = useCallback(
@@ -68,8 +68,8 @@ export default function MarketplaceToggleView({
 
   return (
     <div className={styles.wrapper}>
-      {/* Listing type filter — Exchange / Rental / Want More */}
-      <div className={styles.typeBar}>
+      <div className={styles.filterRow}>
+        {/* Listing type filter — Exchange / Rental / Want More */}
         <div className={styles.typeTrack}>
           {LISTING_TYPES.map((t) =>
             t.comingSoon ? (
@@ -92,9 +92,8 @@ export default function MarketplaceToggleView({
             )
           )}
         </div>
-      </div>
 
-      <div className={styles.toggleBar}>
+        {/* Grid / Map toggle */}
         <div className={styles.toggleTrack}>
           <span
             className={styles.pill}
