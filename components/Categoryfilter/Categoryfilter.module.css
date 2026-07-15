@@ -1,4 +1,4 @@
-/* ─── Floating filter stack wrapper ──────────────────────────── */
+/* ─── Floating filter stack wrapper (Map view: floats over content) ─────── */
 .floatingFilters {
   position: absolute;
   top: 14px;
@@ -9,6 +9,22 @@
   flex-direction: column;
   gap: 10px;
   pointer-events: none;
+}
+
+/* Grid view: normal document flow instead of overlay — pushes content
+   down rather than floating on top of the cards */
+.staticFilters {
+  position: static !important;
+  padding: 14px 16px;
+  background: #F1F5FB;
+  pointer-events: auto;
+}
+
+.staticFilters .filterRowTop,
+.staticFilters .typeTrack,
+.staticFilters .mobileTriggerBar,
+.staticFilters .desktopBar {
+  pointer-events: auto;
 }
 
 .filterRowTop {
@@ -394,8 +410,6 @@
 }
 
 @media (max-width: 480px) {
-  .mobileTriggerBar { padding: 0; }
-
   .filterRowTop {
     justify-content: flex-start;
   }
