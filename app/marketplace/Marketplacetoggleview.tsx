@@ -37,13 +37,8 @@ export default function MarketplaceToggleView({
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // view stays a lightweight query param — it's a display toggle, not a distinct page
   const view: View = (searchParams.get("view") as View) ?? initialView;
   const selectedCategory = initialCategory;
-
-  // Only "exchange" is functional right now; others are disabled.
-  // Kept as a plain constant for now — swap to real state once
-  // rental/want are wired up.
   const listingType: ListingType = "exchange";
 
   const setView = useCallback(
@@ -68,8 +63,10 @@ export default function MarketplaceToggleView({
 
   return (
     <div className={styles.wrapper}>
-      <div className={styles.filterRow}>
-        {/* Listing type filter — Exchange / Rental / Want More */}
+      {/* Floating filter chips — overlay on top of the map/grid, not a
+          docked toolbar. Wrapper has pointer-events:none so gaps between
+          chips let map drag/pan through; each chip group re-enables it. */}
+      <div className={styles.floatingFilters}>
         <div className={styles.typeTrack}>
           {LISTING_TYPES.map((t) =>
             t.comingSoon ? (
@@ -93,7 +90,6 @@ export default function MarketplaceToggleView({
           )}
         </div>
 
-        {/* Grid / Map toggle */}
         <div className={styles.toggleTrack}>
           <span
             className={styles.pill}
@@ -118,6 +114,7 @@ export default function MarketplaceToggleView({
         </div>
       </div>
 
+      {/* Full-bleed content — fills the whole area behind the floating chips */}
       <div className={styles.viewWrap}>
         <div className={view === "grid" ? styles.viewVisible : styles.viewHidden}>
           <MarketplaceClient
