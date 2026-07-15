@@ -31,21 +31,16 @@ export default function DashboardHero() {
         setLoading(true);
         setError(null);
 
-        const res = await fetch("/api/dashboard-stats", {
-          method: "GET",
-          credentials: "include",
-        });
+        const res = await fetch("/api/dashboard-stats");
+        const data = await res.json().catch(() => ({}));
 
         if (!res.ok) {
-          if (res.status === 401) {
-            setLoading(false);
-            return;
-          }
-          throw new Error("Failed to fetch dashboard stats");
+          setError("Could not load dashboard stats");
+          setLoading(false);
+          return;
         }
 
-        const data: DashboardStats = await res.json();
-        setStats(data);
+        setStats(data as DashboardStats);
       } catch (err) {
         console.error(err);
         setError("Could not load dashboard stats");
@@ -97,7 +92,6 @@ export default function DashboardHero() {
 
   return (
     <section className={styles.hero}>
-      {/* Greeting */}
       <div className={styles.greeting}>
         <p className={styles.greetingSub}>
           {getGreeting()}, {firstName} 👋
@@ -108,7 +102,6 @@ export default function DashboardHero() {
 
       {error && <p className={styles.errorText}>{error}</p>}
 
-      {/* Stat cards */}
       <div className={styles.statsRow}>
         {STATS.map((s) => (
           <Link
