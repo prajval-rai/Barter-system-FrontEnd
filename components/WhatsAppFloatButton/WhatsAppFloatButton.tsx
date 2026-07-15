@@ -30,7 +30,7 @@ export default function WhatsAppFloatButton() {
     <>
       <div className="wa-float-wrapper">
         {showTooltip && (
-          
+          <a
             href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
