@@ -115,3 +115,62 @@
   from { opacity: 0; transform: translateY(4px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
+/* ── Listing Type Filter Bar (Exchange / Rental / Want More) ──────────────── */
+.typeBar {
+  display: flex;
+  padding: 14px 20px 0;
+  background: #fff;
+  flex-shrink: 0;
+}
+
+.typeTrack {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.typeBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border: 1.5px solid #ECECEC;
+  background: #fff;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #666;
+  cursor: pointer;
+  transition: background 120ms, color 120ms, border-color 120ms;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.typeBtn:hover:not(.typeBtnDisabled) {
+  border-color: #1A56DB;
+  color: #1A56DB;
+}
+
+.typeBtnActive {
+  background: #1A56DB;
+  border-color: #1A56DB;
+  color: #fff;
+  font-weight: 600;
+}
+
+.typeBtnDisabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.typeSoonPill {
+  font-size: 9.5px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: #faeeda;
+  color: #854f0b;
+  line-height: 1.4;
+}
