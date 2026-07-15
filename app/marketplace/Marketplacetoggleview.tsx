@@ -21,11 +21,6 @@ interface Props {
 type View = "grid" | "map";
 type ListingType = ""
 
-const LISTING_TYPES: { id: ListingType; label: string; comingSoon: boolean }[] = [
-  { id: "exchange", label: "Exchange", comingSoon: false },
-  { id: "rental", label: "Rental", comingSoon: true },
-  { id: "want", label: "Want More", comingSoon: true },
-];
 
 export default function MarketplaceToggleView({
   initialProducts,
