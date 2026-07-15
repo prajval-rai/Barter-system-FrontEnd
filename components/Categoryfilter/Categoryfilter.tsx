@@ -108,7 +108,7 @@ export default function CategoryFilter({
 
   return (
     <>
-      <div className={styles.floatingFilters}>
+      <div className={`${styles.floatingFilters} ${view === "grid" ? styles.staticFilters : ""}`}>
         {/* Row 1: Grid / Map toggle */}
         <div className={styles.filterRowTop}>
           <div className={styles.viewToggleTrack}>
