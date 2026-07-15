@@ -9,19 +9,21 @@
 }
 
 .viewWrap {
-  position: absolute;
-  inset: 0;
+  position: relative;
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
 }
 
+/* Grid view: normal scrollable flow, sits below the static filter bar */
 .viewVisible {
-  position: absolute;
-  inset: 0;
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
   animation: fadeIn 0.2s ease;
-  overflow: hidden;
 }
 
 .viewHidden { display: none; }
