@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import styles from "./Marketplace.module.css";
 import ProductCard from "./Productcard";
-import CategoryFilter from "../../components/Categoryfilter/Categoryfilter";
 import { Product, Category } from "./page";
 
 interface Props {
@@ -40,7 +39,6 @@ export default function MarketplaceClient({
       setError(null);
       try {
         let url = `/api/marketplace?page=${pageNum}&page_size=12&sort=newest`;
-        // fixed: category id 0 is a valid id, don't treat it as falsy
         if (categoryId !== null && categoryId !== undefined) {
           url += `&category=${categoryId}`;
         }
@@ -69,8 +67,6 @@ export default function MarketplaceClient({
     []
   );
 
-  // Category changed via URL → refetch, unless it's the same category
-  // the server already fetched for us on initial load
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
@@ -81,7 +77,6 @@ export default function MarketplaceClient({
     fetchProducts(1, selectedCategory, true);
   }, [selectedCategory, fetchProducts]);
 
-  // Infinite scroll observer
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -97,16 +92,9 @@ export default function MarketplaceClient({
       if (el) observer.unobserve(el);
     };
   }, [hasNext, loading, page, selectedCategory, fetchProducts]);
-    console.log("MarketplaceClient RENDER:", { products, loading, error })
 
   return (
     <main className={styles.page}>
-      <CategoryFilter
-        categories={categories}
-        selectedCategory={selectedCategory}
-        onSelectCategory={onSelectCategory}
-      />
-
       {error && (
         <div className={styles.errorBanner}>
           <span>{error}</span>
@@ -124,8 +112,6 @@ export default function MarketplaceClient({
           </div>
         ) : (
           products.map((product) => {
-            // Defensive guard: skip malformed entries instead of letting
-            // one bad record throw and blank the whole grid.
             if (!product || product.id == null) return null;
             return <ProductCard key={product.id} product={product} />;
           })
