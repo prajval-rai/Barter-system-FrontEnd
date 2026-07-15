@@ -303,22 +303,28 @@ function MobileBottomNav() {
   const pathname = usePathname();
   const bottomItems = NAV_ITEMS.filter((i) => i.showInBottom);
   const navRef = useRef<HTMLElement>(null);
+  const fabRef = useRef<HTMLAnchorElement>(null);
 
-  /* Measure the actual rendered height of this bar and expose it as a
-     CSS variable so floating elements (like WhatsAppFloatButton) can
-     position themselves relative to it instead of using a guessed offset. */
   useEffect(() => {
-    const setNavHeight = () => {
+    const setPositions = () => {
       if (navRef.current) {
         document.documentElement.style.setProperty(
           "--bottom-nav-height",
           `${navRef.current.offsetHeight}px`
         );
       }
+      if (fabRef.current) {
+        const rect = fabRef.current.getBoundingClientRect();
+        // distance from the right edge of the viewport to the FAB's right edge
+        const rightOffset = window.innerWidth - rect.right;
+        document.documentElement.style.setProperty("--fab-right", `${rightOffset}px`);
+        document.documentElement.style.setProperty("--fab-width", `${rect.width}px`);
+      }
     };
-    setNavHeight();
-    window.addEventListener("resize", setNavHeight);
-    return () => window.removeEventListener("resize", setNavHeight);
+
+    setPositions();
+    window.addEventListener("resize", setPositions);
+    return () => window.removeEventListener("resize", setPositions);
   }, []);
 
   return (
@@ -348,7 +354,7 @@ function MobileBottomNav() {
         );
       })}
 
-      <Link href="/add" className={styles.mobileFab} aria-label="Add New Item">
+      <Link ref={fabRef} href="/add" className={styles.mobileFab} aria-label="Add New Item">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
           <path d="M12 5v14M5 12h14" />
         </svg>
@@ -356,7 +362,6 @@ function MobileBottomNav() {
     </nav>
   );
 }
-
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
 
