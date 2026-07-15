@@ -113,12 +113,19 @@ export default function MarketplaceToggleView({
         </div>
       </div>
 
-      {/* Row 2: Category filter — own component, own styling */}
-      <CategoryFilter
-        categories={categories}
-        selectedCategory={selectedCategory}
-        onSelectCategory={setSelectedCategory}
-      />
+      {/*
+        Row 2: Category filter bar — grid view only.
+        Map view has its own native "Filter" pill + drawer built into
+        MarketplaceMap, so we don't render this on top of it (that was
+        the cause of the duplicate/low-z-index filter UI on the map).
+      */}
+      {view === "grid" && (
+        <CategoryFilter
+          categories={categories}
+          selectedCategory={selectedCategory}
+          onSelectCategory={setSelectedCategory}
+        />
+      )}
 
       <div className={styles.viewWrap}>
         <div className={view === "grid" ? styles.viewVisible : styles.viewHidden}>
