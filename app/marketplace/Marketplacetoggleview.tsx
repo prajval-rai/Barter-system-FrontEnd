@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import styles from "./Marketplacetoggleview.module.css";
 import MarketplaceClient from "./Marketplaceclient";
 import MarketplaceMap from "./Marketplacemap";
-import CategoryFilter from "@/components/Categoryfilter/Categoryfilter"
+import CategoryFilter from "@/components/Categoryfilter/Categoryfilter";
 import { toSlug } from "./slug";
 import { Product, Category } from "./page";
 
@@ -56,9 +56,6 @@ export default function MarketplaceToggleView({
 
   return (
     <div className={styles.wrapper}>
-      {/* CategoryFilter owns the ENTIRE floating filter stack:
-          Grid/Map toggle → Exchange/Rental/Want More → category pills.
-          This component just passes state down. */}
       <CategoryFilter
         categories={categories}
         selectedCategory={selectedCategory}
