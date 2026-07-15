@@ -19,7 +19,6 @@ interface Props {
 }
 
 type View = "grid" | "map";
-type ListingType = ""
 
 
 export default function MarketplaceToggleView({
@@ -35,7 +34,6 @@ export default function MarketplaceToggleView({
 
   const view: View = (searchParams.get("view") as View) ?? initialView;
   const selectedCategory = initialCategory;
-  const listingType: ListingType = "exchange";
 
   const setView = useCallback(
     (v: View) => {
