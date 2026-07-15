@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import styles from "./Marketplacetoggleview.module.css";
 import MarketplaceClient from "./Marketplaceclient";
 import MarketplaceMap from "./Marketplacemap";
+import CategoryFilter from "../CategoryFilter/CategoryFilter"; // adjust path to match your actual folder
 import { toSlug } from "./slug";
 import { Product, Category } from "./page";
 
@@ -63,58 +64,68 @@ export default function MarketplaceToggleView({
 
   return (
     <div className={styles.wrapper}>
-      {/* Floating filter chips — overlay on top of the map/grid, not a
-          docked toolbar. Wrapper has pointer-events:none so gaps between
-          chips let map drag/pan through; each chip group re-enables it. */}
+      {/* Floating filters — overlay on top of the map/grid */}
       <div className={styles.floatingFilters}>
-        <div className={styles.typeTrack}>
-          {LISTING_TYPES.map((t) =>
-            t.comingSoon ? (
-              <div
-                key={t.id}
-                className={`${styles.typeBtn} ${styles.typeBtnDisabled}`}
-                title={`${t.label} — Coming soon`}
-              >
-                <span>{t.label}</span>
-                <span className={styles.typeSoonPill}>Soon</span>
-              </div>
-            ) : (
-              <button
-                key={t.id}
-                className={`${styles.typeBtn} ${listingType === t.id ? styles.typeBtnActive : ""}`}
-                aria-pressed={listingType === t.id}
-              >
-                <span>{t.label}</span>
-              </button>
-            )
-          )}
+        {/* Row 1: listing type + grid/map toggle */}
+        <div className={styles.filterRowTop}>
+          <div className={styles.typeTrack}>
+            {LISTING_TYPES.map((t) =>
+              t.comingSoon ? (
+                <div
+                  key={t.id}
+                  className={`${styles.typeBtn} ${styles.typeBtnDisabled}`}
+                  title={`${t.label} — Coming soon`}
+                >
+                  <span>{t.label}</span>
+                  <span className={styles.typeSoonPill}>Soon</span>
+                </div>
+              ) : (
+                <button
+                  key={t.id}
+                  className={`${styles.typeBtn} ${listingType === t.id ? styles.typeBtnActive : ""}`}
+                  aria-pressed={listingType === t.id}
+                >
+                  <span>{t.label}</span>
+                </button>
+              )
+            )}
+          </div>
+
+          <div className={styles.toggleTrack}>
+            <span
+              className={styles.pill}
+              style={{ transform: view === "map" ? "translateX(100%)" : "translateX(0)" }}
+            />
+            <button
+              className={`${styles.toggleBtn} ${view === "grid" ? styles.toggleBtnActive : ""}`}
+              onClick={() => setView("grid")}
+              aria-pressed={view === "grid"}
+            >
+              <GridIcon />
+              <span>Grid</span>
+            </button>
+            <button
+              className={`${styles.toggleBtn} ${view === "map" ? styles.toggleBtnActive : ""}`}
+              onClick={() => setView("map")}
+              aria-pressed={view === "map"}
+            >
+              <MapIcon />
+              <span>Map</span>
+            </button>
+          </div>
         </div>
 
-        <div className={styles.toggleTrack}>
-          <span
-            className={styles.pill}
-            style={{ transform: view === "map" ? "translateX(100%)" : "translateX(0)" }}
+        {/* Row 2: category filter — single shared instance for both grid + map */}
+        <div className={styles.filterRowCategory}>
+          <CategoryFilter
+            categories={categories}
+            selectedCategory={selectedCategory}
+            onSelectCategory={setSelectedCategory}
           />
-          <button
-            className={`${styles.toggleBtn} ${view === "grid" ? styles.toggleBtnActive : ""}`}
-            onClick={() => setView("grid")}
-            aria-pressed={view === "grid"}
-          >
-            <GridIcon />
-            <span>Grid</span>
-          </button>
-          <button
-            className={`${styles.toggleBtn} ${view === "map" ? styles.toggleBtnActive : ""}`}
-            onClick={() => setView("map")}
-            aria-pressed={view === "map"}
-          >
-            <MapIcon />
-            <span>Map</span>
-          </button>
         </div>
       </div>
 
-      {/* Full-bleed content — fills the whole area behind the floating chips */}
+      {/* Full-bleed content */}
       <div className={styles.viewWrap}>
         <div className={view === "grid" ? styles.viewVisible : styles.viewHidden}>
           <MarketplaceClient
