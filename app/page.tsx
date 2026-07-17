@@ -14,8 +14,8 @@ export default function Home() {
       <Navbar />
       <main>
         <Hero />
-        <WhyBuilt />
         <HowItWorks />
+        <WhyBuilt />
         <WhyExchange />
         <FAQ />
         <Stats />
