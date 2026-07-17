@@ -58,8 +58,8 @@ const YEARS: number[] = Array.from({ length: CURRENT_YEAR - 1990 + 1 }, (_, i) =
 const STEP_QUESTIONS: Record<Step, string> = {
   intent:          "Hi! 👋 What would you like to do today?",
   category:        "Great, let's list your item for exchange! 😊 First, choose the category.",
-  title:           "Great! 😊 What's the name of your item? For example: Phone (Company name model name) or Camera (Company name model name)",
-  description:     "Tell us a little about your item 📝 Add some details so others can know more about it. 😊",
+  title:           "Great! 😊 What's the name of your item? Brand Name?/Model?/",
+  description:     "Tell us a little about your item 📝 Add Specification and Features. 😊",
   condition:       "How is the condition of your item? Please choose the best option.",
   purchase_year:   "When did you buy it? 📅 Select the purchase year, or tap Skip if you don't remember.",
   images:          "Please upload some photos 📸. Clear photos help you get better offers. You can add up to 5 photos.",
