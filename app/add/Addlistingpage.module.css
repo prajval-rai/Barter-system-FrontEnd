@@ -291,6 +291,17 @@
 
 .userBubble .bubbleText { color: #fff; }
 
+/* ── Inline highlight chip (used via ==text== syntax in bot messages) ── */
+.highlightText {
+  font-weight: 700;
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+  padding: 1px 6px;
+  border-radius: 6px;
+  white-space: nowrap;
+  display: inline-block;
+}
+
 /* ─── Error bubble emoji + text ───────────────────────────────────────────── */
 .errorEmoji {
   display: block;
@@ -430,6 +441,7 @@
   gap: 10px;
   padding-left: 34px;
   padding-bottom: 4px;
+  align-items: flex-start;   /* prevents children (select, buttons) from stretching full width */
   animation: fadeIn 0.3s ease both;
 }
 
@@ -542,6 +554,9 @@
   border-radius: 14px;
   padding: 12px;
   box-shadow: var(--shadow-sm);
+  width: 100%;
+  max-width: 320px;   /* keeps the add-item form from stretching full page width */
+  box-sizing: border-box;
 }
 
 .replaceInput {
@@ -577,6 +592,13 @@
               box-shadow var(--duration-fast) var(--ease-smooth);
 }
 .replaceSelect:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(26, 86, 219, 0.1); }
+
+/* ── Narrow variant used for the purchase-year picker (not full width) ── */
+.yearSelect {
+  width: auto;
+  min-width: 160px;
+  max-width: 220px;
+}
 
 .addBtn {
   padding: 9px 0;
@@ -732,7 +754,7 @@
   scrollbar-width: none;          /* Firefox */
 }
 .summaryImgStrip::-webkit-scrollbar { display: none; } /* Chrome/Safari */
- 
+
 /* Each thumbnail in the confirm strip */
 .summaryThumb {
   width: 72px;
