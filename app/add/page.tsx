@@ -55,11 +55,12 @@ const CONDITIONS_EMOJI: Record<string, string> = {
 const CURRENT_YEAR = new Date().getFullYear();
 const YEARS: number[] = Array.from({ length: CURRENT_YEAR - 1990 + 1 }, (_, i) => CURRENT_YEAR - i);
 
+// ── NOTE: wrap text in ==...== to render it as a bold highlighted chip ──
 const STEP_QUESTIONS: Record<Step, string> = {
   intent:          "Hi! 👋 What would you like to do today?",
   category:        "Great, let's list your item for exchange! 😊 First, choose the category.",
-  title:           "Great! 😊 What's the name of your item? Brand Name?/Model?/",
-  description:     "Tell us a little about your item 📝 Add Specification and Features. 😊",
+  title:           "Great! 😊 What's the name of your item? ==Brand Name?/Model?/==",
+  description:     "Tell us a little about your item 📝 ==Add Specification and Features==. 😊",
   condition:       "How is the condition of your item? Please choose the best option.",
   purchase_year:   "When did you buy it? 📅 Select the purchase year, or tap Skip if you don't remember.",
   images:          "Please upload some photos 📸. Clear photos help you get better offers. You can add up to 5 photos.",
@@ -612,6 +613,8 @@ export default function AddListingPage() {
                         className={styles.bubbleText}
                         dangerouslySetInnerHTML={{
                           __html: msg.text
+                            // ── ==text== renders as a bold highlighted chip ──
+                            .replace(/==(.*?)==/g, `<span class="${styles.highlightText}">$1</span>`)
                             .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
                             .replace(/_(.*?)_/g, "<em>$1</em>")
                             .replace(/\n/g, "<br/>"),
@@ -684,7 +687,7 @@ export default function AddListingPage() {
             {step === "purchase_year" && stepReady && (
               <div className={styles.actionsArea}>
                 <select
-                  className={styles.replaceSelect}
+                  className={`${styles.replaceSelect} ${styles.yearSelect}`}
                   defaultValue=""
                   onChange={e => { if (e.target.value) handlePurchaseYear(e.target.value); }}
                 >
