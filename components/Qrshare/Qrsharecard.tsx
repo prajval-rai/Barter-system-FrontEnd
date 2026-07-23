@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { toPng } from "html-to-image";
-import { ScanLine, ArrowLeftRight, Link2 } from "lucide-react";
+import { Scan, ShieldCheck, Smartphone, Lock, Sparkles, ArrowLeftRight } from "lucide-react";
 import styles from "./Qrsharecard.module.css";
 
 interface QRShareCardProps {
@@ -11,6 +11,7 @@ interface QRShareCardProps {
   title: string;
   thumbnail?: string;
   price?: string | number;
+  description?: string;
   category?: string;
   onClose?: () => void;
 }
@@ -22,7 +23,7 @@ export default function QRShareCard({
   title,
   thumbnail,
   price,
-  category,
+  description,
   onClose,
 }: QRShareCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
@@ -36,6 +37,10 @@ export default function QRShareCard({
   const proxiedThumbnail = thumbnail
     ? `/api/image-proxy?url=${encodeURIComponent(thumbnail)}`
     : undefined;
+
+  const displayDescription =
+    description?.trim() ||
+    "Great quality, ready to swap. Check it out and connect instantly.";
 
   async function exportCardAsPng() {
     if (!cardRef.current) throw new Error("Card not ready");
@@ -121,24 +126,33 @@ export default function QRShareCard({
 
         {/* ---- Everything inside cardRef is exactly what gets exported as the shared image ---- */}
         <div ref={cardRef} className={styles.card}>
-          <div className={styles.cardTexture} aria-hidden="true" />
-
-          <div className={styles.cardHeader}>
-            <div className={styles.logo}>
-              <span className={styles.logoIconWrap}>
-                <ArrowLeftRight size={16} strokeWidth={2.5} />
-              </span>
-              <span className={styles.logoText}>
-                Len<span className={styles.logoAccent}>Den</span>
-              </span>
+          {/* Header */}
+          <div className={styles.headerRow}>
+            <div>
+              <div className={styles.logo}>
+                <span className={styles.logoIconWrap}>
+                  <ArrowLeftRight size={18} strokeWidth={2.5} />
+                </span>
+                <span className={styles.logoText}>
+                  Len<span className={styles.logoAccent}>Den</span>
+                </span>
+              </div>
+              <p className={styles.tagline}>Swap More. Save More.</p>
             </div>
-            <span className={styles.tag}>
-              <ScanLine size={12} strokeWidth={2.5} />
-              Scan to Swap
-            </span>
+
+            <div className={styles.headerRight}>
+              <span className={styles.scanPill}>
+                <Scan size={16} strokeWidth={2.5} />
+                Scan to Swap
+              </span>
+              <p className={styles.microTag}>
+                Easy. Quick. Secure. <ShieldCheck size={14} strokeWidth={2.5} />
+              </p>
+            </div>
           </div>
 
-          <div className={styles.body}>
+          {/* Product row */}
+          <div className={styles.productRow}>
             <div className={styles.thumbWrap}>
               {proxiedThumbnail && !thumbFailed ? (
                 <img
@@ -150,29 +164,34 @@ export default function QRShareCard({
               ) : (
                 <div className={styles.thumbFallback}>🖼️</div>
               )}
-              {category && <span className={styles.categoryChip}>{category}</span>}
             </div>
 
-            <div className={styles.info}>
+            <div className={styles.productInfo}>
               <h3 className={styles.productTitle}>{title}</h3>
-              {price !== undefined && price !== null && (
-                <p className={styles.price}>₹{price}</p>
-              )}
-              <p className={styles.cta}>Scan the code to view &amp; swap this item</p>
+              <p className={styles.productDesc}>{displayDescription}</p>
+              <div className={styles.badgeRow}>
+                <span className={styles.qualityBadge}>
+                  <ShieldCheck size={14} strokeWidth={2.5} />
+                  Quality Checked
+                </span>
+                {price !== undefined && price !== null && (
+                  <span className={styles.priceBadge}>₹{price}</span>
+                )}
+              </div>
             </div>
           </div>
 
-          <div className={styles.qrSection}>
+          {/* QR panel */}
+          <div className={styles.qrPanel}>
             <div className={styles.qrFrame}>
               <span className={`${styles.corner} ${styles.cornerTL}`} />
               <span className={`${styles.corner} ${styles.cornerTR}`} />
               <span className={`${styles.corner} ${styles.cornerBL}`} />
               <span className={`${styles.corner} ${styles.cornerBR}`} />
-              <div className={styles.qrGlow} aria-hidden="true" />
               <div className={styles.qrWrap}>
                 <QRCodeSVG
                   value={productUrl}
-                  size={128}
+                  size={168}
                   bgColor="#ffffff"
                   fgColor="#0c1b35"
                   level="M"
@@ -180,16 +199,59 @@ export default function QRShareCard({
               </div>
             </div>
 
-            <div className={styles.qrDivider} aria-hidden="true" />
+            <div className={styles.qrRight}>
+              <div className={styles.qrRightHeader}>
+                <span className={styles.phoneIconWrap}>
+                  <Smartphone size={20} strokeWidth={2.5} />
+                </span>
+                <p className={styles.qrHeadline}>
+                  Point your camera here to <span className={styles.swapWord}>swap!</span>
+                </p>
+              </div>
 
-            <p className={styles.url}>
-              <Link2 size={12} strokeWidth={2.5} />
-              {productUrl.replace("https://", "")}
-            </p>
+              <div className={styles.stepsDivider} />
+
+              <ol className={styles.stepsList}>
+                <li className={styles.step}>
+                  <span className={styles.stepNumber}>1</span>
+                  <div>
+                    <p className={styles.stepTitle}>Scan the QR code</p>
+                    <p className={styles.stepDesc}>Open your camera and scan this code.</p>
+                  </div>
+                </li>
+                <li className={styles.step}>
+                  <span className={styles.stepNumber}>2</span>
+                  <div>
+                    <p className={styles.stepTitle}>Open LenDen</p>
+                    <p className={styles.stepDesc}>You&apos;ll be redirected to the product page.</p>
+                  </div>
+                </li>
+                <li className={styles.step}>
+                  <span className={styles.stepNumber}>3</span>
+                  <div>
+                    <p className={styles.stepTitle}>Start Swapping</p>
+                    <p className={styles.stepDesc}>Connect, chat &amp; swap with ease.</p>
+                  </div>
+                </li>
+              </ol>
+            </div>
           </div>
 
-          <div className={styles.cardFooter}>
-            <span>Swap what you don&apos;t need for what you do.</span>
+          {/* Footer */}
+          <div className={styles.footerBar}>
+            <div className={styles.footerLeft}>
+              <span className={styles.lockIconWrap}>
+                <Lock size={16} strokeWidth={2.5} />
+              </span>
+              <div>
+                <p className={styles.footerTitle}>Safe &amp; Secure Swaps</p>
+                <p className={styles.footerSub}>Your privacy and safety are our priority.</p>
+              </div>
+            </div>
+            <p className={styles.footerRight}>
+              <Sparkles size={14} strokeWidth={2.5} />
+              Happy Swapping!
+            </p>
           </div>
         </div>
         {/* ---- end exported card ---- */}
