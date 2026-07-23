@@ -6,6 +6,7 @@ import { useState, useEffect, useRef } from "react";
 import styles from "./Appshell.module.css";
 import { useAuth } from "@/context/AuthContext";
 import Image from "next/image";
+import LenDenLogo from "@/components/logo";
 import WhatsAppFloatButton from "@/components/WhatsAppFloatButton/WhatsAppFloatButton";
 
 function Icon({ paths, size = 20 }: { paths: string[]; size?: number }) {
@@ -63,18 +64,7 @@ function Sidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => 
     <aside className={`${styles.sidebar} ${collapsed ? styles.sidebarCollapsed : ""}`}>
       {/* Logo */}
       <div className={styles.logoRow}>
-        <Link href="/dashboard" className={styles.logoLink}>
-          {!collapsed && (
-            <Image
-              src="/logo.png"
-              alt="LenDen"
-              width={120}
-              height={32}
-              className={styles.logoImg}
-              priority
-            />
-          )}
-        </Link>
+      <LenDenLogo></LenDenLogo>
         <button className={styles.collapseBtn} onClick={onToggle} aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             {collapsed ? <path d="M9 18l6-6-6-6" /> : <path d="M15 18l-6-6 6-6" />}
