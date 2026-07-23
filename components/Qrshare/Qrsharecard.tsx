@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { toPng } from "html-to-image";
+import { ScanLine, ArrowLeftRight, Link2 } from "lucide-react";
 import styles from "./Qrsharecard.module.css";
 
 interface QRShareCardProps {
@@ -10,6 +11,7 @@ interface QRShareCardProps {
   title: string;
   thumbnail?: string;
   price?: string | number;
+  category?: string;
   onClose?: () => void;
 }
 
@@ -20,6 +22,7 @@ export default function QRShareCard({
   title,
   thumbnail,
   price,
+  category,
   onClose,
 }: QRShareCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
@@ -30,9 +33,6 @@ export default function QRShareCard({
 
   const productUrl = `${SITE_URL}/products/${productId}`;
 
-  // Routed through a same-origin proxy so the browser doesn't block it
-  // (no CORS headers on the original host) and so html-to-image can
-  // actually embed it into the exported PNG.
   const proxiedThumbnail = thumbnail
     ? `/api/image-proxy?url=${encodeURIComponent(thumbnail)}`
     : undefined;
@@ -84,11 +84,9 @@ export default function QRShareCard({
           text: `Check out "${title}" on LenDen — ${productUrl}`,
         });
       } else {
-        // Desktop / unsupported browsers: fall back to download
         await handleDownload();
       }
     } catch (err) {
-      // AbortError fires when the user just cancels the native share sheet
       if ((err as DOMException)?.name !== "AbortError") {
         console.error("Share failed", err);
         setError("Sharing isn't supported here — try Download instead.");
@@ -121,30 +119,23 @@ export default function QRShareCard({
           </button>
         )}
 
-        {/* ---- This block is exactly what gets exported as the shared image ---- */}
+        {/* ---- Everything inside cardRef is exactly what gets exported as the shared image ---- */}
         <div ref={cardRef} className={styles.card}>
+          <div className={styles.cardTexture} aria-hidden="true" />
+
           <div className={styles.cardHeader}>
             <div className={styles.logo}>
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M17 2l4 4-4 4" />
-                <path d="M3 11V9a4 4 0 0 1 4-4h14" />
-                <path d="M7 22l-4-4 4-4" />
-                <path d="M21 13v2a4 4 0 0 1-4 4H3" />
-              </svg>
+              <span className={styles.logoIconWrap}>
+                <ArrowLeftRight size={16} strokeWidth={2.5} />
+              </span>
               <span className={styles.logoText}>
                 Len<span className={styles.logoAccent}>Den</span>
               </span>
             </div>
-            <span className={styles.tag}>Scan to Swap</span>
+            <span className={styles.tag}>
+              <ScanLine size={12} strokeWidth={2.5} />
+              Scan to Swap
+            </span>
           </div>
 
           <div className={styles.body}>
@@ -159,6 +150,7 @@ export default function QRShareCard({
               ) : (
                 <div className={styles.thumbFallback}>🖼️</div>
               )}
+              {category && <span className={styles.categoryChip}>{category}</span>}
             </div>
 
             <div className={styles.info}>
@@ -166,23 +158,38 @@ export default function QRShareCard({
               {price !== undefined && price !== null && (
                 <p className={styles.price}>₹{price}</p>
               )}
+              <p className={styles.cta}>Scan the code to view &amp; swap this item</p>
             </div>
           </div>
 
-          <div className={styles.qrRow}>
-            <div className={styles.qrWrap}>
-              <QRCodeSVG
-                value={productUrl}
-                size={104}
-                bgColor="#ffffff"
-                fgColor="#0c1b35"
-                level="M"
-              />
+          <div className={styles.qrSection}>
+            <div className={styles.qrFrame}>
+              <span className={`${styles.corner} ${styles.cornerTL}`} />
+              <span className={`${styles.corner} ${styles.cornerTR}`} />
+              <span className={`${styles.corner} ${styles.cornerBL}`} />
+              <span className={`${styles.corner} ${styles.cornerBR}`} />
+              <div className={styles.qrGlow} aria-hidden="true" />
+              <div className={styles.qrWrap}>
+                <QRCodeSVG
+                  value={productUrl}
+                  size={128}
+                  bgColor="#ffffff"
+                  fgColor="#0c1b35"
+                  level="M"
+                />
+              </div>
             </div>
-            <div className={styles.qrHint}>
-              <span className={styles.qrHintTitle}>Point your camera here</span>
-              <span className={styles.url}>{productUrl.replace("https://", "")}</span>
-            </div>
+
+            <div className={styles.qrDivider} aria-hidden="true" />
+
+            <p className={styles.url}>
+              <Link2 size={12} strokeWidth={2.5} />
+              {productUrl.replace("https://", "")}
+            </p>
+          </div>
+
+          <div className={styles.cardFooter}>
+            <span>Swap what you don&apos;t need for what you do.</span>
           </div>
         </div>
         {/* ---- end exported card ---- */}
