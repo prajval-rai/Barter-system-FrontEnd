@@ -17,6 +17,7 @@ interface ChatMessage {
   text: string;
   timestamp: Date;
   isError?: boolean;
+  _emoji?: string;
 }
 
 interface ReplaceOptionDraft {
@@ -55,19 +56,20 @@ const CONDITIONS_EMOJI: Record<string, string> = {
 const CURRENT_YEAR = new Date().getFullYear();
 const YEARS: number[] = Array.from({ length: CURRENT_YEAR - 1990 + 1 }, (_, i) => CURRENT_YEAR - i);
 
-// ── NOTE: wrap text in ==...== to render it as a bold highlighted chip ──
+// ── NOTE: wrap text in ==...== for a highlight chip, **_text_** for bold-italic
+// question emphasis, and {{text}} for an "example" hint tag ──
 const STEP_QUESTIONS: Record<Step, string> = {
-  intent:          "Hi! 👋 What would you like to do today?",
-  category:        "Great, let's list your item for exchange! 😊 First, choose the category.",
-  title:           "Great! 😊 What's the name of your item? ==Brand Name?/Model?/==",
-  description:     "Tell us a little about your item 📝 ==Add Specification and Features==. 😊",
-  condition:       "How is the condition of your item? Please choose the best option.",
-  purchase_year:   "When did you buy it? 📅 Select the purchase year, or tap Skip if you don't remember.",
-  images:          "Please upload some photos 📸. Clear photos help you get better offers. You can add up to 5 photos.",
-  ask_replace:     "What would you like in exchange? Or are you okay with any item?",
-  replace_options: "Tell us what you'd like in exchange. 💱 You can add more than one item if you want.",
-  confirm:         "Almost done! 😊 Please check your listing once before submitting.",
-  done:            "🎉 Done! Your item has been submitted and is under review. You'll start receiving offers soon.",
+  intent:          "Hi! 👋 **_What would you like to do today?_**",
+  category:        "Great, let's list your item for exchange! 😊 **_First, choose the category._**",
+  title:           "Great! 😊 **_What's the name of your item?_** {{e.g. iPhone 13, Yamaha FZ, Harry Potter Book}}",
+  description:     "**_Tell us a little about your item._** 📝 {{e.g. Used for 1 year, minor scratch on back, all accessories included}} 😊",
+  condition:       "**_How is the condition of your item?_** Please choose the best option.",
+  purchase_year:   "**_When did you buy it?_** 📅 Select the purchase year, or tap Skip if you don't remember.",
+  images:          "**_Please upload some photos._** 📸 Clear photos help you get better offers. You can add up to 5 photos.",
+  ask_replace:     "**_What would you like in exchange?_** Or are you okay with any item?",
+  replace_options: "**_Tell us what you'd like in exchange._** 💱 {{e.g. Bluetooth speaker, Cricket bat, Novel}}",
+  confirm:         "Almost done! 😊 **_Please check your listing once before submitting._**",
+  done:            "🎉 **_Done!_** Your item has been submitted and is under review. You'll start receiving offers soon.",
 };
 
 const STEP_ORDER: Step[] = [
@@ -76,6 +78,10 @@ const STEP_ORDER: Step[] = [
 ];
 
 const REQUIRED_PROFILE_FIELDS = ["latitude", "longitude", "address", "city", "pincode", "contact_number"];
+
+// ── Draft persistence key. Bump the suffix if the shape ever changes,
+// so stale drafts from an old version don't get force-loaded. ──
+const DRAFT_KEY = "addListingDraft_v1";
 
 function uid() { return Math.random().toString(36).slice(2); }
 function sleep(ms: number) { return new Promise(r => setTimeout(r, ms)); }
@@ -122,6 +128,9 @@ async function validateWithAI(step: Step, value: string): Promise<{ ok: boolean;
   const prompt = prompts[step];
   if (!prompt) return { ok: true, message: "" };
   try {
+    // NOTE: this hits OpenAI directly from the client today, which means
+    // NEXT_PUBLIC_OPENAI_KEY is exposed in the browser bundle. Route this
+    // through a server API instead (see notes at the end of the response).
     const res = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -226,6 +235,14 @@ export default function AddListingPage() {
   // actually landed in `messages`. Never before, never mid-loader. ──
   const [stepReady, setStepReady]             = useState(false);
 
+  // ── Editing from the confirm summary: when set, finishing this step
+  // jumps straight back to "confirm" instead of advancing forward
+  // through the rest of the flow. ──
+  const [editingField, setEditingField]       = useState<Step | null>(null);
+
+  // ── Back-button discard confirmation ──
+  const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
+
   // ── Profile gate ──
   const [profileChecking, setProfileChecking]   = useState(true);
   const [profileBlocked, setProfileBlocked]     = useState(false);
@@ -250,17 +267,61 @@ export default function AddListingPage() {
   }, [messages, botTyping, step]);
 
   // ── Sequence is now strict: hide step UI -> wait -> show loader ->
-  // wait -> hide loader -> show bot message -> THEN reveal step UI. ──
-  const sendBot = useCallback(async (s: Step, delay = 300) => {
+  // wait -> hide loader -> show bot message -> THEN reveal step UI.
+  // `customText` lets edit-mode show a different line than the
+  // original step question. ──
+  const sendBot = useCallback(async (s: Step, delay = 300, customText?: string) => {
     setStepReady(false);
     await sleep(delay);
     setBotTyping(true);
     await sleep(800);
     setBotTyping(false);
-    setMessages(prev => [...prev, { id: uid(), role: "bot", text: STEP_QUESTIONS[s], timestamp: new Date() }]);
+    setMessages(prev => [...prev, { id: uid(), role: "bot", text: customText ?? STEP_QUESTIONS[s], timestamp: new Date() }]);
     setStepReady(true);
     setTimeout(() => inputRef.current?.focus(), 100);
   }, []);
+
+  // ── Restore a saved draft from sessionStorage, or start fresh at
+  // "intent". Photos can't survive JSON serialization (File objects),
+  // so a draft that got past the images step gets bounced back there
+  // with a friendly note instead of silently losing photos at submit. ──
+  const startOrRestore = useCallback(async () => {
+    try {
+      const raw = sessionStorage.getItem(DRAFT_KEY);
+      if (raw) {
+        const draft = JSON.parse(raw);
+        if (draft?.step && draft.step !== "intent" && draft.step !== "done") {
+          const restoredMessages: ChatMessage[] = (draft.messages ?? []).map((m: any) => ({
+            ...m,
+            timestamp: new Date(m.timestamp),
+          }));
+          setForm(f => ({ ...f, ...draft.form, images: [] }));
+          setReplaceOptions(draft.replaceOptions ?? []);
+
+          const pastImages = STEP_ORDER.indexOf(draft.step) > STEP_ORDER.indexOf("images");
+
+          setMessages([
+            ...restoredMessages,
+            {
+              id: uid(),
+              role: "bot",
+              text: pastImages
+                ? "👋 **_Welcome back!_** We picked up your draft, but photos don't survive a refresh — please add them again. 📸"
+                : "👋 **_Welcome back!_** Continuing right where you left off.",
+              timestamp: new Date(),
+            },
+          ]);
+          setStep(pastImages ? "images" : draft.step);
+          setStepReady(true);
+          setTimeout(() => inputRef.current?.focus(), 100);
+          return;
+        }
+      }
+    } catch {
+      // corrupt/old draft — ignore and start fresh
+    }
+    sendBot("intent");
+  }, [sendBot]);
 
   // ── Profile check + bot init (starts at "intent" now) ──
   useEffect(() => {
@@ -282,17 +343,17 @@ export default function AddListingPage() {
         } else {
           setProfileBlocked(false);
           setProfileChecking(false);
-          sendBot("intent");
+          startOrRestore();
         }
       } catch {
         setProfileBlocked(false);
         setProfileChecking(false);
-        sendBot("intent");
+        startOrRestore();
       }
     };
 
     init();
-  }, [sendBot]);
+  }, [startOrRestore]);
 
   const handleProfileSaved = useCallback(async () => {
     setProfileModalOpen(false);
@@ -309,13 +370,34 @@ export default function AddListingPage() {
       } else {
         setIncompleteFields([]);
         setProfileBlocked(false);
-        sendBot("intent");
+        startOrRestore();
       }
     } catch {
       setProfileBlocked(false);
-      sendBot("intent");
+      startOrRestore();
     }
-  }, [sendBot]);
+  }, [startOrRestore]);
+
+  // ── Save draft to sessionStorage whenever meaningful state changes.
+  // Images are intentionally excluded (Files can't be serialized). ──
+  useEffect(() => {
+    if (profileChecking || profileBlocked) return;
+    if (step === "intent" && messages.length === 0) return;
+    if (step === "done") {
+      try { sessionStorage.removeItem(DRAFT_KEY); } catch {}
+      return;
+    }
+    try {
+      sessionStorage.setItem(DRAFT_KEY, JSON.stringify({
+        step,
+        form: { ...form, images: [] },
+        replaceOptions,
+        messages: messages.map(m => ({ ...m, timestamp: m.timestamp.toISOString() })),
+      }));
+    } catch {
+      // storage full/unavailable — draft just won't persist, non-fatal
+    }
+  }, [step, form, replaceOptions, messages, profileChecking, profileBlocked]);
 
   const addUser = (text: string) =>
     setMessages(prev => [...prev, { id: uid(), role: "user", text, timestamp: new Date() }]);
@@ -324,14 +406,7 @@ export default function AddListingPage() {
     const emoji = getErrorEmoji(msg);
     setMessages(prev => [
       ...prev,
-      {
-        id: uid(),
-        role: "bot",
-        text: msg,
-        timestamp: new Date(),
-        isError: true,
-        ...(({ _emoji: emoji } as any)),
-      } as ChatMessage & { _emoji: string },
+      { id: uid(), role: "bot", text: msg, timestamp: new Date(), isError: true, _emoji: emoji },
     ]);
   }, []);
 
@@ -341,6 +416,30 @@ export default function AddListingPage() {
     setStep(next);
     await sendBot(next);
   }, [sendBot]);
+
+  // ── Used by every step that can be reached either normally (advance
+  // forward) or via an edit from the confirm summary (jump straight
+  // back to confirm instead of redoing the rest of the flow). ──
+  const finishStepOrReturn = useCallback(async (current: Step) => {
+    if (editingField) {
+      setEditingField(null);
+      setStep("confirm");
+      await sendBot("confirm", 200, "✅ Got it, updated! Here's your listing:");
+    } else {
+      await advance(current);
+    }
+  }, [editingField, advance, sendBot]);
+
+  // ── Jump back to any earlier step to edit it, from the confirm
+  // summary. Pre-fills text inputs so the user isn't starting blank. ──
+  const jumpToEdit = useCallback(async (target: Step) => {
+    setEditingField(target);
+    setStep(target);
+    if (target === "title") setInput(form.title);
+    else if (target === "description") setInput(form.description);
+    else setInput("");
+    await sendBot(target, 150, `✏️ Let's update this — ${STEP_QUESTIONS[target]}`);
+  }, [form, sendBot]);
 
   const handleSend = useCallback(async () => {
     const val = input.trim();
@@ -355,7 +454,7 @@ export default function AddListingPage() {
       addUser(val);
       setForm(f => ({ ...f, title: val }));
       setInput("");
-      await advance("title");
+      await finishStepOrReturn("title");
 
     } else if (step === "description") {
       if (val.length < 10) return showError("Please add a few more details (minimum 10 characters). 🙏");
@@ -366,9 +465,9 @@ export default function AddListingPage() {
       addUser(val);
       setForm(f => ({ ...f, description: val }));
       setInput("");
-      await advance("description");
+      await finishStepOrReturn("description");
     }
-  }, [input, step, advance, showError]);
+  }, [input, step, finishStepOrReturn, showError]);
 
   // ── Intent: only "Exchange" is live. Rent / Want Something are locked. ──
   const handleIntent = useCallback(async () => {
@@ -379,35 +478,39 @@ export default function AddListingPage() {
   const handleCategory = useCallback(async (cat: Category) => {
     addUser(`${cat.name} 🏷️`);
     setForm(f => ({ ...f, category: cat.id, categoryName: cat.name }));
-    await advance("category");
-  }, [advance]);
+    await finishStepOrReturn("category");
+  }, [finishStepOrReturn]);
 
   const handleCondition = useCallback(async (cond: string) => {
     addUser(`${CONDITIONS_EMOJI[cond]} ${cond}`);
     setForm(f => ({ ...f, condition: cond }));
-    await advance("condition");
-  }, [advance]);
+    await finishStepOrReturn("condition");
+  }, [finishStepOrReturn]);
 
   // ── Purchase year: select a year or Skip ──
   const handlePurchaseYear = useCallback(async (year: string | null) => {
     addUser(year ? `${year} 📅` : "Skip 🤷");
     setForm(f => ({ ...f, purchase_year: year ?? "" }));
-    await advance("purchase_year");
-  }, [advance]);
+    await finishStepOrReturn("purchase_year");
+  }, [finishStepOrReturn]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []).slice(0, 5);
+    setImagePreviews(prev => {
+      prev.forEach(url => URL.revokeObjectURL(url)); // avoid leaking old blob URLs
+      return files.map(f => URL.createObjectURL(f));
+    });
     setForm(f => ({ ...f, images: files }));
-    setImagePreviews(files.map(f => URL.createObjectURL(f)));
   };
 
   const handleImagesDone = useCallback(async () => {
     if (form.images.length === 0) return showError("Please upload at least one photo. 📸");
     addUser(`${form.images.length} photo${form.images.length > 1 ? "s" : ""} uploaded 📸✓`);
-    await advance("images");
-  }, [form.images, advance, showError]);
+    await finishStepOrReturn("images");
+  }, [form.images, finishStepOrReturn, showError]);
 
   const handleAskReplace = useCallback(async (wantReplace: boolean) => {
+    setEditingField(null); // ask_replace always resolves to confirm/replace_options either way
     if (wantReplace) {
       addUser("Yes, I want something specific 🎯");
       setStep("replace_options");
@@ -439,6 +542,7 @@ export default function AddListingPage() {
   const handleReplaceDone = useCallback(async () => {
     if (replaceOptions.length === 0) return showError("Please add at least one item. 🙏");
     addUser(`Want in exchange: ${replaceOptions.map(o => o.title).join(", ")} ✓`);
+    setEditingField(null);
     setStep("confirm");
     await sendBot("confirm");
   }, [replaceOptions, sendBot, showError]);
@@ -481,6 +585,7 @@ export default function AddListingPage() {
         if (!rRes.ok) throw new Error(rData.error || "Failed to save exchange options");
       }
 
+      try { sessionStorage.removeItem(DRAFT_KEY); } catch {}
       setStep("done");
       await sendBot("done");
     } catch (err: any) {
@@ -492,6 +597,23 @@ export default function AddListingPage() {
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
+  };
+
+  // ── Back button: only prompt if there's actually something to lose ──
+  const hasProgress = step !== "intent" && step !== "done";
+
+  const handleBackClick = () => {
+    if (!hasProgress) {
+      router.back();
+    } else {
+      setShowDiscardConfirm(true);
+    }
+  };
+
+  const handleDiscardConfirm = () => {
+    try { sessionStorage.removeItem(DRAFT_KEY); } catch {}
+    setShowDiscardConfirm(false);
+    router.back();
   };
 
   const showTextInput = ["title", "description"].includes(step);
@@ -526,6 +648,57 @@ export default function AddListingPage() {
             onSaved={handleProfileSaved}
           />
 
+          {/* ── Discard confirmation modal ── */}
+          {showDiscardConfirm && (
+            <div
+              style={{
+                position: "fixed", inset: 0, zIndex: 50,
+                background: "rgba(0,0,0,0.4)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}
+              onClick={() => setShowDiscardConfirm(false)}
+            >
+              <div
+                onClick={e => e.stopPropagation()}
+                style={{
+                  background: "#fff", borderRadius: "16px", padding: "24px",
+                  maxWidth: "320px", width: "90%", textAlign: "center",
+                  boxShadow: "0 10px 40px rgba(0,0,0,0.2)",
+                }}
+              >
+                <div style={{ fontSize: "2rem", marginBottom: "8px" }}>🤔</div>
+                <p style={{ fontWeight: 700, fontSize: "1rem", marginBottom: "4px" }}>
+                  Discard this listing?
+                </p>
+                <p style={{ fontSize: "0.85rem", color: "var(--color-text-subtle)", marginBottom: "20px" }}>
+                  Your progress hasn't been posted yet. If you leave now, you'll lose what you've filled in.
+                </p>
+                <div style={{ display: "flex", gap: "10px" }}>
+                  <button
+                    onClick={() => setShowDiscardConfirm(false)}
+                    style={{
+                      flex: 1, padding: "10px", borderRadius: "999px",
+                      border: "1px solid #e5e7eb", background: "#fff",
+                      fontWeight: 600, cursor: "pointer",
+                    }}
+                  >
+                    Keep editing
+                  </button>
+                  <button
+                    onClick={handleDiscardConfirm}
+                    style={{
+                      flex: 1, padding: "10px", borderRadius: "999px",
+                      border: "none", background: "#EF4444", color: "#fff",
+                      fontWeight: 600, cursor: "pointer",
+                    }}
+                  >
+                    Discard
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* ── Blocked overlay ── */}
           {profileBlocked && !profileModalOpen && (
             <div style={{
@@ -557,7 +730,7 @@ export default function AddListingPage() {
           {/* ── Chat Header ── */}
           <div className={styles.chatHeader}>
             <div className={styles.chatHeaderLeft}>
-              <button className={styles.backBtn} onClick={() => router.back()}>
+              <button className={styles.backBtn} onClick={handleBackClick}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                   <path d="M19 12H5M12 5l-7 7 7 7"/>
                 </svg>
@@ -589,12 +762,11 @@ export default function AddListingPage() {
           </div>
 
           {/* ── Chat body ── */}
-          <div className={styles.chatBody}>
+          <div className={styles.chatBody} aria-live="polite">
             <div className={styles.dateChip}>Today</div>
 
             {messages.map(msg => {
-              const errorMsg = msg as ChatMessage & { _emoji?: string };
-              const isError  = errorMsg.isError && errorMsg._emoji;
+              const isError = msg.isError && msg._emoji;
 
               return (
                 <div
@@ -605,21 +777,28 @@ export default function AddListingPage() {
                   <div className={msg.role === "bot" ? styles.botBubble : styles.userBubble}>
                     {isError ? (
                       <div className={styles.bubbleText}>
-                        <span className={styles.errorEmoji}>{errorMsg._emoji}</span>
+                        <span className={styles.errorEmoji}>{msg._emoji}</span>
                         <span className={styles.errorMsg}>{msg.text}</span>
                       </div>
-                    ) : (
+                    ) : msg.role === "bot" ? (
                       <div
                         className={styles.bubbleText}
                         dangerouslySetInnerHTML={{
                           __html: msg.text
                             // ── ==text== renders as a bold highlighted chip ──
                             .replace(/==(.*?)==/g, `<span class="${styles.highlightText}">$1</span>`)
+                            // ── {{text}} renders as a muted italic "example" hint ──
+                            .replace(/\{\{(.*?)\}\}/g, `<span class="${styles.exampleHint}">✏️ $1</span>`)
                             .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
                             .replace(/_(.*?)_/g, "<em>$1</em>")
                             .replace(/\n/g, "<br/>"),
                         }}
                       />
+                    ) : (
+                      // ── User text is rendered as plain text, not HTML —
+                      // it's not trusted input and shouldn't run through
+                      // the markdown-style parser. ──
+                      <div className={styles.bubbleText}>{msg.text}</div>
                     )}
                     <div className={msg.role === "bot" ? styles.timeBot : styles.timeUser}>
                       {formatTime(msg.timestamp)}
@@ -650,11 +829,11 @@ export default function AddListingPage() {
                 <button className={styles.chip} onClick={handleIntent}>
                   🔄 Exchange an item
                 </button>
-                <button className={`${styles.chip} ${styles.chipDisabled}`} disabled type="button">
+                <button className={`${styles.chip} ${styles.chipDisabled}`} disabled type="button" aria-disabled="true" title="Coming soon">
                   🏠 Rent an item
                   <span className={styles.comingSoonTag}>Coming soon</span>
                 </button>
-                <button className={`${styles.chip} ${styles.chipDisabled}`} disabled type="button">
+                <button className={`${styles.chip} ${styles.chipDisabled}`} disabled type="button" aria-disabled="true" title="Coming soon">
                   🎁 I want something
                   <span className={styles.comingSoonTag}>Coming soon</span>
                 </button>
@@ -798,7 +977,7 @@ export default function AddListingPage() {
               </div>
             )}
 
-            {/* ── STEP: Confirm — now with image previews ── */}
+            {/* ── STEP: Confirm — every row can be edited in place ── */}
             {step === "confirm" && stepReady && (
               <div className={styles.summaryCard}>
 
@@ -816,17 +995,25 @@ export default function AddListingPage() {
                   </div>
                 )}
 
-                <SummaryRow label="📦 Item"        value={form.title} />
-                <SummaryRow label="📝 Description" value={form.description} />
-                <SummaryRow label="🏷️ Category"    value={form.categoryName} />
-                <SummaryRow label="✨ Condition"    value={form.condition} />
-                {form.purchase_year && <SummaryRow label="📅 Bought In"  value={form.purchase_year} />}
-                <SummaryRow label="📸 Photos"       value={`${form.images.length} uploaded`} />
-                <SummaryRow label="💱 Want in return" value={
-                  replaceOptions.length === 0
-                    ? "Anything works 🤙"
-                    : replaceOptions.map(o => o.title).join(", ")
-                } />
+                <SummaryRow label="📦 Item"        value={form.title} onEdit={() => jumpToEdit("title")} />
+                <SummaryRow label="📝 Description" value={form.description} onEdit={() => jumpToEdit("description")} />
+                <SummaryRow label="🏷️ Category"    value={form.categoryName} onEdit={() => jumpToEdit("category")} />
+                <SummaryRow label="✨ Condition"    value={form.condition} onEdit={() => jumpToEdit("condition")} />
+                <SummaryRow
+                  label="📅 Bought In"
+                  value={form.purchase_year || "Not specified"}
+                  onEdit={() => jumpToEdit("purchase_year")}
+                />
+                <SummaryRow
+                  label="📸 Photos"
+                  value={`${form.images.length} uploaded`}
+                  onEdit={() => jumpToEdit("images")}
+                />
+                <SummaryRow
+                  label="💱 Want in return"
+                  value={replaceOptions.length === 0 ? "Anything works 🤙" : replaceOptions.map(o => o.title).join(", ")}
+                  onEdit={() => jumpToEdit("ask_replace")}
+                />
                 <div className={styles.divider} />
                 <button className={styles.confirmBtn} onClick={handleConfirm} disabled={loading}>
                   {loading ? "Posting… ⏳" : "🚀 Confirm & Post!"}
@@ -884,11 +1071,27 @@ export default function AddListingPage() {
 
 // ─── Summary Row ──────────────────────────────────────────────────────────────
 
-function SummaryRow({ label, value }: { label: string; value: string }) {
+function SummaryRow({
+  label, value, onEdit,
+}: { label: string; value: string; onEdit?: () => void }) {
   return (
     <div className={styles.summaryRow}>
       <span className={styles.summaryLabel}>{label}</span>
-      <span className={styles.summaryValue}>{value}</span>
+      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        <span className={styles.summaryValue}>{value}</span>
+        {onEdit && (
+          <button
+            onClick={onEdit}
+            aria-label={`Edit ${label}`}
+            style={{
+              background: "none", border: "none", cursor: "pointer",
+              fontSize: "0.85rem", padding: "2px 4px", opacity: 0.6, lineHeight: 1,
+            }}
+          >
+            ✏️
+          </button>
+        )}
+      </div>
     </div>
   );
 }
