@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import styles from './ProductActions.module.css';
 import ExchangeModal from '@/components/ProductDetails/ExchangeModal';
-import LoginModal from '../login/LoginModal.tsx'; // ← adjust path if needed
+import LoginModal from "@/app/login/LoginModal"; // ← adjust path if needed
 import { useAuth } from '@/context/AuthContext';
 
 interface Props {
