@@ -29,7 +29,7 @@ export default function BookmarksPage() {
   useEffect(() => {
     const fetchBookmarks = async () => {
       try {
-        const res = await fetch(`/api/product/bookmarks`);
+        const res = await fetch(`/api/product/bookmark`);
         if (!res.ok) throw new Error("Failed to fetch bookmarks.");
         const data: ApiResponse = await res.json();
         setBookmarks(data.data);
