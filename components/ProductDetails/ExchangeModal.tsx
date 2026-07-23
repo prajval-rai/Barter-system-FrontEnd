@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import {
   ArrowLeftRight, X, Package, ChevronDown, Check,
-  Send, ShieldCheck, MessageCircle,
+  Send, ShieldCheck, MessageCircle, Gift,
   AlertTriangle, Loader2,
 } from "lucide-react";
 import styles from "../../styles/Exchangerequests.module.css";
@@ -12,11 +12,14 @@ interface MyProduct { id: number; title: string; thumbnail: string | null; }
 interface Props {
   productId: number;
   productTitle: string;
+  productThumbnail?: string | null;
   onClose: () => void;
   onSent: () => void;
 }
 
-export default function ExchangeModal({ productId, productTitle, onClose, onSent }: Props) {
+const MAX_MESSAGE_LEN = 300;
+
+export default function ExchangeModal({ productId, productTitle, productThumbnail, onClose, onSent }: Props) {
   const [myProducts, setMyProducts]       = useState<MyProduct[]>([]);
   const [loadingMine, setLoadingMine]     = useState(true);
   const [myProductsErr, setMyProductsErr] = useState<string | null>(null);
@@ -26,7 +29,15 @@ export default function ExchangeModal({ productId, productTitle, onClose, onSent
   const [sendErr, setSendErr]             = useState<string | null>(null);
   const dropRef                           = useRef<HTMLDivElement>(null);
 
-  const base_url = process.env.NEXT_PUBLIC_BACKEND_URL;
+  // Free-text offer, used when the person has nothing listed yet
+  // (or chooses to describe something instead of picking a listing).
+  const [offerText, setOfferText] = useState("");
+
+  // Editable message — pre-filled once something is selected, but the
+  // person can rewrite it entirely. `messageEdited` stops us from
+  // clobbering their own words with the auto-fill on every re-render.
+  const [message, setMessage]         = useState("");
+  const [messageEdited, setMessageEdited] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -56,20 +67,35 @@ export default function ExchangeModal({ productId, productTitle, onClose, onSent
   }, []);
 
   const selected  = myProducts.find(p => p.id === selectedId);
-  const systemMsg = selected
-    ? `Hey! I want to swap my "${selected.title}" for your "${productTitle}". Interested?`
-    : "";
+  const hasListings = myProducts.length > 0;
+
+  // Auto-suggest a message whenever the selection changes, unless the
+  // person has already started typing their own.
+  useEffect(() => {
+    if (messageEdited) return;
+    if (selected) {
+      setMessage(`Hey! I want to swap my "${selected.title}" for your "${productTitle}". Interested?`);
+    } else if (offerText.trim()) {
+      setMessage(`Hey! I don't have a listing to trade yet, but I can offer: ${offerText.trim()}. Interested in swapping for your "${productTitle}"?`);
+    }
+  }, [selected, offerText, productTitle, messageEdited]);
+
+  const canSend = hasListings ? !!selectedId : offerText.trim().length > 0;
 
   const handleSend = async () => {
-    if (!selectedId) return;
+    if (!canSend) return;
     setSending(true);
     setSendErr(null);
     try {
-      // send barter request
       const res = await fetch(`/api/barter/request/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ request_product: selectedId, request_for_product: productId }),
+        body: JSON.stringify({
+          request_product: selectedId || null,
+          request_for_product: productId,
+          offer_description: !selectedId ? offerText.trim() : null,
+          message: message.trim() || null,
+        }),
       });
       if (!res.ok) {
         const err = await res.json();
@@ -106,13 +132,41 @@ export default function ExchangeModal({ productId, productTitle, onClose, onSent
         {/* ── Body ── */}
         <div className={styles.body}>
 
+          {/* Trade preview — the thing people's eyes should land on first */}
+          <div className={styles.tradePreview}>
+            <div className={styles.previewTile}>
+              {selected?.thumbnail ? (
+                <img src={selected.thumbnail} alt="" className={styles.previewImg} />
+              ) : selected ? (
+                <div className={styles.previewEmpty}><Package size={18} /></div>
+              ) : (
+                <div className={styles.previewPlaceholder}><Gift size={18} /></div>
+              )}
+              <span className={styles.previewLabel}>
+                {selected ? selected.title : hasListings ? "Choose yours" : "Your offer"}
+              </span>
+            </div>
+
+            <div className={styles.previewArrow}>
+              <ArrowLeftRight size={16} />
+            </div>
+
+            <div className={styles.previewTile}>
+              {productThumbnail ? (
+                <img src={productThumbnail} alt="" className={styles.previewImg} />
+              ) : (
+                <div className={styles.previewEmpty}><Package size={18} /></div>
+              )}
+              <span className={styles.previewLabel}>{productTitle}</span>
+            </div>
+          </div>
+
           {/* Your offer */}
           <div className={styles.section}>
             <div className={styles.labelRow}>
               <span className={styles.label}>Your offer</span>
               <span className={styles.badge}>Required</span>
             </div>
-            <p className={styles.hint}>Pick what you want to give</p>
 
             {loadingMine ? (
               <div className={styles.stateRow}>
@@ -123,11 +177,24 @@ export default function ExchangeModal({ productId, productTitle, onClose, onSent
               <div className={styles.stateErr}>
                 <AlertTriangle size={13} /> {myProductsErr}
               </div>
-            ) : myProducts.length === 0 ? (
-              <div className={styles.stateWarn}>
-                <Package size={13} />
-                You haven't listed anything yet. Add a product first!
-              </div>
+            ) : !hasListings ? (
+              <>
+                <div className={styles.stateWarn}>
+                  <Package size={13} />
+                  You haven't listed anything yet — no problem, just describe what you can offer below.
+                </div>
+                <div className={styles.offerTextWrap}>
+                  <textarea
+                    className={styles.offerTextarea}
+                    placeholder="e.g. ₹500 cash, a service (like tutoring), or another item you'll list soon…"
+                    value={offerText}
+                    maxLength={200}
+                    rows={2}
+                    onChange={e => setOfferText(e.target.value)}
+                  />
+                  <span className={styles.charCount}>{offerText.length}/200</span>
+                </div>
+              </>
             ) : (
               <div className={styles.dropWrap} ref={dropRef}>
                 <button
@@ -178,37 +245,41 @@ export default function ExchangeModal({ productId, productTitle, onClose, onSent
                         {selectedId === p.id && <Check size={12} className={styles.dropCheck} />}
                       </button>
                     ))}
+                    <button
+                      type="button"
+                      className={styles.dropItemAlt}
+                      onClick={() => { setSelectedId(""); setDropOpen(false); }}
+                    >
+                      <Gift size={14} />
+                      <span>Offer something else instead</span>
+                    </button>
                   </div>
                 )}
               </div>
             )}
           </div>
 
-          {/* They're offering */}
+          {/* Editable message */}
           <div className={styles.section}>
             <div className={styles.labelRow}>
-              <span className={styles.label}>You're getting</span>
+              <span className={styles.label}>Your message</span>
             </div>
-            <p className={styles.hint}>What they're offering in return</p>
-            <div className={styles.targetTile}>
-              <div className={styles.targetIcon}><ArrowLeftRight size={13} /></div>
-              <span className={styles.targetTitle}>{productTitle}</span>
+            <div className={styles.msgEditWrap}>
+              <MessageCircle size={13} className={styles.msgEditIcon} />
+              <textarea
+                className={styles.msgTextarea}
+                value={message}
+                maxLength={MAX_MESSAGE_LEN}
+                rows={3}
+                placeholder="Say hi and explain your offer…"
+                onChange={e => { setMessage(e.target.value); setMessageEdited(true); }}
+              />
+            </div>
+            <div className={styles.msgFooterRow}>
+              <p className={styles.msgNote}>You can keep chatting once they accept.</p>
+              <span className={styles.charCount}>{message.length}/{MAX_MESSAGE_LEN}</span>
             </div>
           </div>
-
-          {/* Message preview */}
-          {selected && (
-            <div className={styles.section}>
-              <div className={styles.labelRow}>
-                <span className={styles.label}>Auto message</span>
-              </div>
-              <div className={styles.msgBox}>
-                <MessageCircle size={12} className={styles.msgIcon} />
-                <p className={styles.msgText}>{systemMsg}</p>
-              </div>
-              <p className={styles.msgNote}>You can chat more once they accept.</p>
-            </div>
-          )}
 
           {/* Safety note */}
           <div className={styles.notice}>
@@ -232,7 +303,7 @@ export default function ExchangeModal({ productId, productTitle, onClose, onSent
           <button
             className={styles.sendBtn}
             onClick={handleSend}
-            disabled={sending || !selectedId || loadingMine}
+            disabled={sending || !canSend || loadingMine}
           >
             {sending
               ? <><Loader2 size={13} className={styles.spin} /> Sending…</>
