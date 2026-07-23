@@ -23,19 +23,14 @@ type ApiResponse = {
 
 export default function BookmarksPage() {
   const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const base_url    = process.env.NEXT_PUBLIC_BACKEND_URL;
+  const [loading, setLoading]     = useState(true);
+  const [error, setError]         = useState<string | null>(null);
 
   useEffect(() => {
     const fetchBookmarks = async () => {
       try {
-        const res = await fetch(`${base_url}products/bookmarks/`, {
-          credentials: "include",
-        });
-
+        const res = await fetch(`/api/product/bookmarks`);
         if (!res.ok) throw new Error("Failed to fetch bookmarks.");
-
         const data: ApiResponse = await res.json();
         setBookmarks(data.data);
       } catch (err: unknown) {
@@ -44,7 +39,6 @@ export default function BookmarksPage() {
         setLoading(false);
       }
     };
-
     fetchBookmarks();
   }, []);
 
@@ -54,14 +48,12 @@ export default function BookmarksPage() {
 
   return (
     <AppShell>
-        <BookmarksView
-      bookmarks={bookmarks}
-      loading={loading}
-      error={error}
-      onRemove={handleRemove}
-    />
-
+      <BookmarksView
+        bookmarks={bookmarks}
+        loading={loading}
+        error={error}
+        onRemove={handleRemove}
+      />
     </AppShell>
-    
   );
 }
