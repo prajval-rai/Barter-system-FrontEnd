@@ -22,7 +22,7 @@ export default function LenDenLogo({ width = 280 }: { width?: number }) {
         alt="LenDen"
         width={width}
         height={height}
-        style={{ width: "100%", height: "auto" }}
+        style={{ width: "80%", height: "auto" }}
         priority
       />
     </Link>
