@@ -3,7 +3,12 @@
   flex-direction: column;
   gap: var(--space-3);
 }
-
+.errorText {
+  font-size: 12px;
+  color: var(--color-error, #dc2626);
+  margin-top: 4px;
+  text-align: center;
+}
 /* ── Base button ── */
 .btn {
   display: inline-flex;
