@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import styles from './ProductActions.module.css';
 import ExchangeModal from '@/components/ProductDetails/ExchangeModal';
+import LoginModal from '@/components/LoginModal/LoginModal'; // ← adjust path if needed
+import { useAuth } from '@/context/AuthContext';
 
 interface Props {
   productId: number;
@@ -10,7 +12,12 @@ interface Props {
   IsBookMarked: boolean;
 }
 
+// ── What the user was trying to do when we intercepted them for login ──
+type PendingAction = 'save' | 'exchange' | null;
+
 export default function ProductActions({ productId, productTitle, IsBookMarked }: Props) {
+  const { user, loading: authLoading } = useAuth();
+
   const [saved,        setSaved      ] = useState(IsBookMarked);
   const [requested,    setRequested  ] = useState(false);
   const [copied,       setCopied     ] = useState(false);
@@ -18,7 +25,10 @@ export default function ProductActions({ productId, productTitle, IsBookMarked }
   const [bookmarking,  setBookmarking] = useState(false);
   const [bookmarkError, setBookmarkError] = useState<string | null>(null);
 
-  const handleSave = async () => {
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [pendingAction,  setPendingAction ] = useState<PendingAction>(null);
+
+  const doSave = async () => {
     if (bookmarking) return;
     setBookmarking(true);
     setBookmarkError(null);
@@ -43,6 +53,37 @@ export default function ProductActions({ productId, productTitle, IsBookMarked }
     }
   };
 
+  // ── Auth gate: run the action if logged in, otherwise remember what
+  // was requested and prompt login first ──
+  const handleSave = () => {
+    if (!user) {
+      setPendingAction('save');
+      setShowLoginModal(true);
+      return;
+    }
+    doSave();
+  };
+
+  const handleExchangeClick = () => {
+    if (requested) return;
+    if (!user) {
+      setPendingAction('exchange');
+      setShowLoginModal(true);
+      return;
+    }
+    setShowModal(true);
+  };
+
+  // ── After a successful login, pick up right where the user left off ──
+  const handleLoginSuccess = () => {
+    setShowLoginModal(false);
+    const action = pendingAction;
+    setPendingAction(null);
+
+    if (action === 'save') doSave();
+    if (action === 'exchange') setShowModal(true);
+  };
+
   const handleShare = async () => {
     const url = `${window.location.origin}/products/${productId}`;
     try {
@@ -64,8 +105,8 @@ export default function ProductActions({ productId, productTitle, IsBookMarked }
       {/* Primary CTA */}
       <button
         className={`${styles.btn} ${styles.btnPrimary} ${requested ? styles.btnRequested : ''}`}
-        onClick={() => !requested && setShowModal(true)}
-        disabled={requested}
+        onClick={handleExchangeClick}
+        disabled={requested || authLoading}
       >
         {requested ? (
           <><CheckIcon /> Request Sent</>
@@ -79,7 +120,7 @@ export default function ProductActions({ productId, productTitle, IsBookMarked }
         <button
           className={`${styles.btn} ${styles.btnSecondary} ${saved ? styles.btnSaved : ''}`}
           onClick={handleSave}
-          disabled={bookmarking}
+          disabled={bookmarking || authLoading}
         >
           {bookmarking ? (
             <SpinnerIcon />
@@ -111,6 +152,16 @@ export default function ProductActions({ productId, productTitle, IsBookMarked }
           }}
         />
       )}
+
+      {/* Login modal — shown when a logged-out user tries Save or Exchange */}
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => {
+          setShowLoginModal(false);
+          setPendingAction(null);
+        }}
+        onSuccess={handleLoginSuccess}
+      />
 
     </div>
   );
