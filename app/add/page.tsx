@@ -57,17 +57,18 @@ const CURRENT_YEAR = new Date().getFullYear();
 const YEARS: number[] = Array.from({ length: CURRENT_YEAR - 1990 + 1 }, (_, i) => CURRENT_YEAR - i);
 
 // ── NOTE: wrap text in ==...== for a highlight chip, **_text_** for bold-italic
-// question emphasis, and {{text}} for an "example" hint tag ──
+// question emphasis, and {{text}} for an "example" hint tag. All examples use
+// generic dummy product names — no real brands. ──
 const STEP_QUESTIONS: Record<Step, string> = {
   intent:          "Hi! 👋 **_What would you like to do today?_**",
   category:        "Great, let's list your item for exchange! 😊 **_First, choose the category._**",
-  title:           "Great! 😊 **_What's the name of your item?_** {{e.g. iPhone 13, Yamaha FZ, Harry Potter Book}}",
+  title:           "Great! 😊 **_What's the name of your item?_** {{e.g. Smartphone Model X, Sports Bicycle, Fiction Novel}}",
   description:     "**_Tell us a little about your item._** 📝 {{e.g. Used for 1 year, minor scratch on back, all accessories included}} 😊",
   condition:       "**_How is the condition of your item?_** Please choose the best option.",
   purchase_year:   "**_When did you buy it?_** 📅 Select the purchase year, or tap Skip if you don't remember.",
   images:          "**_Please upload some photos._** 📸 Clear photos help you get better offers. You can add up to 5 photos.",
   ask_replace:     "**_What would you like in exchange?_** Or are you okay with any item?",
-  replace_options: "**_Tell us what you'd like in exchange._** 💱 {{e.g. Bluetooth speaker, Cricket bat, Novel}}",
+  replace_options: "**_Tell us what you'd like in exchange._** 💱 {{e.g. Portable Speaker, Sports Equipment, Storybook}}",
   confirm:         "Almost done! 😊 **_Please check your listing once before submitting._**",
   done:            "🎉 **_Done!_** Your item has been submitted and is under review. You'll start receiving offers soon.",
 };
@@ -107,9 +108,9 @@ async function validateWithAI(step: Step, value: string): Promise<{ ok: boolean;
     title: `You are SwapBot, a friendly assistant for an Indian barter marketplace. Speak in simple, casual Indian English.
       The user entered this as a product name for their listing: "${value}".
       Rules:
-      - If it looks like a real product name (phone, laptop, book, clothes, cycle, etc.) → ok: true, message: ""
+      - If it looks like a real product name (phone, laptop, book, clothing, bicycle, etc.) → ok: true, message: ""
       - If it's a greeting like "hi", "hello" → ok: false, message: "That looks like a greeting, not a product name 😅 What item are you listing?"
-      - If it's random gibberish like "asdfgh" → ok: false, message: "That doesn't look like a product name 🤔 Try something like 'iPhone 13' or 'Cycle'"
+      - If it's random gibberish like "asdfgh" → ok: false, message: "That doesn't look like a product name 🤔 Try something like 'Smartphone Model X' or 'Bicycle'"
       - If it's a question like "what should I sell?" → ok: false, message: "You know your stuff best! 😄 Tell me what you'd like to list."
       - Keep messages under 12 words, max 1 emoji, friendly tone
       Return only JSON (no markdown): {"ok": true/false, "message": "..."}`,
@@ -130,7 +131,7 @@ async function validateWithAI(step: Step, value: string): Promise<{ ok: boolean;
   try {
     // NOTE: this hits OpenAI directly from the client today, which means
     // NEXT_PUBLIC_OPENAI_KEY is exposed in the browser bundle. Route this
-    // through a server API instead (see notes at the end of the response).
+    // through a server API instead for production use.
     const res = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -178,19 +179,19 @@ Rules:
 - Always use the "noto" prefix (noto:xxx) for colorful emoji-style icons
 - Use kebab-case for the icon name
 - Return ONLY the icon string, nothing else, no quotes, no explanation
-Examples:
-- iPhone, mobile → noto:mobile-phone
-- Laptop, MacBook → noto:laptop
-- Cycle, Bicycle → noto:bicycle
-- Book, Novel → noto:books
+Examples (generic item types, not brand names):
+- Smartphone, mobile phone → noto:mobile-phone
+- Laptop, notebook computer → noto:laptop
+- Bicycle, cycle → noto:bicycle
+- Book, novel → noto:books
 - Camera → noto:camera
 - Headphones → noto:headphone
 - Watch → noto:watch
-- TV → noto:television
+- Television → noto:television
 - Shoes → noto:running-shoe
-- Clothes, Shirt → noto:t-shirt
+- Clothing, shirt → noto:t-shirt
 - Guitar → noto:guitar
-- Bag, Backpack → noto:backpack`,
+- Bag, backpack → noto:backpack`,
           },
           {
             role: "user",
@@ -250,7 +251,7 @@ export default function AddListingPage() {
   const [incompleteFields, setIncompleteFields] = useState<string[]>([]);
 
   const bottomRef   = useRef<HTMLDivElement>(null);
-  const inputRef    = useRef<HTMLInputElement>(null);
+  const inputRef    = useRef<HTMLTextAreaElement>(null);
   const fileRef     = useRef<HTMLInputElement>(null);
   const initialized = useRef(false);
 
@@ -266,7 +267,7 @@ export default function AddListingPage() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, botTyping, step]);
 
-  // ── Sequence is now strict: hide step UI -> wait -> show loader ->
+  // ── Sequence is strict: hide step UI -> wait -> show loader ->
   // wait -> hide loader -> show bot message -> THEN reveal step UI.
   // `customText` lets edit-mode show a different line than the
   // original step question. ──
@@ -441,6 +442,10 @@ export default function AddListingPage() {
     await sendBot(target, 150, `✏️ Let's update this — ${STEP_QUESTIONS[target]}`);
   }, [form, sendBot]);
 
+  const resetInputHeight = () => {
+    if (inputRef.current) inputRef.current.style.height = "auto";
+  };
+
   const handleSend = useCallback(async () => {
     const val = input.trim();
     if (!val) return;
@@ -454,6 +459,7 @@ export default function AddListingPage() {
       addUser(val);
       setForm(f => ({ ...f, title: val }));
       setInput("");
+      resetInputHeight();
       await finishStepOrReturn("title");
 
     } else if (step === "description") {
@@ -465,6 +471,7 @@ export default function AddListingPage() {
       addUser(val);
       setForm(f => ({ ...f, description: val }));
       setInput("");
+      resetInputHeight();
       await finishStepOrReturn("description");
     }
   }, [input, step, finishStepOrReturn, showError]);
@@ -595,8 +602,20 @@ export default function AddListingPage() {
     }
   }, [form, replaceOptions, sendBot, showError]);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
+  // ── Enter sends, Shift+Enter inserts a newline ──
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  };
+
+  // ── Auto-grow the textarea as the user types, capped at a max height ──
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInput(e.target.value);
+    const el = e.target;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 140)}px`;
   };
 
   // ── Back button: only prompt if there's actually something to lose ──
@@ -795,10 +814,9 @@ export default function AddListingPage() {
                         }}
                       />
                     ) : (
-                      // ── User text is rendered as plain text, not HTML —
-                      // it's not trusted input and shouldn't run through
-                      // the markdown-style parser. ──
-                      <div className={styles.bubbleText}>{msg.text}</div>
+                      // ── User text is plain text (not run through the markdown
+                      // parser), but line breaks from Shift+Enter are preserved. ──
+                      <div className={styles.bubbleText} style={{ whiteSpace: "pre-wrap" }}>{msg.text}</div>
                     )}
                     <div className={msg.role === "bot" ? styles.timeBot : styles.timeUser}>
                       {formatTime(msg.timestamp)}
@@ -944,7 +962,7 @@ export default function AddListingPage() {
                 <div className={styles.replaceForm}>
                   <input
                     className={styles.replaceInput}
-                    placeholder="Item name (e.g. iPhone 13)"
+                    placeholder="Item name (e.g. Smartphone Model X)"
                     value={replaceForm.title}
                     onChange={e => setReplaceForm(f => ({ ...f, title: e.target.value }))}
                   />
@@ -1037,19 +1055,20 @@ export default function AddListingPage() {
             <div ref={bottomRef} />
           </div>
 
-          {/* Input bar */}
+          {/* Input bar — auto-growing textarea, Enter sends, Shift+Enter = new line */}
           {showTextInput && stepReady && !profileBlocked && (
             <div className={styles.inputBar}>
-              <input
+              <textarea
                 ref={inputRef}
                 className={styles.textInput}
                 value={input}
-                onChange={e => setInput(e.target.value)}
+                onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
                 placeholder={
-                  step === "title" ? "Enter item name…" : "Describe your item…"
+                  step === "title" ? "Enter item name…" : "Describe your item… (Shift+Enter for new line)"
                 }
                 disabled={botTyping || aiValidating}
+                rows={1}
               />
               <button
                 className={styles.sendBtn}
