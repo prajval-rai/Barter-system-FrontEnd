@@ -37,21 +37,26 @@ function BookmarkCard({
   onRemove: (productId: number) => void;
 }) {
   const [removing, setRemoving] = useState(false);
+  const [removeError, setRemoveError] = useState<string | null>(null);
 
   const handleRemove = async () => {
-    const base_url    = process.env.NEXT_PUBLIC_BACKEND_URL;
     if (removing) return;
     setRemoving(true);
+    setRemoveError(null);
     try {
-      const res = await fetch(
-        `${base_url}products/bookmark/${item.product_id}/remove/`,
-        { method: "DELETE", credentials: "include" }
-      );
-      if (!res.ok) throw new Error("Failed to remove bookmark");
+      const res = await fetch(`/api/product/bookmark/${item.product_id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || err.detail || "Failed to remove bookmark");
+      }
       onRemove(item.product_id);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      setRemoveError(err.message ?? "Couldn't remove. Try again!");
       setRemoving(false);
+      setTimeout(() => setRemoveError(null), 3000);
     }
   };
 
@@ -96,8 +101,8 @@ function BookmarkCard({
           </div>
 
           <div className={styles.actions}>
-            <a
-              href={`/products/${item.product_id}`}
+            
+              href={`/product/${item.product_id}`}
               className={styles.viewBtn}
             >
               <EyeIcon />
@@ -113,6 +118,10 @@ function BookmarkCard({
             </button>
           </div>
         </div>
+
+        {removeError && (
+          <p className={styles.removeError} role="alert">{removeError}</p>
+        )}
       </div>
     </div>
   );
