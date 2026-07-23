@@ -709,6 +709,11 @@
   box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.04);
 }
 
+/*
+  Now a <textarea> (auto-grows via JS on input, capped at max-height).
+  resize:none removes the manual drag handle; the ::-webkit-scrollbar-button
+  rule removes the up/down arrow buttons some browsers render by default.
+*/
 .textInput {
   flex: 1;
   min-width: 0;
@@ -721,10 +726,23 @@
   font-family: var(--font-body);
   color: var(--color-text-heading);
   transition: border-color var(--duration-fast) var(--ease-smooth),
-              box-shadow var(--duration-fast) var(--ease-smooth);
+              box-shadow var(--duration-fast) var(--ease-smooth),
+              border-radius var(--duration-fast) var(--ease-smooth);
+
+  resize: none;
+  min-height: 42px;
+  max-height: 140px;
+  overflow-y: hidden;   /* JS switches this to 'auto' once content exceeds max-height */
+  line-height: 1.4;
+  scrollbar-width: thin;  /* Firefox */
 }
 .textInput:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(26, 86, 219, 0.12); }
 .textInput::placeholder { color: var(--color-text-muted); }
+
+.textInput::-webkit-scrollbar        { width: 6px; }
+.textInput::-webkit-scrollbar-button { display: none; }   /* removes up/down arrow buttons */
+.textInput::-webkit-scrollbar-track  { background: transparent; }
+.textInput::-webkit-scrollbar-thumb  { background: var(--color-border); border-radius: 3px; }
 
 .sendBtn {
   width: 42px;
