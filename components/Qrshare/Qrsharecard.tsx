@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { toPng } from "html-to-image";
-import styles from "./QRShareCard.module.css";
+import styles from "./Qrsharecard.module.css";
 
 interface QRShareCardProps {
   productId: number | string;
