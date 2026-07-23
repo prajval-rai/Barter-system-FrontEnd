@@ -101,7 +101,7 @@ function BookmarkCard({
           </div>
 
           <div className={styles.actions}>
-            
+            <a
               href={`/product/${item.product_id}`}
               className={styles.viewBtn}
             >
