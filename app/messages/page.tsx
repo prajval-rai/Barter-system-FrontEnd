@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import styles from "../../styles/Chat.module.css";
+import LenDenLogo from "@/components/logo";
 
 /* ─────────────────────────────────────────
    TYPES
@@ -1281,7 +1282,7 @@ export default function Chats() {
       {/* ── SIDEBAR ── */}
       <div className={`${styles.sidebar} ${mobileShowChat ? styles.sidebarHidden : ""}`}>
         <div className={styles.sidebarHeader}>
-          <div className={styles.sidebarTitle}><MessageCircle size={18} />Trade Chats</div>
+          <div className={styles.sidebarTitle}><LenDenLogo></LenDenLogo></div>
           <button className={styles.refreshBtn} onClick={loadAll} disabled={chatLoading}>
             <RefreshCw size={13} className={chatLoading ? styles.spin : ""} />
           </button>
