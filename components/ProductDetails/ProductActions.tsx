@@ -11,32 +11,33 @@ interface Props {
 }
 
 export default function ProductActions({ productId, productTitle, IsBookMarked }: Props) {
-  const [saved,        setSaved     ] = useState(IsBookMarked);  // ← init from prop
-  const [requested,    setRequested ] = useState(false);
-  const [copied,       setCopied    ] = useState(false);
-  const [showModal,    setShowModal ] = useState(false);
-  const [bookmarking,  setBookmarking] = useState(false);        // ← loading state
-  const base_url    = process.env.NEXT_PUBLIC_BACKEND_URL;
+  const [saved,        setSaved      ] = useState(IsBookMarked);
+  const [requested,    setRequested  ] = useState(false);
+  const [copied,       setCopied     ] = useState(false);
+  const [showModal,    setShowModal  ] = useState(false);
+  const [bookmarking,  setBookmarking] = useState(false);
+  const [bookmarkError, setBookmarkError] = useState<string | null>(null);
 
-const handleSave = async () => {
+  const handleSave = async () => {
     if (bookmarking) return;
     setBookmarking(true);
+    setBookmarkError(null);
 
     try {
-      const url = saved
-        ? `${base_url}products/bookmark/${productId}/remove/`  // ← DELETE if saved
-        : `${base_url}products/bookmark/${productId}/`;         // ← POST if not saved
-
-      const res = await fetch(url, {
+      const res = await fetch(`/api/products/bookmark/${productId}`, {
         method: saved ? 'DELETE' : 'POST',
-        credentials: 'include',
       });
 
-      if (!res.ok) throw new Error('Failed to toggle bookmark');
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || err.detail || 'Failed to toggle bookmark');
+      }
 
       setSaved((prev) => !prev);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Bookmark error:', err);
+      setBookmarkError(err.message ?? 'Failed to save. Try again!');
+      setTimeout(() => setBookmarkError(null), 3000);
     } finally {
       setBookmarking(false);
     }
@@ -93,6 +94,10 @@ const handleSave = async () => {
           {copied ? 'Link Copied!' : 'Share'}
         </button>
       </div>
+
+      {bookmarkError && (
+        <p className={styles.errorText} role="alert">{bookmarkError}</p>
+      )}
 
       {/* Exchange modal */}
       {showModal && (
