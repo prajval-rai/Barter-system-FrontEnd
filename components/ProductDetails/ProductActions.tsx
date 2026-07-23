@@ -44,7 +44,7 @@ export default function ProductActions({ productId, productTitle, IsBookMarked }
   };
 
   const handleShare = async () => {
-    const url = `${window.location.origin}/product/${productId}`;
+    const url = `${window.location.origin}/products/${productId}`;
     try {
       if (navigator.share) {
         await navigator.share({ title: productTitle, url });
