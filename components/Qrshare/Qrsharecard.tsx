@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { toPng } from "html-to-image";
-import styles from "./Qrsharecard.module.css";
+import styles from "./QRShareCard.module.css";
 
 interface QRShareCardProps {
   productId: number | string;
@@ -26,8 +26,16 @@ export default function QRShareCard({
   const [downloading, setDownloading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [thumbFailed, setThumbFailed] = useState(false);
 
   const productUrl = `${SITE_URL}/products/${productId}`;
+
+  // Routed through a same-origin proxy so the browser doesn't block it
+  // (no CORS headers on the original host) and so html-to-image can
+  // actually embed it into the exported PNG.
+  const proxiedThumbnail = thumbnail
+    ? `/api/image-proxy?url=${encodeURIComponent(thumbnail)}`
+    : undefined;
 
   async function exportCardAsPng() {
     if (!cardRef.current) throw new Error("Card not ready");
@@ -141,12 +149,12 @@ export default function QRShareCard({
 
           <div className={styles.body}>
             <div className={styles.thumbWrap}>
-              {thumbnail ? (
+              {proxiedThumbnail && !thumbFailed ? (
                 <img
-                  src={thumbnail}
+                  src={proxiedThumbnail}
                   alt={title}
                   className={styles.thumb}
-                  crossOrigin="anonymous"
+                  onError={() => setThumbFailed(true)}
                 />
               ) : (
                 <div className={styles.thumbFallback}>🖼️</div>
