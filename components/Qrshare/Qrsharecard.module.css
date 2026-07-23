@@ -86,36 +86,21 @@
   flex-wrap: wrap;
 }
 
-.logo {
+.logoBlock {
   display: flex;
-  align-items: center;
-  gap: var(--space-2);
+  flex-direction: column;
+  gap: 4px;
 }
 
-.logoIconWrap {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-full);
-  background: var(--color-primary);
-  color: var(--color-white);
-}
-
-.logoText {
-  font-family: var(--font-display);
-  font-weight: var(--font-bold);
-  font-size: var(--text-2xl);
-  color: var(--color-text-heading);
-}
-
-.logoAccent {
-  color: var(--color-primary);
+.logoImg {
+  height: 36px;
+  width: auto;
+  object-fit: contain;
+  display: block;
 }
 
 .tagline {
-  margin: 4px 0 0 42px;
+  margin: 0;
   font-size: var(--text-sm);
   color: var(--color-text-muted);
 }
@@ -244,56 +229,15 @@
   padding: 5px var(--space-3);
 }
 
-/* ── QR panel ────────────────────────────────────────── */
-.qrPanel {
-  display: flex;
-  gap: var(--space-5);
-  align-items: center;
-  background: var(--color-white);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card);
-  padding: var(--space-5);
-  flex-wrap: wrap;
-}
-
-.qrFrame {
-  position: relative;
-  flex-shrink: 0;
-  padding: 12px;
-}
-
-.qrWrap {
-  position: relative;
-  z-index: 1;
-  width: 168px;
-  height: 168px;
-  padding: var(--space-2);
-  background: var(--color-white);
-  border-radius: var(--radius-sm);
-  line-height: 0;
-  box-sizing: content-box;
-}
-
-.corner {
-  position: absolute;
-  width: 26px;
-  height: 26px;
-  border: 4px solid var(--color-primary);
-  z-index: 2;
-}
-
-.cornerTL { top: 0; left: 0; border-right: none; border-bottom: none; border-radius: 8px 0 0 0; }
-.cornerTR { top: 0; right: 0; border-left: none; border-bottom: none; border-radius: 0 8px 0 0; }
-.cornerBL { bottom: 0; left: 0; border-right: none; border-top: none; border-radius: 0 0 0 8px; }
-.cornerBR { bottom: 0; right: 0; border-left: none; border-top: none; border-radius: 0 0 8px 0; }
-
-.qrRight {
-  flex: 1;
-  min-width: 220px;
+/* ── Steps section (now standalone text block, above QR) ── */
+.stepsSection {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-5);
 }
 
 .qrRightHeader {
@@ -434,59 +378,48 @@
   margin: 0;
 }
 
-/* ── Error text ──────────────────────────────────────── */
-.errorText {
-  font-size: var(--text-xs);
-  color: #b91c1c;
-  margin: 0;
-  text-align: center;
-}
-
-/* ── Actions ─────────────────────────────────────────── */
-.actions {
+/* ── QR panel (bottom, bigger, standalone) ────────────── */
+.qrPanel {
   display: flex;
-  gap: var(--space-2);
-}
-
-.primaryBtn,
-.secondaryBtn {
-  flex: 1;
-  font-family: var(--font-body);
-  font-size: var(--text-sm);
-  font-weight: var(--font-semibold);
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-full);
-  cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-smooth);
-  border: 1.5px solid transparent;
-}
-
-.primaryBtn {
-  background: var(--color-primary);
-  color: var(--color-white);
-  box-shadow: 0 2px 8px var(--color-primary-shadow);
-}
-
-.primaryBtn:hover {
-  background: var(--color-primary-dark);
-}
-
-.secondaryBtn {
+  justify-content: center;
+  align-items: center;
   background: var(--color-white);
-  border-color: var(--color-border);
-  color: var(--color-text-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-6);
 }
 
-.secondaryBtn:hover {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-  background: var(--color-primary-light);
+.qrFrame {
+  position: relative;
+  flex-shrink: 0;
+  padding: 16px;
 }
 
-.secondaryBtn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+.qrWrap {
+  position: relative;
+  z-index: 1;
+  width: 220px;
+  height: 220px;
+  padding: var(--space-3);
+  background: var(--color-white);
+  border-radius: var(--radius-sm);
+  line-height: 0;
+  box-sizing: content-box;
 }
+
+.corner {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  border: 5px solid var(--color-primary);
+  z-index: 2;
+}
+
+.cornerTL { top: 0; left: 0; border-right: none; border-bottom: none; border-radius: 10px 0 0 0; }
+.cornerTR { top: 0; right: 0; border-left: none; border-bottom: none; border-radius: 0 10px 0 0; }
+.cornerBL { bottom: 0; left: 0; border-right: none; border-top: none; border-radius: 0 0 0 10px; }
+.cornerBR { bottom: 0; right: 0; border-left: none; border-top: none; border-radius: 0 0 10px 0; }
 
 /* Let the QR shrink to fit its container instead of staying a fixed
    large pixel size — the SVG scales cleanly since it's vector. */
@@ -496,13 +429,84 @@
   display: block;
 }
 
+/* ── Error text ──────────────────────────────────────── */
+.errorText {
+  font-size: var(--text-xs);
+  color: #b91c1c;
+  margin: 0;
+  text-align: center;
+}
+
+/* ── Actions: icon-only buttons ────────────────────────── */
+.actions {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: center;
+}
+
+.iconBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 84px;
+  padding: var(--space-3) var(--space-2);
+  border-radius: var(--radius-lg);
+  border: 1.5px solid var(--color-border);
+  background: var(--color-white);
+  color: var(--color-text-subtle);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-smooth);
+  font-family: var(--font-body);
+}
+
+.iconBtn:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+  transform: translateY(-1px);
+}
+
+.iconBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.iconBtn:first-child {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-white);
+}
+.iconBtn:first-child:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+  color: var(--color-white);
+}
+
+.iconBtnLabel {
+  font-size: 11px;
+  font-weight: var(--font-semibold);
+}
+
+.iconCheck {
+  color: #15803d;
+}
+
+.miniSpinner {
+  width: 20px;
+  height: 20px;
+  border: 2.5px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 /* ═══════════════════════════════════════════════════════
    RESPONSIVE — mobile is a full single screen, no scroll.
-   Every rule below trims vertical space rather than just
-   shrinking font sizes, since height was the actual problem:
-   header + tagline + pill stack, big thumb, full step
-   descriptions, and a pill footer were together taller than
-   one phone viewport, pushing the action buttons off-screen.
    ═══════════════════════════════════════════════════════ */
 @media (max-width: 640px) {
   .overlay { padding: 0; align-items: stretch; }
@@ -523,25 +527,19 @@
     border-radius: var(--radius-md);
   }
 
-  /* Header: logo + scan pill share one row, tagline/microtag drop
-     to keep this to a single compact line instead of two stacked
-     columns each with their own subtext line. */
   .headerRow {
     flex-wrap: nowrap;
     align-items: center;
     gap: 8px;
   }
 
-  .logoIconWrap { width: 24px; height: 24px; }
-  .logoText { font-size: 16px; }
+  .logoImg { height: 24px; }
   .tagline { display: none; }
 
   .headerRight { flex-direction: row; align-items: center; gap: 6px; }
   .scanPill { font-size: 10px; padding: 5px 10px; }
   .microTag { display: none; }
 
-  /* Product row: thumb shrinks and sits beside the text instead of
-     stacking above it — this alone reclaims most of the height. */
   .productRow {
     flex-direction: row;
     align-items: center;
@@ -550,8 +548,8 @@
   }
 
   .thumbWrap {
-    width: 60px;
-    height: 60px;
+    width: 56px;
+    height: 56px;
     border-width: 2px;
     border-radius: var(--radius-md);
   }
@@ -570,32 +568,16 @@
   .badgeRow { margin-top: 2px; gap: 6px; }
   .qualityBadge, .priceBadge { font-size: 10px; padding: 3px 8px; }
 
-  /* QR panel: QR shrinks hard and sits beside the steps instead of
-     stacked above them — this was the single biggest height cost. */
-  .qrPanel {
-    flex-direction: row;
-    align-items: center;
-    padding: 10px;
-    gap: 10px;
-  }
-
-  .qrFrame { padding: 4px; }
-  .qrWrap { width: 78px; height: 78px; padding: 4px; }
-  .corner { width: 16px; height: 16px; border-width: 3px; }
-
-  .qrRight { gap: 6px; min-width: 0; }
+  /* Steps: compact single-line-per-step, no descriptions */
+  .stepsSection { padding: var(--space-3); gap: 6px; }
   .qrRightHeader { gap: 8px; }
   .phoneIconWrap { width: 28px; height: 28px; }
   .qrHeadline { font-size: 11.5px; }
-
   .stepsDivider { display: none; }
   .stepsList { gap: 3px; }
   .step { gap: 6px; }
   .stepNumber { width: 16px; height: 16px; font-size: 9px; }
   .stepTitle { font-size: 10.5px; }
-  /* Step descriptions are the one thing safe to drop entirely on
-     mobile — titles alone ("Scan the QR code", "Open LenDen"...)
-     still communicate the flow without the extra lines of height. */
   .stepDesc { display: none; }
 
   /* Footer: one compact row, subtext dropped */
@@ -605,6 +587,15 @@
   .footerSub { display: none; }
   .footerRight { font-size: 10.5px; }
 
-  .actions { gap: 6px; }
-  .primaryBtn, .secondaryBtn { font-size: 11px; padding: 8px 6px; }
+  /* QR panel: still the star — shrinks less aggressively than
+     everything else since it's the most important element and
+     is now the last thing before the action buttons. */
+  .qrPanel { padding: var(--space-4); }
+  .qrFrame { padding: 8px; }
+  .qrWrap { width: 150px; height: 150px; padding: 6px; }
+  .corner { width: 22px; height: 22px; border-width: 4px; }
+
+  .actions { gap: 8px; }
+  .iconBtn { width: 72px; padding: 10px 6px; }
+  .iconBtnLabel { font-size: 10px; }
 }
