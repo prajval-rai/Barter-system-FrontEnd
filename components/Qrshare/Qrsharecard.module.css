@@ -140,6 +140,7 @@
   border-radius: var(--radius-full);
   padding: var(--space-2) var(--space-4);
   box-shadow: 0 4px 12px var(--color-primary-shadow);
+  white-space: nowrap;
 }
 
 .microTag {
@@ -149,6 +150,7 @@
   font-size: var(--text-xs);
   color: var(--color-text-muted);
   margin: 0;
+  white-space: nowrap;
 }
 
 .microTag svg {
@@ -494,85 +496,115 @@
   display: block;
 }
 
-/* ── Responsive ──────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════
+   RESPONSIVE — mobile is a full single screen, no scroll.
+   Every rule below trims vertical space rather than just
+   shrinking font sizes, since height was the actual problem:
+   header + tagline + pill stack, big thumb, full step
+   descriptions, and a pill footer were together taller than
+   one phone viewport, pushing the action buttons off-screen.
+   ═══════════════════════════════════════════════════════ */
 @media (max-width: 640px) {
+  .overlay { padding: 0; align-items: stretch; }
+
   .modal {
-    max-width: 94vw;
-    padding: var(--space-3);
+    max-width: 100%;
+    max-height: 100dvh;
+    height: 100dvh;
+    border-radius: 0;
+    padding: var(--space-3) var(--space-3) calc(var(--space-3) + env(safe-area-inset-bottom));
+    justify-content: space-between;
+    overflow-y: auto;
   }
 
   .card {
     padding: var(--space-4) var(--space-3) var(--space-3);
-    gap: var(--space-3);
+    gap: 10px;
+    border-radius: var(--radius-md);
   }
 
-  /* Header: stack instead of squeezing two columns side by side */
+  /* Header: logo + scan pill share one row, tagline/microtag drop
+     to keep this to a single compact line instead of two stacked
+     columns each with their own subtext line. */
   .headerRow {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--space-2);
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 8px;
   }
 
-  .headerRight {
-    align-items: flex-start;
-    width: 100%;
-  }
+  .logoIconWrap { width: 24px; height: 24px; }
+  .logoText { font-size: 16px; }
+  .tagline { display: none; }
 
-  .logoText { font-size: var(--text-lg); }
-  .logoIconWrap { width: 26px; height: 26px; }
-  .tagline { margin-left: 34px; font-size: var(--text-xs); }
-  .scanPill { font-size: var(--text-xs); padding: 6px var(--space-3); }
+  .headerRight { flex-direction: row; align-items: center; gap: 6px; }
+  .scanPill { font-size: 10px; padding: 5px 10px; }
+  .microTag { display: none; }
 
-  /* Product row: stack, center the thumbnail */
+  /* Product row: thumb shrinks and sits beside the text instead of
+     stacking above it — this alone reclaims most of the height. */
   .productRow {
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
-    text-align: center;
-    gap: var(--space-3);
+    text-align: left;
+    gap: 10px;
   }
 
-  .thumbWrap { width: 96px; height: 96px; }
-  .productInfo { align-items: center; min-width: 0; }
-  .productTitle { font-size: var(--text-lg); }
-  .productDesc { font-size: var(--text-xs); }
-  .badgeRow { justify-content: center; }
+  .thumbWrap {
+    width: 60px;
+    height: 60px;
+    border-width: 2px;
+    border-radius: var(--radius-md);
+  }
 
-  /* QR panel: stack, QR shrinks with the container width instead of
-     staying at a fixed 168px that overflows on narrow screens */
+  .productInfo { align-items: flex-start; min-width: 0; gap: 3px; }
+  .productTitle { font-size: 14px; }
+
+  .productDesc {
+    font-size: 11px;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .badgeRow { margin-top: 2px; gap: 6px; }
+  .qualityBadge, .priceBadge { font-size: 10px; padding: 3px 8px; }
+
+  /* QR panel: QR shrinks hard and sits beside the steps instead of
+     stacked above them — this was the single biggest height cost. */
   .qrPanel {
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
-    padding: var(--space-4) var(--space-3);
-    gap: var(--space-3);
+    padding: 10px;
+    gap: 10px;
   }
 
-  .qrFrame { align-self: center; }
+  .qrFrame { padding: 4px; }
+  .qrWrap { width: 78px; height: 78px; padding: 4px; }
+  .corner { width: 16px; height: 16px; border-width: 3px; }
 
-  .qrWrap {
-    width: min(150px, 55vw);
-    height: auto;
-  }
+  .qrRight { gap: 6px; min-width: 0; }
+  .qrRightHeader { gap: 8px; }
+  .phoneIconWrap { width: 28px; height: 28px; }
+  .qrHeadline { font-size: 11.5px; }
 
-  .qrRight { text-align: left; width: 100%; }
-  .qrHeadline { font-size: var(--text-base); }
+  .stepsDivider { display: none; }
+  .stepsList { gap: 3px; }
+  .step { gap: 6px; }
+  .stepNumber { width: 16px; height: 16px; font-size: 9px; }
+  .stepTitle { font-size: 10.5px; }
+  /* Step descriptions are the one thing safe to drop entirely on
+     mobile — titles alone ("Scan the QR code", "Open LenDen"...)
+     still communicate the flow without the extra lines of height. */
+  .stepDesc { display: none; }
 
-  /* Footer: stack instead of cramming two rows side by side */
-  .footerBar {
-    flex-direction: column;
-    align-items: flex-start;
-    border-radius: var(--radius-lg);
-    gap: var(--space-2);
-  }
+  /* Footer: one compact row, subtext dropped */
+  .footerBar { padding: 8px 10px; border-radius: var(--radius-md); gap: 8px; }
+  .lockIconWrap { width: 26px; height: 26px; }
+  .footerTitle { font-size: 10.5px; }
+  .footerSub { display: none; }
+  .footerRight { font-size: 10.5px; }
 
-  .footerRight { align-self: flex-start; }
-
-  .actions { flex-wrap: wrap; }
-  .primaryBtn, .secondaryBtn { flex: 1 1 45%; }
-}
-
-@media (max-width: 380px) {
-  .stepTitle { font-size: var(--text-xs); }
-  .stepDesc { font-size: 10px; }
-  .stepNumber { width: 22px; height: 22px; font-size: var(--text-xs); }
-  .qrWrap { width: min(130px, 50vw); }
+  .actions { gap: 6px; }
+  .primaryBtn, .secondaryBtn { font-size: 11px; padding: 8px 6px; }
 }
