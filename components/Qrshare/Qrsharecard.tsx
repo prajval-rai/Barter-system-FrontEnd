@@ -3,7 +3,17 @@
 import { useRef, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { toPng } from "html-to-image";
-import { Scan, ShieldCheck, Smartphone, Lock, Sparkles, ArrowLeftRight } from "lucide-react";
+import {
+  Scan,
+  ShieldCheck,
+  Smartphone,
+  Lock,
+  Sparkles,
+  Download,
+  Share2,
+  Link2,
+  Check,
+} from "lucide-react";
 import styles from "./Qrsharecard.module.css";
 
 interface QRShareCardProps {
@@ -68,6 +78,9 @@ export default function QRShareCard({
     }
   }
 
+  // ── Opens the native share sheet with the card image attached.
+  // On mobile this is where WhatsApp, Instagram, etc. show up as
+  // share targets automatically — no per-app integration needed. ──
   async function handleShare() {
     setError(null);
     try {
@@ -89,6 +102,8 @@ export default function QRShareCard({
           text: `Check out "${title}" on LenDen — ${productUrl}`,
         });
       } else {
+        // Desktop / unsupported browsers: fall back to downloading
+        // the image so the user can attach it manually.
         await handleDownload();
       }
     } catch (err) {
@@ -126,17 +141,11 @@ export default function QRShareCard({
 
         {/* ---- Everything inside cardRef is exactly what gets exported as the shared image ---- */}
         <div ref={cardRef} className={styles.card}>
-          {/* Header */}
+
+          {/* ── Header: logo + tagline (top) ── */}
           <div className={styles.headerRow}>
-            <div>
-              <div className={styles.logo}>
-                <span className={styles.logoIconWrap}>
-                  <ArrowLeftRight size={18} strokeWidth={2.5} />
-                </span>
-                <span className={styles.logoText}>
-                  Len<span className={styles.logoAccent}>Den</span>
-                </span>
-              </div>
+            <div className={styles.logoBlock}>
+              <img src="/logo.png" alt="LenDen" className={styles.logoImg} />
               <p className={styles.tagline}>Swap More. Save More.</p>
             </div>
 
@@ -151,7 +160,7 @@ export default function QRShareCard({
             </div>
           </div>
 
-          {/* Product row */}
+          {/* ── Product info (top) ── */}
           <div className={styles.productRow}>
             <div className={styles.thumbWrap}>
               {proxiedThumbnail && !thumbFailed ? (
@@ -181,63 +190,45 @@ export default function QRShareCard({
             </div>
           </div>
 
-          {/* QR panel */}
-          <div className={styles.qrPanel}>
-            <div className={styles.qrFrame}>
-              <span className={`${styles.corner} ${styles.cornerTL}`} />
-              <span className={`${styles.corner} ${styles.cornerTR}`} />
-              <span className={`${styles.corner} ${styles.cornerBL}`} />
-              <span className={`${styles.corner} ${styles.cornerBR}`} />
-              <div className={styles.qrWrap}>
-                <QRCodeSVG
-                  value={productUrl}
-                  size={168}
-                  bgColor="#ffffff"
-                  fgColor="#0c1b35"
-                  level="M"
-                />
-              </div>
+          {/* ── Steps (top, text content) ── */}
+          <div className={styles.stepsSection}>
+            <div className={styles.qrRightHeader}>
+              <span className={styles.phoneIconWrap}>
+                <Smartphone size={20} strokeWidth={2.5} />
+              </span>
+              <p className={styles.qrHeadline}>
+                Point your camera below to <span className={styles.swapWord}>swap!</span>
+              </p>
             </div>
 
-            <div className={styles.qrRight}>
-              <div className={styles.qrRightHeader}>
-                <span className={styles.phoneIconWrap}>
-                  <Smartphone size={20} strokeWidth={2.5} />
-                </span>
-                <p className={styles.qrHeadline}>
-                  Point your camera here to <span className={styles.swapWord}>swap!</span>
-                </p>
-              </div>
+            <div className={styles.stepsDivider} />
 
-              <div className={styles.stepsDivider} />
-
-              <ol className={styles.stepsList}>
-                <li className={styles.step}>
-                  <span className={styles.stepNumber}>1</span>
-                  <div>
-                    <p className={styles.stepTitle}>Scan the QR code</p>
-                    <p className={styles.stepDesc}>Open your camera and scan this code.</p>
-                  </div>
-                </li>
-                <li className={styles.step}>
-                  <span className={styles.stepNumber}>2</span>
-                  <div>
-                    <p className={styles.stepTitle}>Open LenDen</p>
-                    <p className={styles.stepDesc}>You&apos;ll be redirected to the product page.</p>
-                  </div>
-                </li>
-                <li className={styles.step}>
-                  <span className={styles.stepNumber}>3</span>
-                  <div>
-                    <p className={styles.stepTitle}>Start Swapping</p>
-                    <p className={styles.stepDesc}>Connect, chat &amp; swap with ease.</p>
-                  </div>
-                </li>
-              </ol>
-            </div>
+            <ol className={styles.stepsList}>
+              <li className={styles.step}>
+                <span className={styles.stepNumber}>1</span>
+                <div>
+                  <p className={styles.stepTitle}>Scan the QR code</p>
+                  <p className={styles.stepDesc}>Open your camera and scan this code.</p>
+                </div>
+              </li>
+              <li className={styles.step}>
+                <span className={styles.stepNumber}>2</span>
+                <div>
+                  <p className={styles.stepTitle}>Open LenDen</p>
+                  <p className={styles.stepDesc}>You&apos;ll be redirected to the product page.</p>
+                </div>
+              </li>
+              <li className={styles.step}>
+                <span className={styles.stepNumber}>3</span>
+                <div>
+                  <p className={styles.stepTitle}>Start Swapping</p>
+                  <p className={styles.stepDesc}>Connect, chat &amp; swap with ease.</p>
+                </div>
+              </li>
+            </ol>
           </div>
 
-          {/* Footer */}
+          {/* ── Footer (top, text content) ── */}
           <div className={styles.footerBar}>
             <div className={styles.footerLeft}>
               <span className={styles.lockIconWrap}>
@@ -253,24 +244,71 @@ export default function QRShareCard({
               Happy Swapping!
             </p>
           </div>
+
+          {/* ── QR panel: bigger, standalone, bottom ── */}
+          <div className={styles.qrPanel}>
+            <div className={styles.qrFrame}>
+              <span className={`${styles.corner} ${styles.cornerTL}`} />
+              <span className={`${styles.corner} ${styles.cornerTR}`} />
+              <span className={`${styles.corner} ${styles.cornerBL}`} />
+              <span className={`${styles.corner} ${styles.cornerBR}`} />
+              <div className={styles.qrWrap}>
+                <QRCodeSVG
+                  value={productUrl}
+                  size={220}
+                  bgColor="#ffffff"
+                  fgColor="#0c1b35"
+                  level="M"
+                />
+              </div>
+            </div>
+          </div>
         </div>
         {/* ---- end exported card ---- */}
 
         {error && <p className={styles.errorText}>{error}</p>}
 
+        {/* ── Icon-only action buttons ── */}
         <div className={styles.actions}>
-          <button className={styles.primaryBtn} onClick={handleShare}>
-            Share
-          </button>
           <button
-            className={styles.secondaryBtn}
+            className={styles.iconBtn}
+            onClick={handleShare}
+            aria-label="Share"
+            title="Share to WhatsApp, Instagram & more"
+          >
+            <Share2 size={20} strokeWidth={2.2} />
+            <span className={styles.iconBtnLabel}>Share</span>
+          </button>
+
+          <button
+            className={styles.iconBtn}
             onClick={handleDownload}
             disabled={downloading}
+            aria-label="Download image"
+            title="Download PNG"
           >
-            {downloading ? "Saving…" : "Download PNG"}
+            {downloading ? (
+              <span className={styles.miniSpinner} />
+            ) : (
+              <Download size={20} strokeWidth={2.2} />
+            )}
+            <span className={styles.iconBtnLabel}>
+              {downloading ? "Saving…" : "Download"}
+            </span>
           </button>
-          <button className={styles.secondaryBtn} onClick={handleCopyLink}>
-            {copied ? "Copied!" : "Copy Link"}
+
+          <button
+            className={styles.iconBtn}
+            onClick={handleCopyLink}
+            aria-label="Copy link"
+            title="Copy product link"
+          >
+            {copied ? (
+              <Check size={20} strokeWidth={2.4} className={styles.iconCheck} />
+            ) : (
+              <Link2 size={20} strokeWidth={2.2} />
+            )}
+            <span className={styles.iconBtnLabel}>{copied ? "Copied!" : "Copy Link"}</span>
           </button>
         </div>
       </div>
