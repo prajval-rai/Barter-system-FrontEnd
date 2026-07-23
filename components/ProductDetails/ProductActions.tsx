@@ -24,7 +24,7 @@ export default function ProductActions({ productId, productTitle, IsBookMarked }
     setBookmarkError(null);
 
     try {
-      const res = await fetch(`/api/products/bookmark/${productId}`, {
+      const res = await fetch(`/api/product/bookmark/${productId}`, {
         method: saved ? 'DELETE' : 'POST',
       });
 
@@ -44,7 +44,7 @@ export default function ProductActions({ productId, productTitle, IsBookMarked }
   };
 
   const handleShare = async () => {
-    const url = `${window.location.origin}/products/${productId}`;
+    const url = `${window.location.origin}/product/${productId}`;
     try {
       if (navigator.share) {
         await navigator.share({ title: productTitle, url });
