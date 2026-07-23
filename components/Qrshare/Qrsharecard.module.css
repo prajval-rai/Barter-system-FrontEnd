@@ -264,10 +264,13 @@
 .qrWrap {
   position: relative;
   z-index: 1;
+  width: 168px;
+  height: 168px;
   padding: var(--space-2);
   background: var(--color-white);
   border-radius: var(--radius-sm);
   line-height: 0;
+  box-sizing: content-box;
 }
 
 .corner {
@@ -483,12 +486,93 @@
   cursor: not-allowed;
 }
 
+/* Let the QR shrink to fit its container instead of staying a fixed
+   large pixel size — the SVG scales cleanly since it's vector. */
+.qrWrap svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
 /* ── Responsive ──────────────────────────────────────── */
-@media (max-width: 560px) {
-  .qrPanel { flex-direction: column; align-items: stretch; }
-  .qrFrame { align-self: center; }
-  .thumbWrap { width: 110px; height: 110px; }
+@media (max-width: 640px) {
+  .modal {
+    max-width: 94vw;
+    padding: var(--space-3);
+  }
+
+  .card {
+    padding: var(--space-4) var(--space-3) var(--space-3);
+    gap: var(--space-3);
+  }
+
+  /* Header: stack instead of squeezing two columns side by side */
+  .headerRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+
+  .headerRight {
+    align-items: flex-start;
+    width: 100%;
+  }
+
+  .logoText { font-size: var(--text-lg); }
+  .logoIconWrap { width: 26px; height: 26px; }
+  .tagline { margin-left: 34px; font-size: var(--text-xs); }
+  .scanPill { font-size: var(--text-xs); padding: 6px var(--space-3); }
+
+  /* Product row: stack, center the thumbnail */
+  .productRow {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--space-3);
+  }
+
+  .thumbWrap { width: 96px; height: 96px; }
+  .productInfo { align-items: center; min-width: 0; }
   .productTitle { font-size: var(--text-lg); }
+  .productDesc { font-size: var(--text-xs); }
+  .badgeRow { justify-content: center; }
+
+  /* QR panel: stack, QR shrinks with the container width instead of
+     staying at a fixed 168px that overflows on narrow screens */
+  .qrPanel {
+    flex-direction: column;
+    align-items: center;
+    padding: var(--space-4) var(--space-3);
+    gap: var(--space-3);
+  }
+
+  .qrFrame { align-self: center; }
+
+  .qrWrap {
+    width: min(150px, 55vw);
+    height: auto;
+  }
+
+  .qrRight { text-align: left; width: 100%; }
+  .qrHeadline { font-size: var(--text-base); }
+
+  /* Footer: stack instead of cramming two rows side by side */
+  .footerBar {
+    flex-direction: column;
+    align-items: flex-start;
+    border-radius: var(--radius-lg);
+    gap: var(--space-2);
+  }
+
+  .footerRight { align-self: flex-start; }
+
   .actions { flex-wrap: wrap; }
   .primaryBtn, .secondaryBtn { flex: 1 1 45%; }
+}
+
+@media (max-width: 380px) {
+  .stepTitle { font-size: var(--text-xs); }
+  .stepDesc { font-size: 10px; }
+  .stepNumber { width: 22px; height: 22px; font-size: var(--text-xs); }
+  .qrWrap { width: min(130px, 50vw); }
 }
