@@ -102,7 +102,7 @@ function BookmarkCard({
 
           <div className={styles.actions}>
             <a
-              href={`/product/${item.product_id}`}
+              href={`/products/${item.product_id}`}
               className={styles.viewBtn}
             >
               <EyeIcon />
