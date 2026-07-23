@@ -9,9 +9,11 @@ function getCookieHeader(req: NextRequest) {
 // ── Add a bookmark ──
 export async function POST(
   req: NextRequest,
-  { params }: { params: { productId: string } }
+  { params }: { params: Promise<{ productId: string }> }
 ) {
-  const res = await fetch(`${BACKEND}products/bookmark/${params.productId}/`, {
+  const { productId } = await params;
+
+  const res = await fetch(`${BACKEND}products/bookmark/${productId}/`, {
     method: "POST",
     headers: { "Cookie": getCookieHeader(req) },
   });
@@ -22,9 +24,11 @@ export async function POST(
 // ── Remove a bookmark ──
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { productId: string } }
+  { params }: { params: Promise<{ productId: string }> }
 ) {
-  const res = await fetch(`${BACKEND}products/bookmark/${params.productId}/remove/`, {
+  const { productId } = await params;
+
+  const res = await fetch(`${BACKEND}products/bookmark/${productId}/remove/`, {
     method: "DELETE",
     headers: { "Cookie": getCookieHeader(req) },
   });
