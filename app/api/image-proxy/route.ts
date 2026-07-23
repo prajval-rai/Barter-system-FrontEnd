@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 const ALLOWED_HOSTS = [
   "lenden.co.in",
   "www.lenden.co.in",
-  // e.g. "your-bucket.s3.amazonaws.com", "res.cloudinary.com", "your-cdn.com"
+  "storage.googleapis.com", // GCS bucket serving product thumbnails (barter-system-images)
 ];
 
 export async function GET(req: NextRequest) {
@@ -26,7 +26,14 @@ export async function GET(req: NextRequest) {
     (h) => target.hostname === h || target.hostname.endsWith(`.${h}`)
   );
 
-  if (!hostAllowed) {
+  // storage.googleapis.com is shared across every public GCS bucket, so
+  // restrict it further to just your bucket's path to avoid this becoming
+  // an open proxy for arbitrary public buckets.
+  const isYourBucket =
+    target.hostname !== "storage.googleapis.com" ||
+    target.pathname.startsWith("/barter-system-images/");
+
+  if (!hostAllowed || !isYourBucket) {
     return NextResponse.json({ error: "Host not allowed" }, { status: 403 });
   }
 
