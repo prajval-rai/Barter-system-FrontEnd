@@ -764,3 +764,15 @@
   flex-shrink: 0;
   border: 1.5px solid var(--color-border, #e5e7eb);
 }
+
+.exampleHint {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.78rem;
+  font-style: italic;
+  color: var(--color-text-subtle, #6b7280);
+  background: rgba(0, 0, 0, 0.04);
+  padding: 4px 10px;
+  border-radius: 8px;
+  width: fit-content;
+}
