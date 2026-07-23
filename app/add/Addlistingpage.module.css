@@ -705,7 +705,7 @@
   background: var(--color-white);
   border-top: 1px solid var(--color-border);
   flex-shrink: 0;
-  align-items: center;
+  align-items: flex-end;
   box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.04);
 }
 
