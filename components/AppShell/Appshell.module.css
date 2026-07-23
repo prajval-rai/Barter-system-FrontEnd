@@ -69,6 +69,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 20px 16px 16px;
+  flex-shrink: 0;
 }
 
 .logoLink {
@@ -127,6 +128,7 @@
 /* ── CTA ── */
 .ctaWrap {
   padding: 0 12px 12px;
+  flex-shrink: 0;
 }
 
 .ctaBtn {
@@ -154,14 +156,24 @@
 }
 
 /* ── Nav ── */
+/* flex: 1 + min-height: 0 lets this box shrink below its content's natural
+   height inside the flex column; overflow-y: auto then scrolls internally
+   instead of spilling onto sidebarUser/helpLink below it. Previously this
+   was `overflow: visible`, which let nav items paint over the footer rows
+   whenever the sidebar was shorter than the nav's content (short viewport
+   heights, browser chrome eating vertical space, etc). */
 .nav {
   flex: 1;
-  overflow: visible;
+  overflow-y: auto;
+  overflow-x: hidden;
   padding: 4px 10px 8px;
   display: flex;
   flex-direction: column;
   min-height: 0;
+  scrollbar-width: none;
 }
+
+.nav::-webkit-scrollbar { display: none; }
 
 /* Section grouping */
 .navSection {
@@ -202,6 +214,7 @@
   transition: background 120ms, color 120ms;
   white-space: nowrap;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .navItem:hover {
@@ -269,8 +282,6 @@
   padding: 0 3px;
 }
 
-
-
 /* ── Sidebar user row ── */
 .sidebarUser {
   display: flex;
@@ -278,6 +289,8 @@
   gap: 9px;
   padding: 12px 14px;
   border-top: 1px solid #F0F4FA;
+  flex-shrink: 0;
+  background: #ffffff;
 }
 
 .sidebarUserCollapsed {
@@ -365,6 +378,8 @@
   text-decoration: none;
   border-top: 1px solid #F0F4FA;
   transition: background 120ms;
+  flex-shrink: 0;
+  background: #ffffff;
 }
 
 .helpLink:hover {
@@ -611,6 +626,7 @@
   gap: 10px;
   padding: 8px 10px;
   border-radius: var(--border-radius-md);
+  flex-shrink: 0;
 }
 
 .comingSoonPill {
