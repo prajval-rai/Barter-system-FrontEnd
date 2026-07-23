@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import styles from "./Mylistings.module.css";
-import QRShareCard from "../QRShare/QRShareCard";
+import QRShareCard from "../Qrshare/Qrsharecard";
 
 interface Product {
   id: number;
