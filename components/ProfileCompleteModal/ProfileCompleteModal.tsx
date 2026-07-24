@@ -13,9 +13,9 @@ interface ProfileCompleteModalProps {
 
 const FIELD_META: Record<string, { label: string; type: string; placeholder: string }> = {
   description:    { label: "Description",     type: "textarea", placeholder: "Tell others what you offer..." },
-  address:        { label: "Address",          type: "text",     placeholder: "Your street address" },
-  city:           { label: "City",             type: "text",     placeholder: "City name" },
-  pincode:        { label: "Pincode",          type: "text",     placeholder: "6-digit pincode" },
+  address:        { label: "Address",          type: "text",     placeholder: "Detected automatically from GPS" },
+  city:           { label: "City",             type: "text",     placeholder: "Detected automatically from GPS" },
+  pincode:        { label: "Pincode",          type: "text",     placeholder: "Detected automatically from GPS" },
   latitude:       { label: "Latitude",         type: "number",   placeholder: "Auto-filled from GPS" },
   longitude:      { label: "Longitude",        type: "number",   placeholder: "Auto-filled from GPS" },
   contact_number: { label: "Contact Number",   type: "tel",      placeholder: "10-digit mobile number" },
@@ -23,6 +23,7 @@ const FIELD_META: Record<string, { label: string; type: string; placeholder: str
 
 // These are captured silently via GPS — never rendered as visible inputs
 const HIDDEN_FIELDS = ["latitude", "longitude"];
+// Fields that come ONLY from GPS detection — never manually typed
 const LOCATION_FIELDS = ["address", "city", "pincode", "latitude", "longitude"];
 
 // Maps this form's field keys to the keys used on AuthUser / in context
@@ -42,9 +43,14 @@ export default function ProfileCompleteModal({
   const [locLoading, setLocLoading] = useState(false);
   const [locError, setLocError]     = useState<string | null>(null);
   const [locSuccess, setLocSuccess] = useState(false);
+  const [permState, setPermState]   = useState<PermissionState | "unsupported" | null>(null);
   const [saving, setSaving]         = useState(false);
   const [saveError, setSaveError]   = useState<string | null>(null);
   const overlayRef                  = useRef<HTMLDivElement>(null);
+
+  const needsLocation = incompleteFields.some((f) => LOCATION_FIELDS.includes(f));
+  // Gate: while location is required but not yet detected, hide the rest of the form
+  const showLocationGate = needsLocation && !locSuccess;
 
   useEffect(() => {
     if (isOpen) {
@@ -52,6 +58,20 @@ export default function ProfileCompleteModal({
       setSaveError(null);
       setLocError(null);
       setLocSuccess(false);
+      setSaving(false);
+
+      // Check current permission state up front (doesn't prompt the user)
+      if (navigator.permissions?.query) {
+        navigator.permissions
+          .query({ name: "geolocation" as PermissionName })
+          .then((status) => {
+            setPermState(status.state);
+            status.onchange = () => setPermState(status.state);
+          })
+          .catch(() => setPermState(null));
+      } else {
+        setPermState("unsupported");
+      }
     }
   }, [isOpen]);
 
@@ -98,18 +118,30 @@ export default function ProfileCompleteModal({
         setLocSuccess(true);
         setLocLoading(false);
       },
-      () => {
-        setLocError("Could not fetch location. Please allow location access.");
+      (err) => {
+        setLocSuccess(false);
+        if (err.code === err.PERMISSION_DENIED) {
+          setLocError(
+            "Location access was denied. Please allow location permission for this site in your browser settings, then try again."
+          );
+        } else {
+          setLocError("Could not fetch location. Please try again.");
+        }
         setLocLoading(false);
       }
     );
   };
 
   const handleChange = (key: string, value: string) => {
+    // Location fields are GPS-only — ignore any attempt to edit them manually
+    if (LOCATION_FIELDS.includes(key)) return;
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
   const handleSave = async () => {
+    // Hard block: can't save while location is still required but undetected
+    if (showLocationGate) return;
+
     const payload: Record<string, string> = {};
     for (const key of incompleteFields) {
       if (form[key]?.trim()) payload[key] = form[key].trim();
@@ -149,7 +181,6 @@ export default function ProfileCompleteModal({
 
   if (!isOpen) return null;
 
-  const needsLocation = incompleteFields.some((f) => LOCATION_FIELDS.includes(f));
   // Only render fields that have UI — GPS coordinates are captured but stay invisible
   const visibleFields = incompleteFields.filter((f) => !HIDDEN_FIELDS.includes(f));
 
@@ -160,10 +191,16 @@ export default function ProfileCompleteModal({
         {/* Header */}
         <div className={styles.header}>
           <div className={styles.headerLeft}>
-            <span className={styles.headerIcon}>👤</span>
+            <span className={styles.headerIcon}>{showLocationGate ? "📍" : "👤"}</span>
             <div>
-              <h2 className={styles.headerTitle}>Complete your profile</h2>
-              <p className={styles.headerSub}>Fill in the missing fields below</p>
+              <h2 className={styles.headerTitle}>
+                {showLocationGate ? "Enable your location" : "Complete your profile"}
+              </h2>
+              <p className={styles.headerSub}>
+                {showLocationGate
+                  ? "We need your location before you can continue"
+                  : "Fill in the missing fields below"}
+              </p>
             </div>
           </div>
           <button className={styles.closeBtn} onClick={onClose} aria-label="Close">✕</button>
@@ -172,66 +209,81 @@ export default function ProfileCompleteModal({
         {/* Body */}
         <div className={styles.body}>
 
-          {/* GPS auto-detect — shown when any location field is pending */}
-          {needsLocation && (
-            <div className={styles.locationRow}>
+          {showLocationGate ? (
+            /* ── Gate screen: nothing else is shown until location is detected ── */
+            <div className={styles.locationGate}>
+              <p className={styles.locationGateText}>
+                To complete your profile we need your address, city and pincode.
+                These are filled in automatically from your device's location —
+                click below and allow access when your browser asks.
+              </p>
+
               <button
                 className={styles.locationBtn}
                 onClick={fetchLocation}
                 disabled={locLoading}
               >
-                {locLoading
-                  ? <span className={styles.locSpinner} />
-                  : <span>📍</span>
-                }
-                {locLoading ? "Detecting location…" : "Auto-detect my location"}
+                {locLoading ? <span className={styles.locSpinner} /> : <span>📍</span>}
+                {locLoading ? "Detecting location…" : "Allow & detect my location"}
               </button>
 
-              {locError && (
-                <p className={styles.locError}>⚠ {locError}</p>
-              )}
+              {locError && <p className={styles.locError}>⚠ {locError}</p>}
 
-              {locSuccess && !locError && (
-                <p className={styles.locSuccess}>
-                  ✓ Location detected — fields filled below. Edit if needed.
+              {permState === "denied" && !locError && (
+                <p className={styles.locError}>
+                  ⚠ Location is currently blocked for this site. Enable it from your
+                  browser's site settings (the icon next to the address bar), then
+                  try again.
                 </p>
               )}
             </div>
+          ) : (
+            <>
+              {/* Location already detected — show a small confirmation instead of the gate */}
+              {needsLocation && locSuccess && (
+                <p className={styles.locSuccess}>✓ Location detected — shown below.</p>
+              )}
+
+              {/* Fields — GPS coordinates excluded, captured silently in the background */}
+              <div className={styles.fields}>
+                {visibleFields.map((key) => {
+                  const meta = FIELD_META[key];
+                  if (!meta) return null;
+
+                  const isLocked = LOCATION_FIELDS.includes(key);
+                  const isFilled = Boolean(form[key]);
+
+                  return (
+                    <div className={styles.fieldGroup} key={key}>
+                      <label className={styles.label}>
+                        {meta.label}
+                        {isLocked && <span className={styles.gpsTag}>GPS</span>}
+                      </label>
+
+                      {meta.type === "textarea" ? (
+                        <textarea
+                          className={styles.textarea}
+                          placeholder={meta.placeholder}
+                          value={form[key] || ""}
+                          onChange={(e) => handleChange(key, e.target.value)}
+                          rows={3}
+                        />
+                      ) : (
+                        <input
+                          className={`${styles.input} ${isFilled ? styles.inputFilled : ""}`}
+                          type={meta.type}
+                          placeholder={meta.placeholder}
+                          value={form[key] || ""}
+                          readOnly={isLocked}
+                          onChange={(e) => handleChange(key, e.target.value)}
+                        />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </>
           )}
-
-          {/* Fields — GPS coordinates excluded, captured silently in the background */}
-          <div className={styles.fields}>
-            {visibleFields.map((key) => {
-              const meta = FIELD_META[key];
-              if (!meta) return null;
-
-              const isFilled = Boolean(form[key]);
-
-              return (
-                <div className={styles.fieldGroup} key={key}>
-                  <label className={styles.label}>{meta.label}</label>
-
-                  {meta.type === "textarea" ? (
-                    <textarea
-                      className={styles.textarea}
-                      placeholder={meta.placeholder}
-                      value={form[key] || ""}
-                      onChange={(e) => handleChange(key, e.target.value)}
-                      rows={3}
-                    />
-                  ) : (
-                    <input
-                      className={`${styles.input} ${isFilled ? styles.inputFilled : ""}`}
-                      type={meta.type}
-                      placeholder={meta.placeholder}
-                      value={form[key] || ""}
-                      onChange={(e) => handleChange(key, e.target.value)}
-                    />
-                  )}
-                </div>
-              );
-            })}
-          </div>
 
           {saveError && <p className={styles.saveError}>⚠ {saveError}</p>}
         </div>
@@ -239,13 +291,15 @@ export default function ProfileCompleteModal({
         {/* Footer */}
         <div className={styles.footer}>
           <button className={styles.cancelBtn} onClick={onClose}>Cancel</button>
-          <button
-            className={styles.saveBtn}
-            onClick={handleSave}
-            disabled={saving}
-          >
-            {saving ? "Saving…" : "Save profile"}
-          </button>
+          {!showLocationGate && (
+            <button
+              className={styles.saveBtn}
+              onClick={handleSave}
+              disabled={saving}
+            >
+              {saving ? "Saving…" : "Save profile"}
+            </button>
+          )}
         </div>
 
       </div>
