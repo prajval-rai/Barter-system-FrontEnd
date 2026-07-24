@@ -104,7 +104,24 @@
   gap: 18px;
 }
 
-/* ── GPS button — now a real solid button, not a dashed placeholder ── */
+/* ── Location gate screen (shown before the rest of the form) ── */
+.locationGate {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 14px;
+  padding: 8px 0 4px;
+  text-align: center;
+}
+
+.locationGateText {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: #46577d;
+  line-height: 1.5;
+}
+
+/* ── GPS button ── */
 .locationRow {
   display: flex;
   flex-direction: column;
@@ -238,10 +255,12 @@
   color: #15803d;
 }
 
+/* Location fields are always readOnly — style them as clearly locked/non-editable */
 .input[readonly] {
   cursor: default;
   background: #f8faff;
-  color: #6b7fa3;
+  color: #46577d;
+  border-color: #e2eaf8;
 }
 
 .textarea {
