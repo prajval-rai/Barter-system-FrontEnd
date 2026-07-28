@@ -49,17 +49,33 @@ const INDIA_ZOOM = 5;
 const MAX_ZOOM = 18;
 const SAME_PLACE_EPSILON = 0.0006;
 
+// ── Radius-focus config ────────────────────────────────────────────────────
+const SEARCH_RADIUS_KM = 20;
+const SEARCH_RADIUS_M = SEARCH_RADIUS_KM * 1000;
+// How long we're willing to wait for a geolocation fix before giving up and
+// falling back to "fit all products" framing instead.
+const GEO_FOCUS_TIMEOUT_MS = 8000;
+
 export default function MarketplaceMap({ categories, selectedCategory, onSelectCategory }: Props) {
   const router = useRouter();
-  const mapRef         = useRef<HTMLDivElement>(null);
-  const leafletMap     = useRef<any>(null);
-  const clusterLayer   = useRef<any>(null);
-  const locationMarker = useRef<any>(null);
-  const boundaryLayer  = useRef<any>(null);
-  const mapInitialized = useRef(false);
-  const productsRef    = useRef<Product[]>([]);
-  const zoomTimeout    = useRef<any>(null);
-  const fitToAllOnce   = useRef(false);
+  const mapRef          = useRef<HTMLDivElement>(null);
+  const leafletMap      = useRef<any>(null);
+  const clusterLayer    = useRef<any>(null);
+  const locationMarker  = useRef<any>(null);
+  const boundaryLayer   = useRef<any>(null);
+  const radiusCircle    = useRef<any>(null);
+  const mapInitialized  = useRef(false);
+  const productsRef     = useRef<Product[]>([]);
+  const zoomTimeout     = useRef<any>(null);
+  const fitToAllOnce    = useRef(false);
+  // True once we've done ANY initial framing (radius-focus or fit-all) —
+  // guards against doing it twice, and against a late-arriving geolocation
+  // result overriding a fallback fit-all that already happened.
+  const initialFocusDone = useRef(false);
+  // True the moment the user manually drags the map. Used to cancel a
+  // pending geolocation auto-focus so we never yank the view out from
+  // under someone who started exploring before their GPS fix arrived.
+  const userInteracted  = useRef(false);
 
   const [products,          setProducts         ] = useState<Product[]>([]);
   const [loading,           setLoading          ] = useState(true);
@@ -117,9 +133,9 @@ export default function MarketplaceMap({ categories, selectedCategory, onSelectC
     if (valid.length === 0) return [];
 
     const isMobile = window.innerWidth <= 640;
-    // Grid cell must be >= the rendered pin footprint (90x80, ~0.85 scale on
-    // mobile) or two pins in different-but-adjacent cells will visually
-    // overlap even though the algorithm correctly decided not to cluster them.
+    // Grid cell must be >= the rendered pin footprint (90x80) or pins in
+    // different-but-adjacent cells can visually overlap on screen even
+    // though the algorithm correctly decided not to cluster them.
     const gridSize = isMobile ? 80 : 105;
     const zoom = map.getZoom();
 
@@ -264,7 +280,7 @@ export default function MarketplaceMap({ categories, selectedCategory, onSelectC
     }
   }, []);
 
-  // ── Locate user ────────────────────────────────────────────────────────
+  // ── "You are here" marker ─────────────────────────────────────────────────
 
   const placeYouMarker = useCallback(async (lat: number, lng: number, openPopup: boolean) => {
     const L = await import("leaflet");
@@ -296,6 +312,74 @@ export default function MarketplaceMap({ categories, selectedCategory, onSelectC
     }
   }, []);
 
+  // ── Draw / update the 20km search-radius circle and fit the view to it ────
+
+  const drawRadiusCircle = useCallback(async (L: any, map: any, lat: number, lng: number) => {
+    if (radiusCircle.current) {
+      map.removeLayer(radiusCircle.current);
+    }
+    const circle = L.circle([lat, lng], {
+      radius: SEARCH_RADIUS_M,
+      color: "#3b82f6",
+      weight: 1.5,
+      fillColor: "#3b82f6",
+      fillOpacity: 0.06,
+      dashArray: "4 6",
+      interactive: false,
+    }).addTo(map);
+    radiusCircle.current = circle;
+    return circle;
+  }, []);
+
+  const focusOnUserRadius = useCallback(async (lat: number, lng: number, animate = false) => {
+    if (!leafletMap.current) return;
+    const L = await import("leaflet");
+    const map = leafletMap.current;
+    const circle = await drawRadiusCircle(L, map, lat, lng);
+    map.fitBounds(circle.getBounds(), { padding: [24, 24], animate });
+  }, [drawRadiusCircle]);
+
+  // One-shot: try to get the user's location and frame the map to a 20km
+  // radius around them. Resolves to `true` if it succeeded (so the caller
+  // knows not to fall back to "fit all products"), `false` otherwise.
+  const attemptInitialRadiusFocus = useCallback((): Promise<boolean> => {
+    return new Promise((resolve) => {
+      if (!("geolocation" in navigator)) {
+        resolve(false);
+        return;
+      }
+
+      let settled = false;
+      const finish = (ok: boolean) => {
+        if (settled) return;
+        settled = true;
+        resolve(ok);
+      };
+
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          // User already started exploring the map manually — don't yank
+          // their view to a location fix that arrived late.
+          if (userInteracted.current) {
+            finish(false);
+            return;
+          }
+          const { latitude: lat, longitude: lng } = pos.coords;
+          await placeYouMarker(lat, lng, false);
+          await focusOnUserRadius(lat, lng, false);
+          finish(true);
+        },
+        () => finish(false),
+        { enableHighAccuracy: true, timeout: GEO_FOCUS_TIMEOUT_MS }
+      );
+
+      // Belt-and-braces timeout in case the browser never calls back.
+      setTimeout(() => finish(false), GEO_FOCUS_TIMEOUT_MS + 500);
+    });
+  }, [placeYouMarker, focusOnUserRadius]);
+
+  // ── Manual "locate me" button — also re-centers on the 20km radius ────────
+
   const locateUser = useCallback(() => {
     if (!("geolocation" in navigator)) {
       setLocationError("Geolocation is not supported by your browser.");
@@ -308,9 +392,7 @@ export default function MarketplaceMap({ categories, selectedCategory, onSelectC
       async (pos) => {
         const { latitude: lat, longitude: lng } = pos.coords;
         await placeYouMarker(lat, lng, true);
-        if (leafletMap.current) {
-          leafletMap.current.setView([lat, lng], 14, { animate: true });
-        }
+        await focusOnUserRadius(lat, lng, true);
         setLocating(false);
       },
       (err) => {
@@ -328,16 +410,7 @@ export default function MarketplaceMap({ categories, selectedCategory, onSelectC
       },
       { enableHighAccuracy: true, timeout: 10000 }
     );
-  }, [placeYouMarker]);
-
-  const silentLocate = useCallback(() => {
-    if (!("geolocation" in navigator)) return;
-    navigator.geolocation.getCurrentPosition(
-      (pos) => placeYouMarker(pos.coords.latitude, pos.coords.longitude, false),
-      () => {},
-      { enableHighAccuracy: true, timeout: 8000 }
-    );
-  }, [placeYouMarker]);
+  }, [placeYouMarker, focusOnUserRadius]);
 
   // ── Init Leaflet map ONCE ─────────────────────────────────────────────────
 
@@ -386,6 +459,16 @@ export default function MarketplaceMap({ categories, selectedCategory, onSelectC
 
       loadIndiaBoundary(L, map);
 
+      // Mark manual interaction so a late geolocation result never
+      // overrides a view the user has already started adjusting.
+      map.on("dragstart", () => { userInteracted.current = true; });
+      map.on("zoomstart", (e: any) => {
+        // zoomstart also fires for our own programmatic setView/fitBounds
+        // calls, so only treat it as "user interaction" once we've already
+        // completed the initial framing.
+        if (initialFocusDone.current) userInteracted.current = true;
+      });
+
       map.on("zoomend", () => {
         if (zoomTimeout.current) clearTimeout(zoomTimeout.current);
         zoomTimeout.current = setTimeout(() => {
@@ -397,7 +480,14 @@ export default function MarketplaceMap({ categories, selectedCategory, onSelectC
         plotClusters(productsRef.current);
       }
 
-      silentLocate();
+      // ── First-render framing: try 20km radius focus, else fall back
+      //    to "fit all products" once they've loaded. ──────────────────
+      attemptInitialRadiusFocus().then((focused) => {
+        if (focused) {
+          fitToAllOnce.current = true;
+        }
+        initialFocusDone.current = true;
+      });
 
       const resizeObserver = new ResizeObserver(() => map.invalidateSize());
       if (mapRef.current) resizeObserver.observe(mapRef.current);
@@ -408,16 +498,20 @@ export default function MarketplaceMap({ categories, selectedCategory, onSelectC
       if (leafletMap.current) {
         (leafletMap.current as any)._resizeObserver?.disconnect();
         leafletMap.current.off("zoomend");
+        leafletMap.current.off("dragstart");
+        leafletMap.current.off("zoomstart");
         leafletMap.current.remove();
         leafletMap.current     = null;
         clusterLayer.current   = null;
         locationMarker.current = null;
         boundaryLayer.current  = null;
+        radiusCircle.current   = null;
         mapInitialized.current = false;
       }
       if (zoomTimeout.current) clearTimeout(zoomTimeout.current);
     };
-  }, [plotClusters, silentLocate, loadIndiaBoundary]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [plotClusters, loadIndiaBoundary, attemptInitialRadiusFocus]);
 
   // ── Fetch products ────────────────────────────────────────────────────────
 
@@ -438,6 +532,8 @@ export default function MarketplaceMap({ categories, selectedCategory, onSelectC
         setProducts(list);
         await plotClusters(list);
 
+        // Only fall back to "fit all products" if the radius-focus attempt
+        // didn't already frame the map (or hasn't resolved as successful).
         if (!fitToAllOnce.current && mapInitialized.current) {
           const L = await import("leaflet");
           fitBoundsToAll(L, leafletMap.current, list);
