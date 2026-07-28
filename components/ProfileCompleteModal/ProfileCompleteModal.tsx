@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import styles from "./ProfileCompleteModal.module.css";
 import { useAuth } from "@/context/AuthContext"; // adjust to your actual path
 
@@ -53,6 +54,7 @@ export default function ProfileCompleteModal({
   onSaved,
 }: ProfileCompleteModalProps) {
   const { updateUser } = useAuth();
+  const router = useRouter();
   const [form, setForm]             = useState<Record<string, string>>({});
   const [locLoading, setLocLoading] = useState(false);
   const [locError, setLocError]     = useState<string | null>(null);
@@ -99,6 +101,14 @@ export default function ProfileCompleteModal({
 
   const handleOverlayClick = (e: React.MouseEvent) => {
     if (e.target === overlayRef.current) onClose();
+  };
+
+  // Cancel now navigates back (like a browser/back-button action) instead of
+  // just closing the modal in place. Still calls onClose first so parent
+  // state (e.g. profileModalOpen) is reset before the route change happens.
+  const handleCancel = () => {
+    onClose();
+    router.back();
   };
 
   const fetchLocation = () => {
@@ -375,7 +385,7 @@ export default function ProfileCompleteModal({
 
         {/* Footer */}
         <div className={styles.footer}>
-          <button className={styles.cancelBtn} onClick={onClose}>Cancel</button>
+          <button className={styles.cancelBtn} onClick={handleCancel}>Cancel</button>
           {!showLocationGate && (
             <button
               className={styles.saveBtn}
