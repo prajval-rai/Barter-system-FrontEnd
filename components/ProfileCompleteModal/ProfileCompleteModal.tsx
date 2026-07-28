@@ -32,6 +32,20 @@ const CONTEXT_KEY_MAP: Record<string, string> = {
   longitude: "long",
 };
 
+// ── iOS Safari (and iOS webviews) don't support navigator.permissions
+// for geolocation, and never re-show the native prompt once denied.
+// We detect iOS purely to change copy/behavior — never to gate the
+// actual geolocation call, since the call itself works fine on iOS
+// Safari as long as we're on HTTPS and the user hasn't already denied. ──
+function isIOS(): boolean {
+  if (typeof navigator === "undefined") return false;
+  const ua = navigator.userAgent;
+  const iOSDevice = /iPad|iPhone|iPod/.test(ua);
+  // iPadOS 13+ reports as "Macintosh" but has touch support
+  const iPadOS13Up = navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1;
+  return iOSDevice || iPadOS13Up;
+}
+
 export default function ProfileCompleteModal({
   isOpen,
   onClose,
@@ -60,7 +74,10 @@ export default function ProfileCompleteModal({
       setLocSuccess(false);
       setSaving(false);
 
-      // Check current permission state up front (doesn't prompt the user)
+      // Check current permission state up front (doesn't prompt the user).
+      // NOTE: this is Android/desktop-only intel — iOS Safari has no
+      // Permissions API for geolocation, so permState will stay
+      // "unsupported" there and we must not rely on it for gating.
       if (navigator.permissions?.query) {
         navigator.permissions
           .query({ name: "geolocation" as PermissionName })
@@ -68,7 +85,7 @@ export default function ProfileCompleteModal({
             setPermState(status.state);
             status.onchange = () => setPermState(status.state);
           })
-          .catch(() => setPermState(null));
+          .catch(() => setPermState("unsupported"));
       } else {
         setPermState("unsupported");
       }
@@ -84,6 +101,15 @@ export default function ProfileCompleteModal({
       setLocError("Geolocation is not supported by your browser.");
       return;
     }
+
+    // Secure-context check: iOS Safari silently refuses geolocation on
+    // plain HTTP (even on a local network address). Catch this early
+    // with a clear message instead of a confusing generic error.
+    if (typeof window !== "undefined" && !window.isSecureContext) {
+      setLocError("Location requires a secure (HTTPS) connection. Please load this site over HTTPS and try again.");
+      return;
+    }
+
     setLocLoading(true);
     setLocError(null);
     setLocSuccess(false);
@@ -120,14 +146,32 @@ export default function ProfileCompleteModal({
       },
       (err) => {
         setLocSuccess(false);
-        if (err.code === err.PERMISSION_DENIED) {
-          setLocError(
-            "Location access was denied. Please allow location permission for this site in your browser settings, then try again."
-          );
-        } else {
-          setLocError("Could not fetch location. Please try again.");
-        }
         setLocLoading(false);
+
+        if (err.code === err.PERMISSION_DENIED) {
+          if (isIOS()) {
+            // iOS Safari never re-shows the native prompt once denied for
+            // an origin — the only fix is changing it in Settings.
+            setLocError(
+              "Location access is blocked for this site. On iPhone/iPad: go to Settings → Privacy & Security → Location Services → Safari Websites (or Settings → Safari → Location), allow access, then come back and try again."
+            );
+          } else {
+            setLocError(
+              "Location access was denied. Click the lock/info icon next to the address bar, allow Location for this site, then try again."
+            );
+          }
+        } else if (err.code === err.TIMEOUT) {
+          setLocError("Location request timed out. Please check your connection and try again.");
+        } else {
+          setLocError(
+            "Could not fetch location. Please make sure Location Services are turned on for your browser in your device settings, then try again."
+          );
+        }
+      },
+      {
+        enableHighAccuracy: false,
+        timeout: 10000,
+        maximumAge: 0,
       }
     );
   };
@@ -184,6 +228,12 @@ export default function ProfileCompleteModal({
   // Only render fields that have UI — GPS coordinates are captured but stay invisible
   const visibleFields = incompleteFields.filter((f) => !HIDDEN_FIELDS.includes(f));
 
+  // Only show the extra "blocked in browser settings" hint when we actually
+  // KNOW it's denied (Android/desktop via Permissions API). On iOS this
+  // will be "unsupported", so we rely on the error message from the
+  // getCurrentPosition callback instead, which already has iOS-specific copy.
+  const showDeniedHint = permState === "denied" && !locError;
+
   return (
     <div className={styles.overlay} ref={overlayRef} onClick={handleOverlayClick}>
       <div className={styles.modal}>
@@ -229,7 +279,7 @@ export default function ProfileCompleteModal({
 
               {locError && <p className={styles.locError}>⚠ {locError}</p>}
 
-              {permState === "denied" && !locError && (
+              {showDeniedHint && (
                 <p className={styles.locError}>
                   ⚠ Location is currently blocked for this site. Enable it from your
                   browser's site settings (the icon next to the address bar), then
