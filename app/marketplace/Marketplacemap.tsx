@@ -43,6 +43,8 @@ interface ClusterGroup {
   products: Product[];
 }
 
+type LocationPermissionState = "checking" | "granted" | "denied" | "prompt" | "unsupported";
+
 const PRODUCTS_API = `/api/marketplace`;
 const INDIA_CENTER: [number, number] = [22.5937, 78.9629];
 const INDIA_ZOOM = 5;
@@ -50,7 +52,7 @@ const MAX_ZOOM = 18;
 const SAME_PLACE_EPSILON = 0.0006;
 
 // ── Radius-focus config ────────────────────────────────────────────────────
-const SEARCH_RADIUS_KM = 20;
+const SEARCH_RADIUS_KM = 10;
 const SEARCH_RADIUS_M = SEARCH_RADIUS_KM * 1000;
 // How long we're willing to wait for a geolocation fix before giving up and
 // falling back to "fit all products" framing instead.
@@ -77,13 +79,14 @@ export default function MarketplaceMap({ categories, selectedCategory, onSelectC
   // under someone who started exploring before their GPS fix arrived.
   const userInteracted  = useRef(false);
 
-  const [products,          setProducts         ] = useState<Product[]>([]);
-  const [loading,           setLoading          ] = useState(true);
-  const [activeProduct,     setActiveProduct    ] = useState<Product | null>(null);
-  const [clusterProducts,   setClusterProducts  ] = useState<Product[] | null>(null);
-  const [locating,          setLocating         ] = useState(false);
-  const [locationError,     setLocationError    ] = useState<string | null>(null);
-  const [isFilterOpen,      setIsFilterOpen     ] = useState(false);
+  const [products,           setProducts          ] = useState<Product[]>([]);
+  const [loading,            setLoading           ] = useState(true);
+  const [activeProduct,      setActiveProduct     ] = useState<Product | null>(null);
+  const [clusterProducts,    setClusterProducts   ] = useState<Product[] | null>(null);
+  const [locating,           setLocating          ] = useState(false);
+  const [locationError,      setLocationError     ] = useState<string | null>(null);
+  const [isFilterOpen,       setIsFilterOpen      ] = useState(false);
+  const [locationPermission, setLocationPermission] = useState<LocationPermissionState>("checking");
 
   const activeCategoryName =
     categories.find((c) => c.id === selectedCategory)?.name ?? "All Categories";
@@ -92,6 +95,42 @@ export default function MarketplaceMap({ categories, selectedCategory, onSelectC
     onSelectCategory(id);
     setIsFilterOpen(false);
   };
+
+  // ── Check current permission status up front ──────────────────────────────
+  // This doesn't trigger the native prompt itself — it just tells us whether
+  // the user has already granted/blocked location so we can show the right
+  // UI (and know when a later getCurrentPosition call is expected to be
+  // silent because it was already denied previously).
+  useEffect(() => {
+    if (!("geolocation" in navigator)) {
+      setLocationPermission("unsupported");
+      return;
+    }
+    if (!("permissions" in navigator)) {
+      // Safari and some older browsers don't support the Permissions API —
+      // we'll only find out the real state when getCurrentPosition is called.
+      setLocationPermission("prompt");
+      return;
+    }
+
+    let permStatus: PermissionStatus | null = null;
+    let cancelled = false;
+
+    navigator.permissions
+      .query({ name: "geolocation" as PermissionName })
+      .then((status) => {
+        if (cancelled) return;
+        permStatus = status;
+        setLocationPermission(status.state as LocationPermissionState);
+        status.onchange = () => setLocationPermission(status.state as LocationPermissionState);
+      })
+      .catch(() => setLocationPermission("prompt"));
+
+    return () => {
+      cancelled = true;
+      if (permStatus) permStatus.onchange = null;
+    };
+  }, []);
 
   // ── Build a single pin marker ─────────────────────────────────────────────
 
@@ -312,7 +351,7 @@ export default function MarketplaceMap({ categories, selectedCategory, onSelectC
     }
   }, []);
 
-  // ── Draw / update the 20km search-radius circle and fit the view to it ────
+  // ── Draw / update the 10km search-radius circle and fit the view to it ────
 
   const drawRadiusCircle = useCallback(async (L: any, map: any, lat: number, lng: number) => {
     if (radiusCircle.current) {
@@ -339,12 +378,13 @@ export default function MarketplaceMap({ categories, selectedCategory, onSelectC
     map.fitBounds(circle.getBounds(), { padding: [24, 24], animate });
   }, [drawRadiusCircle]);
 
-  // One-shot: try to get the user's location and frame the map to a 20km
+  // One-shot: try to get the user's location and frame the map to a 10km
   // radius around them. Resolves to `true` if it succeeded (so the caller
   // knows not to fall back to "fit all products"), `false` otherwise.
   const attemptInitialRadiusFocus = useCallback((): Promise<boolean> => {
     return new Promise((resolve) => {
       if (!("geolocation" in navigator)) {
+        setLocationPermission("unsupported");
         resolve(false);
         return;
       }
@@ -364,12 +404,16 @@ export default function MarketplaceMap({ categories, selectedCategory, onSelectC
             finish(false);
             return;
           }
+          setLocationPermission("granted");
           const { latitude: lat, longitude: lng } = pos.coords;
           await placeYouMarker(lat, lng, false);
           await focusOnUserRadius(lat, lng, false);
           finish(true);
         },
-        () => finish(false),
+        (err) => {
+          if (err.code === err.PERMISSION_DENIED) setLocationPermission("denied");
+          finish(false);
+        },
         { enableHighAccuracy: true, timeout: GEO_FOCUS_TIMEOUT_MS }
       );
 
@@ -378,10 +422,11 @@ export default function MarketplaceMap({ categories, selectedCategory, onSelectC
     });
   }, [placeYouMarker, focusOnUserRadius]);
 
-  // ── Manual "locate me" button — also re-centers on the 20km radius ────────
+  // ── Manual "locate me" button — also re-centers on the 10km radius ────────
 
   const locateUser = useCallback(() => {
     if (!("geolocation" in navigator)) {
+      setLocationPermission("unsupported");
       setLocationError("Geolocation is not supported by your browser.");
       return;
     }
@@ -390,6 +435,7 @@ export default function MarketplaceMap({ categories, selectedCategory, onSelectC
 
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
+        setLocationPermission("granted");
         const { latitude: lat, longitude: lng } = pos.coords;
         await placeYouMarker(lat, lng, true);
         await focusOnUserRadius(lat, lng, true);
@@ -399,6 +445,7 @@ export default function MarketplaceMap({ categories, selectedCategory, onSelectC
         setLocating(false);
         switch (err.code) {
           case err.PERMISSION_DENIED:
+            setLocationPermission("denied");
             setLocationError("Location access denied. Please allow it in browser settings.");
             break;
           case err.POSITION_UNAVAILABLE:
@@ -480,7 +527,7 @@ export default function MarketplaceMap({ categories, selectedCategory, onSelectC
         plotClusters(productsRef.current);
       }
 
-      // ── First-render framing: try 20km radius focus, else fall back
+      // ── First-render framing: try 10km radius focus, else fall back
       //    to "fit all products" once they've loaded. ──────────────────
       attemptInitialRadiusFocus().then((focused) => {
         if (focused) {
@@ -649,10 +696,24 @@ export default function MarketplaceMap({ categories, selectedCategory, onSelectC
           </div>
         )}
 
+        {locationPermission === "denied" && !locationError && (
+          <div className={styles.locationToast}>
+            <span>
+              📍 Location access is blocked, so we can&apos;t show listings within {SEARCH_RADIUS_KM}km of you.
+              Enable location for this site in your browser settings, then tap the locate button.
+            </span>
+            <button onClick={() => setLocationPermission("checking")} aria-label="Dismiss">✕</button>
+          </div>
+        )}
+
         {loading && (
           <div className={styles.loadingOverlay}>
             <span className={styles.spinner} />
-            <span className={styles.loadingText}>Finding listings…</span>
+            <span className={styles.loadingText}>
+              {locationPermission === "checking" || locationPermission === "prompt"
+                ? "Finding listings near you…"
+                : "Finding listings…"}
+            </span>
           </div>
         )}
 
