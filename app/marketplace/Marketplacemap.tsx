@@ -46,6 +46,10 @@ interface ClusterGroup {
 const PRODUCTS_API = `/api/marketplace`;
 const INDIA_CENTER: [number, number] = [22.5937, 78.9629];
 const INDIA_ZOOM = 5;
+const MAX_ZOOM = 18;
+// Coordinates closer than this (in degrees) are treated as "the same place" —
+// zooming further will never visually separate them, so we stop trying.
+const SAME_PLACE_EPSILON = 0.0006;
 
 export default function MarketplaceMap({ categories, selectedCategory, onSelectCategory }: Props) {
   const router = useRouter();
@@ -62,6 +66,7 @@ export default function MarketplaceMap({ categories, selectedCategory, onSelectC
   const [products,          setProducts         ] = useState<Product[]>([]);
   const [loading,           setLoading          ] = useState(true);
   const [activeProduct,     setActiveProduct    ] = useState<Product | null>(null);
+  const [clusterProducts,   setClusterProducts  ] = useState<Product[] | null>(null); // NEW: "view all" list
   const [locating,          setLocating         ] = useState(false);
   const [locationError,     setLocationError    ] = useState<string | null>(null);
   const [isFilterOpen,      setIsFilterOpen     ] = useState(false);
@@ -145,6 +150,16 @@ export default function MarketplaceMap({ categories, selectedCategory, onSelectC
     return clusters;
   }, []);
 
+  // Helper: can this cluster ever be split further just by zooming in?
+  const clusterSpread = (cluster: ClusterGroup) => {
+    const lats = cluster.products.map((p) => p.owner_latitude!);
+    const lngs = cluster.products.map((p) => p.owner_longitude!);
+    return {
+      latSpread: Math.max(...lats) - Math.min(...lats),
+      lngSpread: Math.max(...lngs) - Math.min(...lngs),
+    };
+  };
+
   // ── Plot clusters/pins on the map ──────────────────────────────────────────
 
   const plotClusters = useCallback(async (list: Product[]) => {
@@ -165,13 +180,17 @@ export default function MarketplaceMap({ categories, selectedCategory, onSelectC
 
       const count = cluster.products.length;
       const size = count > 20 ? 60 : count > 8 ? 54 : 46;
+      const { latSpread, lngSpread } = clusterSpread(cluster);
+      const isSamePlace = latSpread < SAME_PLACE_EPSILON && lngSpread < SAME_PLACE_EPSILON;
 
+      // Same-location clusters get a "stacked" look — a visual hint that
+      // zooming won't split them, tapping opens a list instead.
       const clusterIcon = L.divIcon({
         className: "",
-        html: `<div class="${styles.cluster}" style="width:${size}px;height:${size}px">
+        html: `<div class="${isSamePlace ? styles.clusterStack : styles.cluster}" style="width:${size}px;height:${size}px">
                  <span class="${styles.clusterInner}">
                    <span class="${styles.clusterCount}">${count}</span>
-                   <span class="${styles.clusterLabel}">items</span>
+                   <span class="${styles.clusterLabel}">${isSamePlace ? "view all" : "items"}</span>
                  </span>
                </div>`,
         iconSize:   [size, size],
@@ -185,20 +204,25 @@ export default function MarketplaceMap({ categories, selectedCategory, onSelectC
 
       clusterMarker.on("click", (e: any) => {
         e.originalEvent?.stopPropagation();
-        const lats = cluster.products.map((p) => p.owner_latitude!);
-        const lngs = cluster.products.map((p) => p.owner_longitude!);
-        const latSpread = Math.max(...lats) - Math.min(...lats);
-        const lngSpread = Math.max(...lngs) - Math.min(...lngs);
+
+        const atMaxZoom = map.getZoom() >= MAX_ZOOM;
+
+        // Can't be split by zooming (same address) OR we're already as
+        // zoomed in as we'll go — show the list instead of a no-op zoom.
+        if (isSamePlace || atMaxZoom) {
+          setClusterProducts(cluster.products);
+          return;
+        }
 
         if (latSpread < 0.001 && lngSpread < 0.001) {
-          map.setView([cluster.lat, cluster.lng], Math.min(map.getZoom() + 4, 18), {
+          map.setView([cluster.lat, cluster.lng], Math.min(map.getZoom() + 4, MAX_ZOOM), {
             animate: true,
           });
         } else {
           const bounds = L.latLngBounds(
             cluster.products.map((p) => [p.owner_latitude!, p.owner_longitude!])
           );
-          map.fitBounds(bounds, { padding: [70, 70], maxZoom: 18, animate: true });
+          map.fitBounds(bounds, { padding: [70, 70], maxZoom: MAX_ZOOM, animate: true });
         }
       });
 
@@ -344,8 +368,6 @@ export default function MarketplaceMap({ categories, selectedCategory, onSelectC
 
       const isMobile = window.innerWidth <= 640;
 
-      // `tap` isn't in the current @types/leaflet MapOptions typing,
-      // so build the options object as `any` and cast on use.
       const mapOptions: any = {
         center:      INDIA_CENTER,
         zoom:        isMobile ? INDIA_ZOOM - 1 : INDIA_ZOOM,
@@ -446,11 +468,9 @@ export default function MarketplaceMap({ categories, selectedCategory, onSelectC
 
   return (
     <div className={styles.wrapper}>
-      {/* Full-bleed map fills the entire area behind everything */}
       <div className={styles.mapWrap}>
         <div ref={mapRef} className={styles.map} />
 
-        {/* Floating top-left info pill */}
         <div className={styles.infoPill}>
           <span className={styles.infoHeading}>Listings Near You</span>
           <span className={styles.infoCount}>
@@ -458,7 +478,6 @@ export default function MarketplaceMap({ categories, selectedCategory, onSelectC
           </span>
         </div>
 
-        {/* Floating filter button — native to the map, single source of truth */}
         <button
           className={styles.filterBtn}
           onClick={() => setIsFilterOpen(true)}
@@ -469,7 +488,6 @@ export default function MarketplaceMap({ categories, selectedCategory, onSelectC
           <span className={styles.filterBtnText}>{activeCategoryName}</span>
         </button>
 
-        {/* Category drawer */}
         {isFilterOpen && (
           <>
             <div className={styles.drawerBackdrop} onClick={() => setIsFilterOpen(false)} />
@@ -508,7 +526,6 @@ export default function MarketplaceMap({ categories, selectedCategory, onSelectC
           </>
         )}
 
-        {/* Locate Me button */}
         <button
           className={`${styles.locateBtn} ${locating ? styles.locateBtnLoading : ""}`}
           onClick={locateUser}
@@ -549,7 +566,51 @@ export default function MarketplaceMap({ categories, selectedCategory, onSelectC
           </div>
         )}
 
-        {/* Side card / bottom sheet on pin click */}
+        {/* NEW: "view all" list for clusters that share (near-)identical coordinates */}
+        {clusterProducts && (
+          <>
+            <div className={styles.drawerBackdrop} onClick={() => setClusterProducts(null)} />
+            <div className={styles.drawer} role="dialog" aria-modal="true" aria-label="Items at this location">
+              <div className={styles.drawerHandle} />
+              <div className={styles.drawerHeader}>
+                <h3 className={styles.drawerTitle}>
+                  {clusterProducts.length} listings here
+                </h3>
+                <button
+                  className={styles.drawerClose}
+                  onClick={() => setClusterProducts(null)}
+                  aria-label="Close"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className={styles.clusterList}>
+                {clusterProducts.map((p) => (
+                  <button
+                    key={p.id}
+                    className={styles.clusterListItem}
+                    onClick={() => {
+                      setActiveProduct(p);
+                      setClusterProducts(null);
+                    }}
+                  >
+                    {p.thumbnail ? (
+                      <img src={p.thumbnail} className={styles.clusterListThumb} alt={p.title} />
+                    ) : (
+                      <div className={styles.clusterListThumbFallback}>📦</div>
+                    )}
+                    <div className={styles.clusterListInfo}>
+                      <span className={styles.clusterListCat}>{p.category_name}</span>
+                      <span className={styles.clusterListTitle}>{p.title}</span>
+                      <span className={styles.clusterListOwner}>Listed by {p.owner_name}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+
         {activeProduct && (
           <div className={styles.sideCard}>
             <button className={styles.closeBtn} onClick={() => setActiveProduct(null)} aria-label="Close">
