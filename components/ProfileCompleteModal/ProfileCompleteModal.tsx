@@ -56,6 +56,11 @@ export default function ProfileCompleteModal({
   const [form, setForm]             = useState<Record<string, string>>({});
   const [locLoading, setLocLoading] = useState(false);
   const [locError, setLocError]     = useState<string | null>(null);
+  // Distinguishes *why* location failed so the UI can point the user to the
+  // right fix: device GPS/Location Services off vs. site permission blocked
+  // vs. a plain timeout. Kept separate from locError's text so we can also
+  // adjust icon/CTA per case if needed later.
+  const [locErrorType, setLocErrorType] = useState<"gps_off" | "permission" | "timeout" | "other" | null>(null);
   const [locSuccess, setLocSuccess] = useState(false);
   const [permState, setPermState]   = useState<PermissionState | "unsupported" | null>(null);
   const [saving, setSaving]         = useState(false);
@@ -112,6 +117,7 @@ export default function ProfileCompleteModal({
 
     setLocLoading(true);
     setLocError(null);
+    setLocErrorType(null);
     setLocSuccess(false);
 
     navigator.geolocation.getCurrentPosition(
@@ -149,22 +155,43 @@ export default function ProfileCompleteModal({
         setLocLoading(false);
 
         if (err.code === err.PERMISSION_DENIED) {
+          // Site-level permission was blocked. On Android/Chrome this is a
+          // deliberate "no" for this origin. On iOS Safari, note that this
+          // SAME code is also returned when Location Services is off
+          // system-wide or for Safari specifically — Safari doesn't
+          // distinguish the two, so the iOS message below covers both.
+          setLocErrorType("permission");
           if (isIOS()) {
-            // iOS Safari never re-shows the native prompt once denied for
-            // an origin — the only fix is changing it in Settings.
             setLocError(
-              "Location access is blocked for this site. On iPhone/iPad: go to Settings → Privacy & Security → Location Services → Safari Websites (or Settings → Safari → Location), allow access, then come back and try again."
+              "Location access is blocked. Please check two things on your iPhone: 1) Settings → Privacy & Security → Location Services is turned ON, and Safari is set to \"While Using the App\". 2) Settings → Safari → Location is set to \"Ask\" or \"Allow\" (or on iOS 15+, tap the \"aA\" icon in the address bar → Website Settings → Location → Allow). Then reload this page and try again."
             );
           } else {
             setLocError(
-              "Location access was denied. Click the lock/info icon next to the address bar, allow Location for this site, then try again."
+              "Location permission for this site was denied. Tap the lock/info icon next to the address bar → Permissions → Location → Allow, then reload the page and try again."
+            );
+          }
+        } else if (err.code === err.POSITION_UNAVAILABLE) {
+          // Browser could not get a position at all — almost always because
+          // device-level GPS/Location Services is turned off, not a site
+          // permission problem. This is the case that's easy to confuse
+          // with "permission denied" but has a different fix.
+          setLocErrorType("gps_off");
+          if (isIOS()) {
+            setLocError(
+              "Your iPhone's Location Services appears to be turned off. Go to Settings → Privacy & Security → Location Services and turn it ON, then come back and try again."
+            );
+          } else {
+            setLocError(
+              "Your device's Location (GPS) appears to be turned off. Turn on Location from your phone's quick settings or Settings → Location, then try again."
             );
           }
         } else if (err.code === err.TIMEOUT) {
-          setLocError("Location request timed out. Please check your connection and try again.");
+          setLocErrorType("timeout");
+          setLocError("Location request timed out. Please check your signal/connection and try again.");
         } else {
+          setLocErrorType("other");
           setLocError(
-            "Could not fetch location. Please make sure Location Services are turned on for your browser in your device settings, then try again."
+            "Could not fetch location. Please make sure Location Services (GPS) are turned on and permission is allowed for this site, then try again."
           );
         }
       },
@@ -277,11 +304,19 @@ export default function ProfileCompleteModal({
                 {locLoading ? "Detecting location…" : "Allow & detect my location"}
               </button>
 
-              {locError && <p className={styles.locError}>⚠ {locError}</p>}
-
-              {showDeniedHint && (
+              {locError && (
                 <p className={styles.locError}>
-                  ⚠ Location is currently blocked for this site. Enable it from your
+                  {locErrorType === "gps_off" ? "📍" : locErrorType === "permission" ? "🔒" : "⚠"} {locError}
+                </p>
+              )}
+
+              {/* Fallback hint for the case where we know (via Permissions API,
+                  Android/desktop only) that the site is denied but haven't yet
+                  gotten an error back from a fetch attempt. iOS never hits this
+                  since permState there stays "unsupported". */}
+              {showDeniedHint && !locError && (
+                <p className={styles.locError}>
+                  🔒 Location is currently blocked for this site. Enable it from your
                   browser's site settings (the icon next to the address bar), then
                   try again.
                 </p>
