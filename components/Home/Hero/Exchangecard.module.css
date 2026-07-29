@@ -212,20 +212,22 @@
   padding: var(--space-4);
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  opacity: 0.6;
+  gap: 10px;
+  overflow: hidden;
 }
 
 .ghostLeft {
-  left: -8%;
-  top: 12%;
-  transform: rotate(-6deg);
+  left: -10%;
+  top: 8%;
+  transform: rotate(-4deg);
+  opacity: 0.85;
 }
 
 .ghostRight {
-  right: -8%;
-  top: 12%;
-  transform: rotate(6deg);
+  right: -10%;
+  top: 8%;
+  transform: rotate(4deg);
+  opacity: 0.85;
 }
 
 .ghostTitle {
@@ -233,7 +235,7 @@
   font-weight: var(--font-bold);
   font-size: 12px;
   color: var(--color-text-heading);
-  opacity: 0.6;
+  opacity: 0.7;
 }
 
 .ghostLine {
@@ -248,6 +250,140 @@
   border-radius: var(--radius-full);
   background: var(--color-border);
   width: 55%;
+}
+
+/* Explore ghost panel */
+.ghostSearch {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--color-primary-light, #eef3ff);
+  border-radius: var(--radius-full);
+  padding: 6px 10px;
+}
+
+.ghostSearchDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-text-body);
+  opacity: 0.3;
+  flex-shrink: 0;
+}
+
+.ghostSearchText {
+  font-family: var(--font-body);
+  font-size: 9px;
+  color: var(--color-text-body);
+  opacity: 0.45;
+}
+
+.ghostSectionLabel {
+  font-family: var(--font-body);
+  font-size: 9px;
+  font-weight: var(--font-semibold);
+  color: var(--color-text-body);
+  opacity: 0.5;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.ghostCategoryGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.ghostCategoryIcon {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  background: var(--color-primary-light, #eef3ff);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+.ghostProductRow {
+  display: flex;
+  gap: 8px;
+}
+
+.ghostProductCard {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ghostProductThumb {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #dbeafe, #e0e7ff);
+}
+
+.ghostProductName {
+  font-family: var(--font-body);
+  font-size: 9px;
+  font-weight: var(--font-semibold);
+  color: var(--color-text-heading);
+}
+
+.ghostProductLoc {
+  font-family: var(--font-body);
+  font-size: 8px;
+  color: var(--color-text-body);
+  opacity: 0.55;
+}
+
+/* Messages ghost panel */
+.ghostMsgRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ghostMsgAvatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.ghostMsgBody {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ghostMsgName {
+  font-family: var(--font-body);
+  font-size: 9.5px;
+  font-weight: var(--font-semibold);
+  color: var(--color-text-heading);
+}
+
+.ghostMsgSub {
+  font-family: var(--font-body);
+  font-size: 8.5px;
+  color: var(--color-text-body);
+  opacity: 0.55;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ghostMsgTime {
+  font-family: var(--font-body);
+  font-size: 8px;
+  color: var(--color-text-body);
+  opacity: 0.4;
+  flex-shrink: 0;
 }
 
 /* ── Animations ── */
