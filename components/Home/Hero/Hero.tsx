@@ -35,6 +35,16 @@ export default function Hero() {
           plantRef={plantRef}
         />
         <div className={styles.copy}>
+          {/* Desktop: straight eyebrow label with flanking lines */}
+          <div className={styles.eyebrow}>
+            <span className={styles.eyebrowLine} />
+            <span className={styles.eyebrowText}>
+              Indian <span className={styles.eyebrowAccent}>Batter</span> System
+            </span>
+            <span className={styles.eyebrowLine} />
+          </div>
+
+          {/* Mobile: curved arc text */}
           <svg
             className={styles.curvedText}
             viewBox="0 0 400 90"
