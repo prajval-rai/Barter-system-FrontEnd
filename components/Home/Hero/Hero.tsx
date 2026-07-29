@@ -1,6 +1,5 @@
 "use client";
-
-import { useState, useRef } from "react";
+import { useState, useRef, useId } from "react";
 import Image from "next/image";
 import styles from "./Hero.module.css";
 import LoginModal from "@/app/login/LoginModal";
@@ -12,11 +11,11 @@ export default function Hero() {
   const { user } = useAuth();
   const router = useRouter();
   const [loginOpen, setLoginOpen] = useState(false);
-
   const innerRef = useRef<HTMLDivElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const heartRef = useRef<HTMLSpanElement>(null);
   const plantRef = useRef<HTMLDivElement>(null);
+  const curveId = useId().replace(/:/g, "");
 
   const handleProtectedAction = () => {
     if (user) {
@@ -35,8 +34,30 @@ export default function Hero() {
           heartRef={heartRef}
           plantRef={plantRef}
         />
-
         <div className={styles.copy}>
+          <svg
+            className={styles.curvedText}
+            viewBox="0 0 400 90"
+            aria-hidden="true"
+          >
+            <path
+              id={`curve-${curveId}`}
+              d="M 15,85 Q 200,-10 385,85"
+              fill="transparent"
+            />
+            <text>
+              <textPath
+                href={`#curve-${curveId}`}
+                startOffset="50%"
+                textAnchor="middle"
+              >
+                <tspan className={styles.curvedTextMuted}>INDIAN </tspan>
+                <tspan className={styles.curvedTextAccent}>BATTER</tspan>
+                <tspan className={styles.curvedTextMuted}> SYSTEM</tspan>
+              </textPath>
+            </text>
+          </svg>
+
           <h1 className={styles.heading} ref={headingRef}>
             Every Product
             <br />
@@ -58,9 +79,7 @@ export default function Hero() {
               </span>
             </span>
           </h1>
-
           <div className={styles.divider} />
-
           <p className={styles.description}>
             Jo aapke liye useless hai,
             <br />
@@ -68,9 +87,7 @@ export default function Hero() {
             <br />
             valuable ho sakta hai.
           </p>
-
           <p className={styles.hashtag}>#ExchangeForBetter</p>
-
           <div className={styles.actions}>
             <button className={styles.primaryBtn} type="button" onClick={handleProtectedAction}>
               Find what you need
@@ -79,18 +96,17 @@ export default function Hero() {
               </svg>
             </button>
             <button
-  className={styles.outlineBtn}
-  type="button"
-  onClick={() => {
-    document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" });
-    history.pushState(null, "", "#how-it-works");
-  }}
->
-  How it works
-</button>
+              className={styles.outlineBtn}
+              type="button"
+              onClick={() => {
+                document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" });
+                history.pushState(null, "", "#how-it-works");
+              }}
+            >
+              How it works
+            </button>
           </div>
         </div>
-
         <div className={styles.mockupArea} aria-hidden="true">
           <div ref={plantRef} className={styles.plantAnchor}>
             <Image
@@ -104,7 +120,6 @@ export default function Hero() {
           </div>
         </div>
       </div>
-
       <LoginModal
         isOpen={loginOpen}
         onClose={() => setLoginOpen(false)}
