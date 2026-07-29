@@ -38,18 +38,18 @@
 
 .eyebrowLine {
   height: 2px;
-  width: 48px;
+  width: 56px;
   background: var(--color-border);
 }
 
 .eyebrowText {
   font-family: var(--font-display);
   font-weight: var(--font-bold);
-  font-size: var(--text-xl);
-  letter-spacing: 2.5px;
+  font-size: clamp(var(--text-xl), 1.8vw, var(--text-2xl));
+  letter-spacing: 3px;
   text-transform: uppercase;
   color: var(--color-text-body);
-  opacity: 0.75;
+  opacity: 0.8;
   white-space: nowrap;
 }
 
@@ -67,8 +67,8 @@
   margin: 0 auto var(--space-2);
   font-family: var(--font-display);
   font-weight: var(--font-extrabold);
-  font-size: 15px;
-  letter-spacing: 1px;
+  font-size: 22px;
+  letter-spacing: 1.5px;
   text-transform: uppercase;
 }
 
@@ -237,8 +237,8 @@
     gap: var(--space-2);
   }
   .curvedText {
-    max-width: 260px;
-    font-size: 13px;
+    max-width: 300px;
+    font-size: 22px;
   }
   .heading {
     font-size: var(--text-3xl);
