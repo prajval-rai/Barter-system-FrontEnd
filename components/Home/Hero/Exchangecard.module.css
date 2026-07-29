@@ -1,10 +1,28 @@
 .wrap {
   position: relative;
   width: 100%;
-  max-width: 420px;
+  max-width: 460px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 0 28px;
+}
+
+.stack {
+  position: relative;
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.bgGlow {
+  position: absolute;
+  inset: -15% -5%;
+  z-index: 0;
+  background: radial-gradient(60% 55% at 50% 30%, rgba(191, 219, 254, 0.55), rgba(255, 255, 255, 0) 70%);
+  pointer-events: none;
 }
 
 /* ── Main card ── */
@@ -217,17 +235,17 @@
 }
 
 .ghostLeft {
-  left: -10%;
-  top: 8%;
-  transform: rotate(-4deg);
-  opacity: 0.85;
+  left: -14%;
+  top: 6%;
+  transform: rotate(-7deg);
+  opacity: 0.92;
 }
 
 .ghostRight {
-  right: -10%;
-  top: 8%;
-  transform: rotate(4deg);
-  opacity: 0.85;
+  right: -14%;
+  top: 6%;
+  transform: rotate(7deg);
+  opacity: 0.92;
 }
 
 .ghostTitle {
@@ -291,7 +309,14 @@
 .ghostCategoryGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  gap: 10px 8px;
+}
+
+.ghostCategoryCell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
 }
 
 .ghostCategoryIcon {
@@ -303,7 +328,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: 13px;
+}
+
+.ghostCategoryLabel {
+  font-family: var(--font-body);
+  font-size: 7px;
+  font-weight: var(--font-semibold);
+  color: var(--color-text-body);
+  opacity: 0.55;
+  text-align: center;
+  line-height: 1.1;
 }
 
 .ghostProductRow {
@@ -322,7 +357,11 @@
   width: 100%;
   aspect-ratio: 1;
   border-radius: 10px;
-  background: linear-gradient(135deg, #dbeafe, #e0e7ff);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
 }
 
 .ghostProductName {
@@ -351,6 +390,13 @@
   height: 26px;
   border-radius: 50%;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: var(--font-bold);
+  font-size: 9px;
+  color: var(--color-white);
 }
 
 .ghostMsgBody {
@@ -386,6 +432,38 @@
   flex-shrink: 0;
 }
 
+/* ── Bottom nav bar ── */
+.navBar {
+  position: relative;
+  z-index: 2;
+  margin-top: -8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  background: var(--color-white);
+  border-radius: var(--radius-full);
+  padding: 10px 22px;
+  box-shadow: 0 10px 26px rgba(23, 43, 99, 0.12);
+}
+
+.navIcon {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-body);
+  opacity: 0.45;
+}
+
+.navIconActive {
+  background: var(--color-primary);
+  color: var(--color-white);
+  opacity: 1;
+}
+
 /* ── Animations ── */
 @keyframes swapSpin {
   0%, 35% { transform: rotate(0deg); }
@@ -416,6 +494,11 @@
 @media (max-width: 480px) {
   .wrap {
     max-width: 280px;
+    padding: 32px 0 20px;
+  }
+  .navBar {
+    gap: 14px;
+    padding: 8px 16px;
   }
   .card {
     padding: var(--space-4) var(--space-4) var(--space-4);
