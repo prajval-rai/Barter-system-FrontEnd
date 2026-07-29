@@ -32,6 +32,7 @@
 .eyebrow {
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   gap: var(--space-3);
   margin-bottom: var(--space-2);
 }
