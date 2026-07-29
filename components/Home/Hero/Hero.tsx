@@ -35,9 +35,8 @@ export default function Hero() {
           plantRef={plantRef}
         />
         <div className={styles.copy}>
-          {/* Desktop: straight eyebrow label with flanking lines */}
+          {/* Desktop: straight eyebrow label, flush-left with heading below */}
           <div className={styles.eyebrow}>
-            <span className={styles.eyebrowLine} />
             <span className={styles.eyebrowText}>
               Indian <span className={styles.eyebrowAccent}>Batter</span> System
             </span>
