@@ -5,7 +5,7 @@ import LoginModal from "@/app/login/LoginModal";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import Butterflies from "@/components/Butterfly/Butterfly";
-import ExchangeCard from "./ExchangeCard/ExchangeCard";
+import ExchangeCard from "./Exchangecard";
 
 export default function Hero() {
   const { user } = useAuth();
