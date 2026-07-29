@@ -21,15 +21,41 @@ const SwapIcon = () => (
   </svg>
 );
 
-const ArrowIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M5 12h14M13 6l6 6-6 6" />
-  </svg>
-);
-
 export default function ExchangeCard() {
   return (
     <div className={styles.wrap}>
+      {/* Left ghost: Explore panel */}
+      <div className={`${styles.ghostCard} ${styles.ghostLeft}`} aria-hidden="true">
+        <span className={styles.ghostTitle}>Explore</span>
+
+        <div className={styles.ghostSearch}>
+          <span className={styles.ghostSearchDot} />
+          <span className={styles.ghostSearchText}>Search items, users...</span>
+        </div>
+
+        <span className={styles.ghostSectionLabel}>Categories</span>
+        <div className={styles.ghostCategoryGrid}>
+          <span className={styles.ghostCategoryIcon}>💻</span>
+          <span className={styles.ghostCategoryIcon}>📚</span>
+          <span className={styles.ghostCategoryIcon}>🪑</span>
+        </div>
+
+        <span className={styles.ghostSectionLabel}>Popular Near You</span>
+        <div className={styles.ghostProductRow}>
+          <div className={styles.ghostProductCard}>
+            <div className={styles.ghostProductThumb} />
+            <span className={styles.ghostProductName}>iPhone 13</span>
+            <span className={styles.ghostProductLoc}>Mumbai</span>
+          </div>
+          <div className={styles.ghostProductCard}>
+            <div className={styles.ghostProductThumb} />
+            <span className={styles.ghostProductName}>Office Chair</span>
+            <span className={styles.ghostProductLoc}>Pune</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Center: main Match Found card */}
       <div className={styles.card}>
         <div className={styles.header}>
           <span className={styles.badge}>
@@ -80,16 +106,45 @@ export default function ExchangeCard() {
         </div>
       </div>
 
-      {/* Floating context cards for depth, matching reference design */}
-      <div className={`${styles.ghostCard} ${styles.ghostLeft}`} aria-hidden="true">
-        <span className={styles.ghostTitle}>Explore</span>
-        <span className={styles.ghostLine} />
-        <span className={styles.ghostLineShort} />
-      </div>
+      {/* Right ghost: Messages panel */}
       <div className={`${styles.ghostCard} ${styles.ghostRight}`} aria-hidden="true">
         <span className={styles.ghostTitle}>Messages</span>
-        <span className={styles.ghostLine} />
-        <span className={styles.ghostLineShort} />
+
+        <div className={styles.ghostMsgRow}>
+          <span className={styles.ghostMsgAvatar} style={{ background: "#f9a8d4" }} />
+          <div className={styles.ghostMsgBody}>
+            <span className={styles.ghostMsgName}>Riya Sharma</span>
+            <span className={styles.ghostMsgSub}>Camera Exchange</span>
+          </div>
+          <span className={styles.ghostMsgTime}>2m</span>
+        </div>
+
+        <div className={styles.ghostMsgRow}>
+          <span className={styles.ghostMsgAvatar} style={{ background: "#93c5fd" }} />
+          <div className={styles.ghostMsgBody}>
+            <span className={styles.ghostMsgName}>Aman Verma</span>
+            <span className={styles.ghostMsgSub}>Book Exchange</span>
+          </div>
+          <span className={styles.ghostMsgTime}>10m</span>
+        </div>
+
+        <div className={styles.ghostMsgRow}>
+          <span className={styles.ghostMsgAvatar} style={{ background: "#a5b4fc" }} />
+          <div className={styles.ghostMsgBody}>
+            <span className={styles.ghostMsgName}>Neha Patel</span>
+            <span className={styles.ghostMsgSub}>Headphones Swap</span>
+          </div>
+          <span className={styles.ghostMsgTime}>1h</span>
+        </div>
+
+        <div className={styles.ghostMsgRow}>
+          <span className={styles.ghostMsgAvatar} style={{ background: "#fca5a5" }} />
+          <div className={styles.ghostMsgBody}>
+            <span className={styles.ghostMsgName}>Karan Singh</span>
+            <span className={styles.ghostMsgSub}>Furniture Exchange</span>
+          </div>
+          <span className={styles.ghostMsgTime}>3h</span>
+        </div>
       </div>
     </div>
   );
