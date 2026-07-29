@@ -1,11 +1,11 @@
 "use client";
 import { useState, useRef, useId } from "react";
-import Image from "next/image";
 import styles from "./Hero.module.css";
 import LoginModal from "@/app/login/LoginModal";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import Butterflies from "@/components/Butterfly/Butterfly";
+import ExchangeCard from "@/components/ExchangeCard/ExchangeCard";
 
 export default function Hero() {
   const { user } = useAuth();
@@ -118,14 +118,7 @@ export default function Hero() {
         </div>
         <div className={styles.mockupArea} aria-hidden="true">
           <div ref={plantRef} className={styles.plantAnchor}>
-            <Image
-              src="/Image/LandingPage/hero-img.png"
-              alt="Chair with teddy bear, camera and books available for exchange"
-              width={640}
-              height={640}
-              className={styles.heroImg}
-              priority
-            />
+            <ExchangeCard />
           </div>
         </div>
       </div>
