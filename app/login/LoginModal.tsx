@@ -22,6 +22,30 @@ interface LoginModalProps {
   onSuccess?: () => void;
 }
 
+/* Trust row shown under the primary action — kept short on purpose,
+   this is a sign-in step, not a marketing screen. */
+const TRUST_ITEMS = [
+  {
+    label: "Secure",
+    icon: (
+      <path d="M8 1.5 3 3.4v3.7c0 3.2 2.1 5.9 5 6.9 2.9-1 5-3.7 5-6.9V3.4L8 1.5Z" />
+    ),
+  },
+  {
+    label: "Private",
+    icon: (
+      <>
+        <rect x="3.5" y="7" width="9" height="6.5" rx="1.5" />
+        <path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" />
+      </>
+    ),
+  },
+  {
+    label: "Real-time",
+    icon: <path d="M8.5 1.5 3 8.5h4l-.5 6L13 7H9l-.5-5.5Z" />,
+  },
+];
+
 export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
   const btnRef = useRef<HTMLDivElement>(null);
   const { login } = useAuth(); // ← pull login from context
@@ -124,51 +148,36 @@ export default function LoginModal({ isOpen, onClose, onSuccess }: LoginModalPro
 
         {/* Close button */}
         <button className={s.closeBtn} onClick={onClose} aria-label="Close">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
             <path d="M12 4L4 12M4 4l8 8" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
           </svg>
         </button>
 
-        {/* Header */}
+        {/* Header — single, quiet identity strip. No competing badges/taglines. */}
         <div className={s.header}>
-          <div className={s.badge}>
-            <span className={s.badgeStar}>✦</span>
-            LenDen Marketplace
-          </div>
-
-          <div className={s.logoRing}>
-            <LenDenLogo width={80} />
-          </div>
-
-          <div className={s.tagline}>Trade · Exchange · Deal</div>
+          <LenDenLogo width={116} />
         </div>
 
         {/* Body */}
         <div className={s.body}>
           <div className={s.welcome}>
-            <h2 className={s.welcomeTitle}>Welcome back!</h2>
+            <h2 className={s.welcomeTitle}>Welcome back</h2>
             <p className={s.welcomeSub}>Sign in to access your marketplace and trades</p>
           </div>
 
-          <div className={s.divider}>
-            <span className={s.dividerText}>continue with</span>
-          </div>
-
+          {/* Primary action — the one thing this modal exists for */}
           <div className={s.googleBtnWrap}>
             <div ref={btnRef} style={{ width: "100%" }} />
           </div>
 
-          <div className={s.featuresLabel}>What you get with LenDen</div>
-          <div className={s.features}>
-            {[
-              "Browse thousands of items to trade",
-              "Secure peer-to-peer exchanges",
-              "Real-time trade chat & notifications",
-              "Your data is never sold or shared",
-            ].map((f, i) => (
-              <div key={i} className={s.featureItem}>
-                <div className={s.featureDot} />
-                <span>{f}</span>
+          {/* Compact trust row instead of a marketing bullet list */}
+          <div className={s.trustRow}>
+            {TRUST_ITEMS.map((item) => (
+              <div key={item.label} className={s.trustItem}>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
+                  {item.icon}
+                </svg>
+                <span>{item.label}</span>
               </div>
             ))}
           </div>
