@@ -28,6 +28,29 @@
   gap: var(--space-3);
 }
 
+/* ── Curved arc text ── */
+.curvedText {
+  width: 100%;
+  max-width: 340px;
+  height: auto;
+  margin: 0 auto var(--space-2);
+  display: block;
+  font-family: var(--font-display);
+  font-weight: var(--font-extrabold);
+  font-size: 15px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.curvedTextMuted {
+  fill: var(--color-text-body);
+  opacity: 0.55;
+}
+
+.curvedTextAccent {
+  fill: var(--color-primary);
+}
+
 .heading {
   font-family: var(--font-display);
   font-weight: var(--font-extrabold);
@@ -123,6 +146,13 @@
 .outlineBtn:hover { border-color: var(--color-primary); background: var(--color-primary-light); }
 .outlineBtn:focus-visible { outline: 3px solid var(--color-primary); outline-offset: 2px; }
 
+/* ── Desktop: hide secondary CTA ── */
+@media (min-width: 961px) {
+  .outlineBtn {
+    display: none;
+  }
+}
+
 /* ── Right: chair image ── */
 .mockupArea {
   position: relative;
@@ -171,6 +201,10 @@
   }
   .copy {
     gap: var(--space-2);
+  }
+  .curvedText {
+    max-width: 260px;
+    font-size: 13px;
   }
   .heading {
     font-size: var(--text-3xl);
