@@ -51,11 +51,15 @@ const PAIRS: ExchangePair[] = [
 const N = PAIRS.length;
 const CYCLE_MS = 3000;
 const FLASH_MS = 650;
-const STACK_VISIBLE = 2; // how many upcoming layers peek behind the active card
+const STACK_VISIBLE = 2;
 
 function getOffset(i: number, currentIndex: number): number {
   return (i - currentIndex + N) % N;
 }
+
+// Layer 1 (nearest) peeks right, layer 2 peeks left, alternating —
+// so the deck fans out on both sides instead of stacking straight down.
+const STACK_SIDE: Array<"left" | "right"> = ["right", "left", "right"];
 
 export default function ExchangeCard() {
   const [currentIndex, setCurrentIndex] = useState<number>(0);
@@ -84,21 +88,21 @@ export default function ExchangeCard() {
       <div className={styles.stage}>
         <div className={styles.bgGlow} aria-hidden="true" />
 
-        {/* ── Layered deck: each layer previews the NEXT pair in queue.
-            When the active card finishes exchanging, offset recalculates on
-            every card (CSS transition handles the "layer opens up" motion),
-            so the front layer glides forward to become the new active card
-            while a fresh one appears behind it. ── */}
+        {/* ── Fanned deck: layers peek out to alternating sides, each showing
+            a real preview of the pair queued up next ── */}
         <div className={styles.stackArea} aria-hidden="true">
           {PAIRS.map((pair) => {
             const offset = getOffset(pair.id - 1, currentIndex);
             if (offset === 0 || offset > STACK_VISIBLE) return null;
 
             const depth = offset;
-            const translateY = depth * 16;
-            const translateX = depth * 8;
-            const scale = Math.max(0.9, 1 - depth * 0.05);
-            const opacity = Math.max(0.4, 0.85 - depth * 0.3);
+            const side = STACK_SIDE[(depth - 1) % STACK_SIDE.length];
+            const sideMultiplier = side === "right" ? 1 : -1;
+            const translateX = sideMultiplier * (34 + depth * 14);
+            const translateY = depth * 10;
+            const rotate = sideMultiplier * (3 + depth * 2);
+            const scale = Math.max(0.88, 0.98 - depth * 0.06);
+            const opacity = Math.max(0.45, 0.9 - depth * 0.25);
             const zIndex = 10 - depth;
 
             return (
@@ -106,18 +110,18 @@ export default function ExchangeCard() {
                 key={pair.id}
                 className={styles.stackLayer}
                 style={{
-                  transform: `translate(${translateX}px, ${translateY}px) scale(${scale})`,
+                  transform: `translate(${translateX}px, ${translateY}px) scale(${scale}) rotate(${rotate}deg)`,
                   opacity,
                   zIndex,
                 }}
               >
                 <div className={styles.stackPreviewRow}>
                   <span className={styles.stackImgWrap}>
-                    <Image src={pair.give.src} alt={pair.give.name} fill sizes="70px" style={{ objectFit: "contain", transform: `scale(${pair.give.scale ?? 1.3})` }} />
+                    <Image src={pair.give.src} alt={pair.give.name} fill sizes="64px" style={{ objectFit: "contain", transform: `scale(${pair.give.scale ?? 1.3})` }} />
                   </span>
                   <span className={styles.stackDivider} />
                   <span className={styles.stackImgWrap}>
-                    <Image src={pair.get.src} alt={pair.get.name} fill sizes="70px" style={{ objectFit: "contain", transform: `scale(${pair.get.scale ?? 1.3})` }} />
+                    <Image src={pair.get.src} alt={pair.get.name} fill sizes="64px" style={{ objectFit: "contain", transform: `scale(${pair.get.scale ?? 1.3})` }} />
                   </span>
                 </div>
               </div>
@@ -125,10 +129,10 @@ export default function ExchangeCard() {
           })}
         </div>
 
-        {/* ── Active exchange card ── */}
-        <div className={styles.activePair}>
+        {/* ── Active exchange card: fades + rises in as it becomes active ── */}
+        <div key={`card-${activePair.id}`} className={`${styles.activePair} ${styles.cardFadeIn}`}>
           <div className={styles.itemCol}>
-            <div key={`give-${activePair.id}`} className={`${styles.itemImgWrap} ${styles.itemImgGive} ${styles.slideInLeft}`}>
+            <div className={`${styles.itemImgWrap} ${styles.itemImgGive} ${styles.slideInLeft}`}>
               <Image
                 src={activePair.give.src}
                 alt={activePair.give.name}
@@ -165,7 +169,7 @@ export default function ExchangeCard() {
           </div>
 
           <div className={styles.itemCol}>
-            <div key={`get-${activePair.id}`} className={`${styles.itemImgWrap} ${styles.itemImgGet} ${styles.slideInRight}`}>
+            <div className={`${styles.itemImgWrap} ${styles.itemImgGet} ${styles.slideInRight}`}>
               <Image
                 src={activePair.get.src}
                 alt={activePair.get.name}
@@ -179,6 +183,28 @@ export default function ExchangeCard() {
             <span className={`${styles.tag} ${styles.tagGet}`}>{activePair.get.tag}</span>
           </div>
         </div>
+
+        {/* ── Fading outgoing ghost: briefly shows the previous card fading out
+            underneath, so the swap reads as fade-out → fade-in, not a jump-cut ── */}
+        {isFlashing && (
+          <div className={`${styles.activePair} ${styles.cardFadeOut}`} aria-hidden="true">
+            <div className={styles.itemCol}>
+              <div className={`${styles.itemImgWrap} ${styles.itemImgGive}`}>
+                <Image src={activePair.give.src} alt="" fill sizes="240px" style={{ objectFit: "contain", transform: `scale(${activePair.give.scale ?? 1.3})` }} />
+              </div>
+            </div>
+            <div className={styles.swapCol}>
+              <span className={styles.swapCircle}>
+                <StraightSwapIcon size={26} />
+              </span>
+            </div>
+            <div className={styles.itemCol}>
+              <div className={`${styles.itemImgWrap} ${styles.itemImgGet}`}>
+                <Image src={activePair.get.src} alt="" fill sizes="240px" style={{ objectFit: "contain", transform: `scale(${activePair.get.scale ?? 1.3})` }} />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <span className={styles.caption}>
