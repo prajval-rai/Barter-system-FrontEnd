@@ -23,7 +23,6 @@
   z-index: 5;
 }
 
-/* ── Stage: holds the background stack + the active exchanging pair ── */
 .stage {
   position: relative;
   width: 100%;
@@ -42,7 +41,7 @@
   pointer-events: none;
 }
 
-/* ── Background stack of upcoming pairs (mini cards receding upward) ── */
+/* ── Background stack of upcoming pairs ── */
 .stackArea {
   position: absolute;
   top: 10px;
@@ -59,23 +58,22 @@
   position: absolute;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   background: var(--color-white);
   border-radius: var(--radius-full);
-  padding: 8px 14px;
+  padding: 8px 16px;
   box-shadow: 0 8px 22px rgba(23, 43, 99, 0.1);
   transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.5s ease;
 }
 
-.stackIcon {
-  width: 26px;
-  height: 26px;
+.stackImgWrap {
+  position: relative;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
+  overflow: hidden;
   background: var(--color-primary-light, #eef3ff);
-  color: var(--color-primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-shrink: 0;
 }
 
 .stackDivider {
@@ -85,7 +83,7 @@
   background: var(--color-border, #dbe4f3);
 }
 
-/* ── Active pair: the two products exchanging front and center ── */
+/* ── Active pair ── */
 .activePair {
   position: relative;
   z-index: 10;
@@ -112,22 +110,24 @@
   min-width: 96px;
 }
 
-.itemIcon {
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
+.itemImgWrap {
+  position: relative;
+  width: 70px;
+  height: 70px;
+  border-radius: 16px;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-white);
+  padding: 6px;
 }
 
-.itemIconGive {
-  background: linear-gradient(135deg, #1f2937, #374151);
+.itemImgGive {
+  background: linear-gradient(135deg, #eef2f7, #dfe6f0);
 }
 
-.itemIconGet {
-  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+.itemImgGet {
+  background: linear-gradient(135deg, var(--color-primary-light, #eef3ff), #dce9ff);
 }
 
 .itemName {
@@ -190,20 +190,11 @@
 }
 
 /* ── Animations ── */
-
-/* new pair rising up from the background stack into the spotlight */
 @keyframes enterFromStack {
-  0% {
-    opacity: 0;
-    transform: translateY(24px) scale(0.85);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+  0% { opacity: 0; transform: translateY(24px) scale(0.85); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* the active pair pulses/shakes right as the exchange happens */
 @keyframes pairShake {
   0%, 100% { transform: scale(1); }
   30% { transform: scale(1.03); }
@@ -228,9 +219,9 @@
   .activePair {
     padding: var(--space-3, 14px);
   }
-  .itemIcon {
-    width: 44px;
-    height: 44px;
+  .itemImgWrap {
+    width: 56px;
+    height: 56px;
   }
   .itemCol {
     min-width: 76px;
