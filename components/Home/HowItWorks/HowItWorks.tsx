@@ -58,7 +58,7 @@ export default function HowItWorks() {
       <div className={styles.inner}>
         <div className={styles.heading}>
           <span className={styles.eyebrow}>The exchange path</span>
-          <h2 className={styles.title}>From your shelf to theirs.</h2>
+          <h2 className={styles.title}>How it works</h2>
         </div>
 
         <div
