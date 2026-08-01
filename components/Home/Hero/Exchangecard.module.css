@@ -6,505 +6,193 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: var(--space-3, 12px);
   padding: 48px 0 28px;
 }
 
-.stack {
+.topPill {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: var(--font-semibold);
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  background: var(--color-primary-light, #eef3ff);
+  padding: 5px 14px;
+  border-radius: var(--radius-full);
+}
+
+/* ── Stage: the open area products float and queue in ── */
+.stage {
   position: relative;
   width: 100%;
+  height: 220px;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 14%,
+    black 86%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 14%,
+    black 86%,
+    transparent 100%
+  );
 }
 
 .bgGlow {
   position: absolute;
-  inset: -15% -5%;
+  inset: -20% -10%;
   z-index: 0;
-  background: radial-gradient(60% 55% at 50% 30%, rgba(191, 219, 254, 0.55), rgba(255, 255, 255, 0) 70%);
+  background: radial-gradient(50% 60% at 50% 45%, rgba(191, 219, 254, 0.5), rgba(255, 255, 255, 0) 70%);
   pointer-events: none;
 }
 
-/* ── Main card ── */
-.card {
+.track {
   position: relative;
-  z-index: 2;
   width: 100%;
-  background: var(--color-white);
-  border-radius: var(--radius-2xl, 24px);
-  box-shadow: 0 20px 50px rgba(23, 43, 99, 0.16);
-  padding: var(--space-6) var(--space-6) var(--space-5);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-  animation: cardFloat 5s ease-in-out infinite;
+  height: 100%;
 }
 
-.header {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  align-self: flex-start;
-  font-family: var(--font-display);
-  font-weight: var(--font-bold);
-  font-size: var(--text-sm);
-  color: var(--color-text-heading);
-}
-
-.badgeDot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #22c55e;
-  box-shadow: 0 0 0 rgba(34, 197, 94, 0.5);
-  animation: pulseDot 1.8s ease-in-out infinite;
-}
-
-.subtitle {
-  font-family: var(--font-body);
-  font-size: var(--text-sm);
-  color: var(--color-text-body);
-  margin: 0;
-}
-
-/* ── Item row ── */
-.row {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  background: var(--color-primary-light, #eef3ff);
-  border-radius: var(--radius-xl, 16px);
-  padding: var(--space-3) var(--space-2);
-  text-align: center;
-}
-
-.itemLabel {
-  font-family: var(--font-body);
-  font-size: 11px;
-  font-weight: var(--font-semibold);
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  color: var(--color-text-body);
-  opacity: 0.65;
-}
-
-.itemIcon {
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-white);
-}
-
-.itemIconGive {
-  background: linear-gradient(135deg, #1f2937, #374151);
-}
-
-.itemIconGet {
-  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
-}
-
-.itemName {
-  font-family: var(--font-display);
-  font-weight: var(--font-bold);
-  font-size: 13px;
-  color: var(--color-text-heading);
-  line-height: 1.2;
-}
-
-.tag {
-  font-family: var(--font-body);
-  font-size: 10px;
-  font-weight: var(--font-semibold);
-  padding: 2px 8px;
-  border-radius: var(--radius-full);
-}
-
-.tagGive {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.tagGet {
-  background: #dcfce7;
-  color: #166534;
-}
-
-/* ── Swap icon ── */
-.swapCol {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.swapCircle {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--color-primary);
-  color: var(--color-white);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 6px 16px var(--color-primary-shadow);
-  animation: swapSpin 3s ease-in-out infinite;
-}
-
-/* ── CTA ── */
-.ctaBtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  width: 100%;
-  padding: var(--space-3) var(--space-4);
-  background: var(--color-primary);
-  color: var(--color-white);
-  border: none;
-  border-radius: var(--radius-full);
-  font-family: var(--font-display);
-  font-weight: var(--font-bold);
-  font-size: var(--text-sm);
-  cursor: pointer;
-  transition: background var(--duration-normal) var(--ease-smooth);
-}
-.ctaBtn:hover {
-  background: var(--color-primary-dark);
-}
-
-/* ── Footer ── */
-.footer {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-}
-
-.avatars {
-  display: flex;
-}
-
-.avatar {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  border: 2px solid var(--color-white);
-  margin-left: -6px;
-}
-.avatar:first-child {
-  margin-left: 0;
-}
-
-.footerText {
-  font-family: var(--font-body);
-  font-size: 12px;
-  color: var(--color-text-body);
-  opacity: 0.75;
-}
-
-/* ── Ghost context cards (depth, like reference screenshot) ── */
-.ghostCard {
+/* ── Individual product slot (center = "live", others = queue/done) ── */
+.slot {
   position: absolute;
-  z-index: 1;
-  width: 62%;
-  height: auto;
-  background: var(--color-white);
-  border-radius: var(--radius-xl, 16px);
-  box-shadow: 0 10px 30px rgba(23, 43, 99, 0.08);
-  padding: var(--space-3, 12px) var(--space-4);
+  top: 50%;
+  left: 50%;
+  margin-top: -34px;
+  margin-left: -34px;
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 8px;
+  transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.5s ease;
+  will-change: transform, opacity;
 }
 
-.ghostLeft {
-  left: -14%;
-  top: 2%;
-  transform: rotate(-7deg);
-  opacity: 0.92;
-}
-
-.ghostRight {
-  right: -14%;
-  top: 2%;
-  transform: rotate(7deg);
-  opacity: 0.92;
-}
-
-.ghostTitle {
-  font-family: var(--font-display);
-  font-weight: var(--font-bold);
-  font-size: 12px;
-  color: var(--color-text-heading);
-  opacity: 0.7;
-}
-
-.ghostLine {
-  height: 6px;
-  border-radius: var(--radius-full);
-  background: var(--color-border);
-  width: 80%;
-}
-
-.ghostLineShort {
-  height: 6px;
-  border-radius: var(--radius-full);
-  background: var(--color-border);
-  width: 55%;
-}
-
-/* Explore ghost panel */
-.ghostSearch {
+.slotIconWrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  color: var(--color-primary);
   background: var(--color-primary-light, #eef3ff);
-  border-radius: var(--radius-full);
-  padding: 6px 10px;
+  transition: width 0.5s ease, height 0.5s ease, background 0.5s ease, box-shadow 0.5s ease, color 0.5s ease;
 }
 
-.ghostSearchDot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--color-text-body);
-  opacity: 0.3;
-  flex-shrink: 0;
+/* the product currently "live" in the middle, mid-exchange */
+.slotCenter .slotIconWrap {
+  width: 68px;
+  height: 68px;
+  color: var(--color-white);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  box-shadow: 0 10px 26px var(--color-primary-shadow);
+  animation: liveRing 2.6s ease-in-out infinite;
 }
 
-.ghostSearchText {
-  font-family: var(--font-body);
-  font-size: 9px;
-  color: var(--color-text-body);
-  opacity: 0.45;
+/* products still waiting their turn */
+.slotQueue .slotIconWrap {
+  background: var(--color-primary-light, #eef3ff);
+  color: var(--color-primary);
 }
 
-.ghostSectionLabel {
-  font-family: var(--font-body);
-  font-size: 9px;
-  font-weight: var(--font-semibold);
-  color: var(--color-text-body);
-  opacity: 0.5;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
+/* products that already got exchanged and are drifting off */
+.slotDone .slotIconWrap {
+  background: #f1f5f9;
+  color: #94a3b8;
 }
 
-.ghostCategoryGrid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px 8px;
-}
-
-.ghostCategoryCell {
+.slotMeta {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 3px;
+  white-space: nowrap;
+  animation: metaFade 0.5s ease;
 }
 
-.ghostCategoryIcon {
-  width: 30px;
-  height: 30px;
-  border-radius: 10px;
+.slotName {
+  font-family: var(--font-display);
+  font-weight: var(--font-bold);
+  font-size: 12.5px;
+  color: var(--color-text-heading);
+}
+
+.slotTag {
+  font-family: var(--font-body);
+  font-size: 9.5px;
+  font-weight: var(--font-semibold);
+  color: var(--color-primary-dark);
   background: var(--color-primary-light, #eef3ff);
+  padding: 1px 8px;
+  border-radius: var(--radius-full);
+}
+
+/* ── Swap flash: pulses over the center item at each hand-off ── */
+.swapFlash {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-top: -16px;
+  margin-left: -16px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--color-white);
   color: var(--color-primary);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
+  box-shadow: 0 6px 16px rgba(23, 43, 99, 0.18);
+  opacity: 0;
+  transform: scale(0.4) rotate(-90deg);
+  z-index: 20;
+  pointer-events: none;
 }
 
-.ghostCategoryLabel {
+.swapFlashActive {
+  animation: flashPop 0.55s ease;
+}
+
+.caption {
   font-family: var(--font-body);
-  font-size: 7px;
-  font-weight: var(--font-semibold);
+  font-size: 12px;
   color: var(--color-text-body);
-  opacity: 0.55;
-  text-align: center;
-  line-height: 1.1;
-}
-
-.ghostProductRow {
-  display: flex;
-  gap: 8px;
-}
-
-.ghostProductCard {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.ghostProductThumb {
-  width: 100%;
-  height: 46px;
-  border-radius: 10px;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-}
-
-.ghostProductName {
-  font-family: var(--font-body);
-  font-size: 9px;
-  font-weight: var(--font-semibold);
-  color: var(--color-text-heading);
-}
-
-.ghostProductLoc {
-  font-family: var(--font-body);
-  font-size: 8px;
-  color: var(--color-text-body);
-  opacity: 0.55;
-}
-
-/* Messages ghost panel */
-.ghostMsgRow {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.ghostMsgAvatar {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-display);
-  font-weight: var(--font-bold);
-  font-size: 9px;
-  color: var(--color-white);
-}
-
-.ghostMsgBody {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.ghostMsgName {
-  font-family: var(--font-body);
-  font-size: 9.5px;
-  font-weight: var(--font-semibold);
-  color: var(--color-text-heading);
-}
-
-.ghostMsgSub {
-  font-family: var(--font-body);
-  font-size: 8.5px;
-  color: var(--color-text-body);
-  opacity: 0.55;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.ghostMsgTime {
-  font-family: var(--font-body);
-  font-size: 8px;
-  color: var(--color-text-body);
-  opacity: 0.4;
-  flex-shrink: 0;
-}
-
-/* ── Bottom nav bar ── */
-.navBar {
-  position: relative;
-  z-index: 2;
-  margin-top: -8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 22px;
-  background: var(--color-white);
-  border-radius: var(--radius-full);
-  padding: 10px 22px;
-  box-shadow: 0 10px 26px rgba(23, 43, 99, 0.12);
-}
-
-.navIcon {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-text-body);
-  opacity: 0.45;
-}
-
-.navIconActive {
-  background: var(--color-primary);
-  color: var(--color-white);
-  opacity: 1;
+  opacity: 0.65;
 }
 
 /* ── Animations ── */
-@keyframes swapSpin {
-  0%, 35% { transform: rotate(0deg); }
-  50%, 85% { transform: rotate(180deg); }
-  100% { transform: rotate(360deg); }
+@keyframes liveRing {
+  0%, 100% { box-shadow: 0 10px 26px var(--color-primary-shadow), 0 0 0 0 rgba(59, 130, 246, 0.35); }
+  50% { box-shadow: 0 10px 26px var(--color-primary-shadow), 0 0 0 10px rgba(59, 130, 246, 0); }
 }
 
-@keyframes cardFloat {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
+@keyframes flashPop {
+  0% { opacity: 0; transform: scale(0.4) rotate(-90deg); }
+  45% { opacity: 1; transform: scale(1.2) rotate(6deg); }
+  100% { opacity: 0; transform: scale(0.6) rotate(90deg); }
 }
 
-@keyframes pulseDot {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5); }
-  50% { box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+@keyframes metaFade {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* ── Responsive ── */
-@media (max-width: 960px) {
-  .wrap {
-    max-width: 340px;
-  }
-  .ghostCard {
-    display: none;
-  }
-}
-
 @media (max-width: 480px) {
   .wrap {
-    max-width: 280px;
+    max-width: 300px;
     padding: 32px 0 20px;
   }
-  .navBar {
-    gap: 14px;
-    padding: 8px 16px;
-  }
-  .card {
-    padding: var(--space-4) var(--space-4) var(--space-4);
-    gap: var(--space-3);
-  }
-  .itemIcon {
-    width: 44px;
-    height: 44px;
+  .stage {
+    height: 180px;
   }
 }
