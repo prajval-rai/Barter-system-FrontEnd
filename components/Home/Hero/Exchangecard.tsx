@@ -3,8 +3,6 @@ import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import styles from "./Exchangecard.module.css";
 
-// Straight double-headed arrow: a single line, arrowheads on both ends,
-// pointing directly left (toward "give") and right (toward "get").
 const StraightSwapIcon = ({ size = 26 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 28 28" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <path d="M4 14h20" />
@@ -53,7 +51,11 @@ const PAIRS: ExchangePair[] = [
 const N = PAIRS.length;
 const CYCLE_MS = 3000;
 const FLASH_MS = 650;
-const STACK_LAYERS = 3;
+const STACK_VISIBLE = 2; // how many upcoming layers peek behind the active card
+
+function getOffset(i: number, currentIndex: number): number {
+  return (i - currentIndex + N) % N;
+}
 
 export default function ExchangeCard() {
   const [currentIndex, setCurrentIndex] = useState<number>(0);
@@ -82,27 +84,49 @@ export default function ExchangeCard() {
       <div className={styles.stage}>
         <div className={styles.bgGlow} aria-hidden="true" />
 
-        {/* ── Layered card silhouettes peeking out behind the active card ── */}
+        {/* ── Layered deck: each layer previews the NEXT pair in queue.
+            When the active card finishes exchanging, offset recalculates on
+            every card (CSS transition handles the "layer opens up" motion),
+            so the front layer glides forward to become the new active card
+            while a fresh one appears behind it. ── */}
         <div className={styles.stackArea} aria-hidden="true">
-          {Array.from({ length: STACK_LAYERS }).map((_, i) => {
-            const depth = STACK_LAYERS - i; // furthest layer first
+          {PAIRS.map((pair) => {
+            const offset = getOffset(pair.id - 1, currentIndex);
+            if (offset === 0 || offset > STACK_VISIBLE) return null;
+
+            const depth = offset;
+            const translateY = depth * 16;
+            const translateX = depth * 8;
+            const scale = Math.max(0.9, 1 - depth * 0.05);
+            const opacity = Math.max(0.4, 0.85 - depth * 0.3);
+            const zIndex = 10 - depth;
+
             return (
               <div
-                key={i}
+                key={pair.id}
                 className={styles.stackLayer}
                 style={{
-                  transform: `translate(${depth * 10}px, ${depth * 12}px)`,
-                  opacity: Math.max(0.25, 0.6 - depth * 0.15),
-                  zIndex: i,
+                  transform: `translate(${translateX}px, ${translateY}px) scale(${scale})`,
+                  opacity,
+                  zIndex,
                 }}
-              />
+              >
+                <div className={styles.stackPreviewRow}>
+                  <span className={styles.stackImgWrap}>
+                    <Image src={pair.give.src} alt={pair.give.name} fill sizes="70px" style={{ objectFit: "contain", transform: `scale(${pair.give.scale ?? 1.3})` }} />
+                  </span>
+                  <span className={styles.stackDivider} />
+                  <span className={styles.stackImgWrap}>
+                    <Image src={pair.get.src} alt={pair.get.name} fill sizes="70px" style={{ objectFit: "contain", transform: `scale(${pair.get.scale ?? 1.3})` }} />
+                  </span>
+                </div>
+              </div>
             );
           })}
         </div>
 
         {/* ── Active exchange card ── */}
         <div className={styles.activePair}>
-          {/* Give side */}
           <div className={styles.itemCol}>
             <div key={`give-${activePair.id}`} className={`${styles.itemImgWrap} ${styles.itemImgGive} ${styles.slideInLeft}`}>
               <Image
@@ -118,7 +142,6 @@ export default function ExchangeCard() {
             <span className={`${styles.tag} ${styles.tagGive}`}>{activePair.give.tag}</span>
           </div>
 
-          {/* Center: straight double arrow, plus arrows firing outward on exchange */}
           <div className={styles.swapCol}>
             <span className={styles.flyTrackLeft}>
               {isFlashing && (
@@ -141,7 +164,6 @@ export default function ExchangeCard() {
             </span>
           </div>
 
-          {/* Get side */}
           <div className={styles.itemCol}>
             <div key={`get-${activePair.id}`} className={`${styles.itemImgWrap} ${styles.itemImgGet} ${styles.slideInRight}`}>
               <Image
