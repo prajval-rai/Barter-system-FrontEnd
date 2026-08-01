@@ -13,6 +13,7 @@ interface ExchangeItem {
   name: string;
   tag: string;
   src: string;
+  scale?: number; // per-image zoom to compensate for baked-in transparent padding
 }
 
 interface ExchangePair {
@@ -24,18 +25,18 @@ interface ExchangePair {
 const PAIRS: ExchangePair[] = [
   {
     id: 1,
-    give: { name: "Vintage Car", tag: "Good Condition", src: "/Image/LandingPage/car.png" },
-    get: { name: "Model Train Set", tag: "Like New", src: "/Image/LandingPage/train.png" },
+    give: { name: "Vintage Car", tag: "Good Condition", src: "/Image/LandingPage/car.png", scale: 1.35 },
+    get: { name: "Model Train Set", tag: "Like New", src: "/Image/LandingPage/train.png", scale: 1.35 },
   },
   {
     id: 2,
-    give: { name: "Thrill Novel Set", tag: "Well Kept", src: "/Image/LandingPage/thrill.png" },
-    get: { name: "Romance Novel Set", tag: "Excellent", src: "/Image/LandingPage/romance.png" },
+    give: { name: "Thrill Novel Set", tag: "Well Kept", src: "/Image/LandingPage/thrill.png", scale: 1.25 },
+    get: { name: "Romance Novel Set", tag: "Excellent", src: "/Image/LandingPage/romance.png", scale: 1.25 },
   },
   {
     id: 3,
-    give: { name: "Headphones", tag: "Like New", src: "/Image/LandingPage/headphone.png" },
-    get: { name: "Denim Jacket", tag: "Trendy", src: "/Image/LandingPage/denim.png" },
+    give: { name: "Headphones", tag: "Like New", src: "/Image/LandingPage/headphone.png", scale: 1.3 },
+    get: { name: "Denim Jacket", tag: "Trendy", src: "/Image/LandingPage/denim.png", scale: 1.3 },
   },
 ];
 
@@ -107,11 +108,23 @@ export default function ExchangeCard() {
                 }}
               >
                 <span className={styles.stackImgWrap}>
-                  <Image src={pair.give.src} alt={pair.give.name} fill sizes="44px" style={{ objectFit: "contain" }} />
+                  <Image
+                    src={pair.give.src}
+                    alt={pair.give.name}
+                    fill
+                    sizes="52px"
+                    style={{ objectFit: "contain", transform: `scale(${pair.give.scale ?? 1.3})` }}
+                  />
                 </span>
                 <span className={styles.stackDivider} />
                 <span className={styles.stackImgWrap}>
-                  <Image src={pair.get.src} alt={pair.get.name} fill sizes="44px" style={{ objectFit: "contain" }} />
+                  <Image
+                    src={pair.get.src}
+                    alt={pair.get.name}
+                    fill
+                    sizes="52px"
+                    style={{ objectFit: "contain", transform: `scale(${pair.get.scale ?? 1.3})` }}
+                  />
                 </span>
               </div>
             );
@@ -125,7 +138,14 @@ export default function ExchangeCard() {
         >
           <div className={styles.itemCol}>
             <div className={`${styles.itemImgWrap} ${styles.itemImgGive}`}>
-              <Image src={activePair.give.src} alt={activePair.give.name} fill sizes="110px" style={{ objectFit: "contain" }} priority />
+              <Image
+                src={activePair.give.src}
+                alt={activePair.give.name}
+                fill
+                sizes="130px"
+                style={{ objectFit: "contain", transform: `scale(${activePair.give.scale ?? 1.3})` }}
+                priority
+              />
             </div>
             <span className={styles.itemName}>{activePair.give.name}</span>
             <span className={`${styles.tag} ${styles.tagGive}`}>{activePair.give.tag}</span>
@@ -139,7 +159,14 @@ export default function ExchangeCard() {
 
           <div className={styles.itemCol}>
             <div className={`${styles.itemImgWrap} ${styles.itemImgGet}`}>
-              <Image src={activePair.get.src} alt={activePair.get.name} fill sizes="110px" style={{ objectFit: "contain" }} priority />
+              <Image
+                src={activePair.get.src}
+                alt={activePair.get.name}
+                fill
+                sizes="130px"
+                style={{ objectFit: "contain", transform: `scale(${activePair.get.scale ?? 1.3})` }}
+                priority
+              />
             </div>
             <span className={styles.itemName}>{activePair.get.name}</span>
             <span className={`${styles.tag} ${styles.tagGet}`}>{activePair.get.tag}</span>
