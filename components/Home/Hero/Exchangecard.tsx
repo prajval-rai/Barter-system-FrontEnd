@@ -44,89 +44,97 @@ const PAIRS: ExchangePair[] = [
 
 const N = PAIRS.length;
 const CYCLE_MS = 3000;
-const FLASH_MS = 500;
+const FLIP_MS = 600; // total flip duration; content swaps at the halfway point (edge-on)
+
+type FlipPhase = "idle" | "out" | "in";
 
 export default function ExchangeCard() {
   const [currentIndex, setCurrentIndex] = useState<number>(0);
-  const [isFlashing, setIsFlashing] = useState<boolean>(false);
-  const flashTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [flipPhase, setFlipPhase] = useState<FlipPhase>("idle");
+  const timeouts = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setIsFlashing(true);
-      flashTimeout.current = setTimeout(() => {
+      setFlipPhase("out");
+
+      const half = setTimeout(() => {
         setCurrentIndex((i) => (i + 1) % N);
-        setIsFlashing(false);
-      }, FLASH_MS);
+        setFlipPhase("in");
+      }, FLIP_MS / 2);
+
+      const full = setTimeout(() => {
+        setFlipPhase("idle");
+      }, FLIP_MS);
+
+      timeouts.current.push(half, full);
     }, CYCLE_MS);
 
     return () => {
       clearInterval(interval);
-      if (flashTimeout.current) clearTimeout(flashTimeout.current);
+      timeouts.current.forEach(clearTimeout);
+      timeouts.current = [];
     };
   }, []);
 
   const activePair = PAIRS[currentIndex];
+  const isFlipping = flipPhase !== "idle";
+  const flipClass = flipPhase === "out" ? styles.flipOut : flipPhase === "in" ? styles.flipIn : "";
 
   return (
     <div className={styles.wrap}>
       <div className={styles.stage}>
         <div className={styles.bgGlow} aria-hidden="true" />
 
-        {/* ── Static layered edges peeking behind the card — decorative only,
-            doesn't cycle or change with the swap ── */}
+        {/* ── Static layered edges peeking behind the card ── */}
         <span className={`${styles.staticLayer} ${styles.staticLayerFar}`} aria-hidden="true" />
         <span className={`${styles.staticLayer} ${styles.staticLayerNear}`} aria-hidden="true" />
 
+        {/* ── Fixed-size card: position and dimensions never change ── */}
         <div className={styles.card}>
           <div className={styles.itemCol}>
-            <div key={`give-${activePair.id}`} className={`${styles.itemImgWrap} ${styles.itemImgGive} ${styles.fadeSwap}`}>
-              <Image
-                src={activePair.give.src}
-                alt={activePair.give.name}
-                fill
-                sizes="220px"
-                style={{ objectFit: "contain", transform: `scale(${activePair.give.scale ?? 1.3})` }}
-                priority
-              />
+            <div className={styles.flipStage}>
+              <div className={`${styles.itemImgWrap} ${styles.itemImgGive} ${flipClass}`}>
+                <Image
+                  src={activePair.give.src}
+                  alt={activePair.give.name}
+                  fill
+                  sizes="220px"
+                  style={{ objectFit: "contain", transform: `scale(${activePair.give.scale ?? 1.3})` }}
+                  priority
+                />
+              </div>
             </div>
-            <span key={`give-name-${activePair.id}`} className={`${styles.itemName} ${styles.fadeSwap}`}>
-              {activePair.give.name}
-            </span>
-            <span key={`give-tag-${activePair.id}`} className={`${styles.tag} ${styles.tagGive} ${styles.fadeSwap}`}>
-              {activePair.give.tag}
-            </span>
+            <span className={styles.itemName}>{activePair.give.name}</span>
+            <span className={`${styles.tag} ${styles.tagGive}`}>{activePair.give.tag}</span>
           </div>
 
           <div className={styles.swapCol}>
-            <span className={`${styles.swapCircle} ${isFlashing ? styles.swapCirclePulse : ""}`}>
+            <span className={`${styles.swapCircle} ${isFlipping ? styles.swapCirclePulse : ""}`}>
               <StraightSwapIcon size={24} />
             </span>
           </div>
 
           <div className={styles.itemCol}>
-            <div key={`get-${activePair.id}`} className={`${styles.itemImgWrap} ${styles.itemImgGet} ${styles.fadeSwap}`}>
-              <Image
-                src={activePair.get.src}
-                alt={activePair.get.name}
-                fill
-                sizes="220px"
-                style={{ objectFit: "contain", transform: `scale(${activePair.get.scale ?? 1.3})` }}
-                priority
-              />
+            <div className={styles.flipStage}>
+              <div className={`${styles.itemImgWrap} ${styles.itemImgGet} ${flipClass}`}>
+                <Image
+                  src={activePair.get.src}
+                  alt={activePair.get.name}
+                  fill
+                  sizes="220px"
+                  style={{ objectFit: "contain", transform: `scale(${activePair.get.scale ?? 1.3})` }}
+                  priority
+                />
+              </div>
             </div>
-            <span key={`get-name-${activePair.id}`} className={`${styles.itemName} ${styles.fadeSwap}`}>
-              {activePair.get.name}
-            </span>
-            <span key={`get-tag-${activePair.id}`} className={`${styles.tag} ${styles.tagGet} ${styles.fadeSwap}`}>
-              {activePair.get.tag}
-            </span>
+            <span className={styles.itemName}>{activePair.get.name}</span>
+            <span className={`${styles.tag} ${styles.tagGet}`}>{activePair.get.tag}</span>
           </div>
         </div>
       </div>
 
       <span className={styles.caption}>
-        {isFlashing ? "Exchanging now…" : "Waiting to match"}
+        {isFlipping ? "Exchanging now…" : "Waiting to match"}
       </span>
     </div>
   );
