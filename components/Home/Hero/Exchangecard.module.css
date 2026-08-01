@@ -1,7 +1,7 @@
 .wrap {
   position: relative;
   width: 100%;
-  max-width: 620px;
+  max-width: 660px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -13,7 +13,7 @@
 .stage {
   position: relative;
   width: 100%;
-  min-height: 460px;
+  min-height: 500px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -27,46 +27,26 @@
   pointer-events: none;
 }
 
-/* ── Background stack peeking behind the active card ── */
+/* ── Layered card silhouettes: plain fanned rectangles peeking bottom-right,
+   matching the reference "stacked deck" look ── */
 .stackArea {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100%;
   pointer-events: none;
 }
 
-.stackCard {
+.stackLayer {
   position: absolute;
-  display: flex;
-  align-items: center;
-  gap: 14px;
+  width: 92%;
+  height: 88%;
+  max-width: 560px;
   background: var(--color-white);
-  border-radius: var(--radius-xl, 20px);
-  padding: 18px 26px;
-  box-shadow: 0 12px 28px rgba(23, 43, 99, 0.14);
+  border-radius: var(--radius-2xl, 28px);
+  box-shadow: 0 18px 40px rgba(23, 43, 99, 0.12);
   transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.5s ease;
-}
-
-.stackImgWrap {
-  position: relative;
-  width: 60px;
-  height: 60px;
-  border-radius: 14px;
-  overflow: hidden;
-  background: var(--color-primary-light, #eef3ff);
-  flex-shrink: 0;
-}
-
-.stackDivider {
-  width: 16px;
-  height: 2px;
-  border-radius: var(--radius-full);
-  background: var(--color-border, #dbe4f3);
 }
 
 /* ── Active pair: sized to visually balance the hero content on the left ── */
@@ -80,10 +60,10 @@
   background: var(--color-white);
   border-radius: var(--radius-2xl, 28px);
   box-shadow: 0 24px 60px rgba(23, 43, 99, 0.2);
-  padding: 44px 40px;
+  padding: 48px 44px;
   width: 100%;
-  min-width: 460px;
-  min-height: 380px;
+  min-width: 500px;
+  min-height: 420px;
   overflow: hidden;
 }
 
@@ -91,15 +71,15 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  min-width: 170px;
+  gap: 14px;
+  min-width: 200px;
 }
 
 .itemImgWrap {
   position: relative;
-  width: 200px;
-  height: 200px;
-  border-radius: 22px;
+  width: 240px;
+  height: 240px;
+  border-radius: 24px;
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -118,7 +98,7 @@
 .itemName {
   font-family: var(--font-display);
   font-weight: var(--font-bold);
-  font-size: 17px;
+  font-size: 18px;
   color: var(--color-text-heading);
   text-align: center;
   line-height: 1.2;
@@ -126,9 +106,9 @@
 
 .tag {
   font-family: var(--font-body);
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: var(--font-semibold);
-  padding: 3px 10px;
+  padding: 4px 12px;
   border-radius: var(--radius-full);
   white-space: nowrap;
 }
@@ -150,14 +130,14 @@
   align-items: center;
   justify-content: center;
   gap: 4px;
-  width: 90px;
+  width: 100px;
 }
 
 .swapCircle {
   position: relative;
   z-index: 2;
-  width: 52px;
-  height: 52px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
   background: var(--color-primary);
   color: var(--color-white);
@@ -172,12 +152,11 @@
   animation: pulseCenter 0.65s ease;
 }
 
-/* Tracks that host the flying arrows on either side of the center circle */
 .flyTrackLeft,
 .flyTrackRight {
   position: relative;
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   flex-shrink: 0;
 }
 
@@ -188,14 +167,12 @@
   color: var(--color-primary);
 }
 
-/* Left arrow points away from center, toward the "give" product */
 .flyArrowLeft {
   right: 0;
   transform: translateY(-50%) scaleX(-1);
   animation: flyLeft 0.65s ease forwards;
 }
 
-/* Right arrow points away from center, toward the "get" product */
 .flyArrowRight {
   left: 0;
   transform: translateY(-50%);
@@ -234,17 +211,16 @@
   40% { transform: scale(1.15); }
 }
 
-/* Arrow shoots outward from the center circle toward its product, then fades */
 @keyframes flyLeft {
   0% { opacity: 0; transform: translateY(-50%) translateX(0) scaleX(-1); }
   25% { opacity: 1; }
-  100% { opacity: 0; transform: translateY(-50%) translateX(-46px) scaleX(-1); }
+  100% { opacity: 0; transform: translateY(-50%) translateX(-50px) scaleX(-1); }
 }
 
 @keyframes flyRight {
   0% { opacity: 0; transform: translateY(-50%) translateX(0); }
   25% { opacity: 1; }
-  100% { opacity: 0; transform: translateY(-50%) translateX(46px); }
+  100% { opacity: 0; transform: translateY(-50%) translateX(50px); }
 }
 
 /* ── Responsive ── */
@@ -254,34 +230,30 @@
     padding: 0 0 16px;
   }
   .stage {
-    min-height: 300px;
+    min-height: 320px;
+  }
+  .stackLayer {
+    width: 90%;
+    height: 84%;
   }
   .activePair {
-    padding: 20px 18px;
+    padding: 22px 18px;
     min-width: unset;
     min-height: unset;
     gap: var(--space-3, 14px);
   }
   .itemImgWrap {
-    width: 104px;
-    height: 104px;
+    width: 110px;
+    height: 110px;
   }
   .itemCol {
-    min-width: 104px;
+    min-width: 110px;
   }
   .itemName {
     font-size: 12.5px;
   }
-  .stackCard {
-    padding: 12px 16px;
-    gap: 10px;
-  }
-  .stackImgWrap {
-    width: 40px;
-    height: 40px;
-  }
   .swapCircle {
-    width: 44px;
-    height: 44px;
+    width: 46px;
+    height: 46px;
   }
 }
