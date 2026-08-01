@@ -27,7 +27,6 @@
   pointer-events: none;
 }
 
-/* ── Static layered deck edges, never move ── */
 .staticLayer {
   position: absolute;
   left: 50%;
@@ -56,19 +55,23 @@
   z-index: 1;
 }
 
-/* ── Fixed card: no width/height/position changes, ever ── */
+/* ── Card: explicit, locked dimensions — width, height, and padding are
+   all fixed values, not content-driven, so nothing inside can resize it ── */
 .card {
   position: relative;
   z-index: 2;
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: 220px 90px 220px; /* fixed column widths, not 1fr */
   align-items: center;
-  gap: var(--space-5, 24px);
+  justify-content: center;
+  gap: 24px;
   background: var(--color-white);
   border-radius: var(--radius-2xl, 28px);
   box-shadow: 0 20px 50px rgba(23, 43, 99, 0.18);
   padding: 40px 36px;
   width: 100%;
+  max-width: 640px;
+  height: 380px;
   box-sizing: border-box;
 }
 
@@ -76,17 +79,18 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 12px;
-  min-width: 0;
+  width: 220px;
+  height: 100%;
 }
 
-/* Gives the flip its 3D depth — perspective lives on the stationary parent
-   so only the image inside appears to rotate, nothing around it shifts. */
-.flipStage {
-  width: 100%;
-  max-width: 220px;
-  aspect-ratio: 1 / 1;
-  perspective: 900px;
+/* Fixed slot that the image lives in — this size never changes,
+   regardless of which product's image is inside it. */
+.imgSlot {
+  width: 220px;
+  height: 220px;
+  flex-shrink: 0;
 }
 
 .itemImgWrap {
@@ -98,9 +102,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transform-style: preserve-3d;
-  backface-visibility: hidden;
-  will-change: transform;
 }
 
 .itemImgGive {
@@ -139,10 +140,13 @@
   color: #166534;
 }
 
+/* ── Center arrow column: fixed width, centered by construction since
+   grid-template-columns puts it exactly between two equal side columns ── */
 .swapCol {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 90px;
 }
 
 .swapCircle {
@@ -158,7 +162,7 @@
 }
 
 .swapCirclePulse {
-  animation: pulseCenter 0.55s ease;
+  animation: pulseCenter 0.5s ease;
 }
 
 .caption {
@@ -168,34 +172,23 @@
   opacity: 0.65;
 }
 
-/* ── The flip itself: rotates on the Y-axis (a circular arc as seen from
-   above) out to 90° — where the flat image is edge-on and invisible —
-   then the new content swaps in at -90° and rotates back to 0°. Card
-   size/position never changes; only this inner element rotates. ── */
-.flipOut {
-  animation: flipOut 0.3s cubic-bezier(0.45, 0, 0.55, 1) forwards;
+/* ── Simple, direct swap: the old image fades out, new one fades in —
+   no rotation, no movement, no resizing. The box itself never changes size. ── */
+.imgSwap {
+  animation: imgSwap 0.35s ease;
 }
 
-.flipIn {
-  animation: flipIn 0.3s cubic-bezier(0.45, 0, 0.55, 1) forwards;
-}
-
-@keyframes flipOut {
-  0% { transform: rotateY(0deg); }
-  100% { transform: rotateY(90deg); }
-}
-
-@keyframes flipIn {
-  0% { transform: rotateY(-90deg); }
-  100% { transform: rotateY(0deg); }
+@keyframes imgSwap {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
 }
 
 @keyframes pulseCenter {
   0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.15); }
+  50% { transform: scale(1.12); }
 }
 
-/* ── Responsive ── */
+/* ── Responsive: still fixed values per breakpoint, just smaller ones ── */
 @media (max-width: 640px) {
   .wrap {
     max-width: 360px;
@@ -211,14 +204,23 @@
     height: 38px;
   }
   .card {
-    padding: 24px 18px;
-    gap: var(--space-3, 14px);
+    grid-template-columns: 110px 60px 110px;
+    gap: 12px;
+    padding: 22px 16px;
+    height: 240px;
   }
-  .flipStage {
-    max-width: 110px;
+  .itemCol {
+    width: 110px;
+  }
+  .imgSlot {
+    width: 110px;
+    height: 110px;
   }
   .itemName {
-    font-size: 13px;
+    font-size: 12.5px;
+  }
+  .swapCol {
+    width: 60px;
   }
   .swapCircle {
     width: 42px;
