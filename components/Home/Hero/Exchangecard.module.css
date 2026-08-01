@@ -16,6 +16,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  padding-top: 22px; /* room for the peeking layers above the card */
 }
 
 .bgGlow {
@@ -26,10 +27,41 @@
   pointer-events: none;
 }
 
-/* ── Single card, no layers, no overflow tricks ── */
+/* ── Static layered "deck" edges: two rounded rectangles centered behind
+   the card, slightly narrower and shifted up, so only a sliver peeks out
+   above the top edge — purely decorative, never moves or cycles ── */
+.staticLayer {
+  position: absolute;
+  left: 50%;
+  border-radius: var(--radius-2xl, 28px);
+  background: var(--color-white);
+  pointer-events: none;
+}
+
+.staticLayerFar {
+  top: 0;
+  width: 88%;
+  height: 60px;
+  transform: translateX(-50%);
+  opacity: 0.5;
+  box-shadow: 0 10px 24px rgba(23, 43, 99, 0.08);
+  z-index: 0;
+}
+
+.staticLayerNear {
+  top: 11px;
+  width: 94%;
+  height: 56px;
+  transform: translateX(-50%);
+  opacity: 0.75;
+  box-shadow: 0 10px 24px rgba(23, 43, 99, 0.1);
+  z-index: 1;
+}
+
+/* ── The single active card ── */
 .card {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
@@ -47,7 +79,7 @@
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  min-width: 0; /* allow grid children to shrink instead of overflowing */
+  min-width: 0;
 }
 
 .itemImgWrap {
@@ -127,14 +159,14 @@
   opacity: 0.65;
 }
 
-/* ── One simple fade animation for the swap, nothing else ── */
+/* ── Content crossfade on swap ── */
 .fadeSwap {
   animation: fadeIn 0.45s ease;
 }
 
 @keyframes fadeIn {
-  0% { opacity: 0; transform: translateY(6px); }
-  100% { opacity: 1; transform: translateY(0); }
+  0% { opacity: 0; transform: translateY(6px) scale(0.97); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 @keyframes pulseCenter {
@@ -146,6 +178,16 @@
 @media (max-width: 640px) {
   .wrap {
     max-width: 360px;
+  }
+  .stage {
+    padding-top: 16px;
+  }
+  .staticLayerFar {
+    height: 40px;
+  }
+  .staticLayerNear {
+    top: 8px;
+    height: 38px;
   }
   .card {
     padding: 24px 18px;
