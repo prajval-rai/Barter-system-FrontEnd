@@ -13,7 +13,7 @@ interface ExchangeItem {
   name: string;
   tag: string;
   src: string;
-  scale?: number; // per-image zoom to compensate for baked-in transparent padding
+  scale?: number;
 }
 
 interface ExchangePair {
@@ -43,16 +43,6 @@ const PAIRS: ExchangePair[] = [
 const N = PAIRS.length;
 const CYCLE_MS = 3000;
 const FLASH_MS = 650;
-const STACK_VISIBLE = 2;
-
-function getOffset(i: number, currentIndex: number): number {
-  return (i - currentIndex + N) % N;
-}
-
-// Alternating tilt/direction for peeking stack cards so they fan out
-// left/right instead of stacking dead-center behind the active card.
-const STACK_TILT = [8, -8, 6, -6];
-const STACK_SHIFT_X = [26, -26, 40, -40];
 
 export default function ExchangeCard() {
   const [currentIndex, setCurrentIndex] = useState<number>(0);
@@ -78,71 +68,21 @@ export default function ExchangeCard() {
 
   return (
     <div className={styles.wrap}>
-      <span className={styles.topPill}>Live Exchanges</span>
-
       <div className={styles.stage}>
         <div className={styles.bgGlow} aria-hidden="true" />
 
-        {/* ── Background stack: upcoming pairs peeking out behind the active card ── */}
-        <div className={styles.stackArea} aria-hidden="true">
-          {PAIRS.map((pair) => {
-            const offset = getOffset(pair.id - 1, currentIndex);
-            if (offset === 0 || offset > STACK_VISIBLE) return null;
-
-            const depth = offset;
-            const tilt = STACK_TILT[(offset - 1) % STACK_TILT.length];
-            const shiftX = STACK_SHIFT_X[(offset - 1) % STACK_SHIFT_X.length];
-            const scale = Math.max(0.82, 0.98 - depth * 0.08);
-            const translateY = -14 - depth * 10;
-            const opacity = Math.max(0.55, 0.95 - depth * 0.18);
-            const zIndex = 10 - depth;
-
-            return (
-              <div
-                key={pair.id}
-                className={styles.stackCard}
-                style={{
-                  transform: `translate(${shiftX}px, ${translateY}px) scale(${scale}) rotate(${tilt}deg)`,
-                  opacity,
-                  zIndex,
-                }}
-              >
-                <span className={styles.stackImgWrap}>
-                  <Image
-                    src={pair.give.src}
-                    alt={pair.give.name}
-                    fill
-                    sizes="52px"
-                    style={{ objectFit: "contain", transform: `scale(${pair.give.scale ?? 1.3})` }}
-                  />
-                </span>
-                <span className={styles.stackDivider} />
-                <span className={styles.stackImgWrap}>
-                  <Image
-                    src={pair.get.src}
-                    alt={pair.get.name}
-                    fill
-                    sizes="52px"
-                    style={{ objectFit: "contain", transform: `scale(${pair.get.scale ?? 1.3})` }}
-                  />
-                </span>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* ── Active exchange: the two products currently swapping ── */}
-        <div
-          key={activePair.id}
-          className={`${styles.activePair} ${isFlashing ? styles.activePairFlash : ""}`}
-        >
+        <div className={styles.activePair}>
+          {/* ── Give side: slides in from the left ── */}
           <div className={styles.itemCol}>
-            <div className={`${styles.itemImgWrap} ${styles.itemImgGive}`}>
+            <div
+              key={`give-${activePair.id}`}
+              className={`${styles.itemImgWrap} ${styles.itemImgGive} ${styles.slideInLeft}`}
+            >
               <Image
                 src={activePair.give.src}
                 alt={activePair.give.name}
                 fill
-                sizes="130px"
+                sizes="170px"
                 style={{ objectFit: "contain", transform: `scale(${activePair.give.scale ?? 1.3})` }}
                 priority
               />
@@ -157,13 +97,17 @@ export default function ExchangeCard() {
             </span>
           </div>
 
+          {/* ── Get side: slides in from the right ── */}
           <div className={styles.itemCol}>
-            <div className={`${styles.itemImgWrap} ${styles.itemImgGet}`}>
+            <div
+              key={`get-${activePair.id}`}
+              className={`${styles.itemImgWrap} ${styles.itemImgGet} ${styles.slideInRight}`}
+            >
               <Image
                 src={activePair.get.src}
                 alt={activePair.get.name}
                 fill
-                sizes="130px"
+                sizes="170px"
                 style={{ objectFit: "contain", transform: `scale(${activePair.get.scale ?? 1.3})` }}
                 priority
               />
