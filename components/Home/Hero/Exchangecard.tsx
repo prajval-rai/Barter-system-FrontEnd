@@ -73,6 +73,11 @@ export default function ExchangeCard() {
       <div className={styles.stage}>
         <div className={styles.bgGlow} aria-hidden="true" />
 
+        {/* ── Static layered edges peeking behind the card — decorative only,
+            doesn't cycle or change with the swap ── */}
+        <span className={`${styles.staticLayer} ${styles.staticLayerFar}`} aria-hidden="true" />
+        <span className={`${styles.staticLayer} ${styles.staticLayerNear}`} aria-hidden="true" />
+
         <div className={styles.card}>
           <div className={styles.itemCol}>
             <div key={`give-${activePair.id}`} className={`${styles.itemImgWrap} ${styles.itemImgGive} ${styles.fadeSwap}`}>
