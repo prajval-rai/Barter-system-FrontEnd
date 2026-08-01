@@ -85,7 +85,7 @@ const FLASH_MS = 650; // duration of the exchange flash/animation
 const STACK_VISIBLE = 3; // how many upcoming pairs to render in the background stack
 
 function getOffset(i: number, currentIndex: number): number {
-  let raw = (i - currentIndex + N) % N;
+  const raw = (i - currentIndex + N) % N;
   return raw;
 }
 
@@ -109,6 +109,13 @@ export default function ExchangeCard() {
     };
   }, []);
 
+  // Pull the active pair + its icon components into local variables.
+  // JSX cannot parse `<PAIRS[currentIndex].give.Icon />` directly (bracket
+  // indexing isn't valid in a JSX tag position), so we resolve it first.
+  const activePair = PAIRS[currentIndex];
+  const GiveIcon = activePair.give.Icon;
+  const GetIcon = activePair.get.Icon;
+
   return (
     <div className={styles.wrap}>
       <span className={styles.topPill}>Live Exchanges</span>
@@ -128,6 +135,9 @@ export default function ExchangeCard() {
             const opacity = Math.max(0.15, 0.85 - depth * 0.22);
             const zIndex = 10 - depth;
 
+            const StackGiveIcon = pair.give.Icon;
+            const StackGetIcon = pair.get.Icon;
+
             return (
               <div
                 key={pair.id}
@@ -139,11 +149,11 @@ export default function ExchangeCard() {
                 }}
               >
                 <span className={styles.stackIcon}>
-                  <pair.give.Icon size={16} />
+                  <StackGiveIcon size={16} />
                 </span>
                 <span className={styles.stackDivider} />
                 <span className={styles.stackIcon}>
-                  <pair.get.Icon size={16} />
+                  <StackGetIcon size={16} />
                 </span>
               </div>
             );
@@ -152,15 +162,15 @@ export default function ExchangeCard() {
 
         {/* ── Active exchange: the two products currently swapping ── */}
         <div
-          key={PAIRS[currentIndex].id}
+          key={activePair.id}
           className={`${styles.activePair} ${isFlashing ? styles.activePairFlash : ""}`}
         >
           <div className={styles.itemCol}>
             <div className={`${styles.itemIcon} ${styles.itemIconGive}`}>
-              <PAIRS[currentIndex].give.Icon size={26} />
+              <GiveIcon size={26} />
             </div>
-            <span className={styles.itemName}>{PAIRS[currentIndex].give.name}</span>
-            <span className={`${styles.tag} ${styles.tagGive}`}>{PAIRS[currentIndex].give.tag}</span>
+            <span className={styles.itemName}>{activePair.give.name}</span>
+            <span className={`${styles.tag} ${styles.tagGive}`}>{activePair.give.tag}</span>
           </div>
 
           <div className={styles.swapCol}>
@@ -171,10 +181,10 @@ export default function ExchangeCard() {
 
           <div className={styles.itemCol}>
             <div className={`${styles.itemIcon} ${styles.itemIconGet}`}>
-              <PAIRS[currentIndex].get.Icon size={26} />
+              <GetIcon size={26} />
             </div>
-            <span className={styles.itemName}>{PAIRS[currentIndex].get.name}</span>
-            <span className={`${styles.tag} ${styles.tagGet}`}>{PAIRS[currentIndex].get.tag}</span>
+            <span className={styles.itemName}>{activePair.get.name}</span>
+            <span className={`${styles.tag} ${styles.tagGet}`}>{activePair.get.tag}</span>
           </div>
         </div>
       </div>
