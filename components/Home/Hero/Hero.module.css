@@ -159,31 +159,6 @@
 .primaryBtn:active { transform: translateY(0); }
 .primaryBtn:focus-visible { outline: 3px solid var(--color-primary); outline-offset: 2px; }
 
-.outlineBtn {
-  display: inline-flex;
-  align-items: center;
-  padding: var(--space-4) var(--space-8);
-  background: var(--color-white);
-  color: var(--color-text-heading);
-  border: 1.5px solid var(--color-border);
-  border-radius: var(--radius-full);
-  font-family: var(--font-display);
-  font-size: var(--text-base);
-  font-weight: var(--font-semibold);
-  cursor: pointer;
-  transition: border-color var(--duration-normal) var(--ease-smooth),
-              background var(--duration-normal) var(--ease-smooth);
-}
-.outlineBtn:hover { border-color: var(--color-primary); background: var(--color-primary-light); }
-.outlineBtn:focus-visible { outline: 3px solid var(--color-primary); outline-offset: 2px; }
-
-/* ── Desktop: hide secondary CTA ── */
-@media (min-width: 961px) {
-  .outlineBtn {
-    display: none;
-  }
-}
-
 /* ── Right: chair image ── */
 .mockupArea {
   position: relative;
@@ -230,8 +205,8 @@
     gap: var(--space-2);
   }
   .curvedText {
-    max-width: 300px;
-    font-size: 22px;
+    max-width: 340px;
+    font-size: 28px;
   }
   .heading {
     font-size: var(--text-3xl);
@@ -252,8 +227,7 @@
     margin-top: var(--space-2);
     width: 100%;
   }
-  .primaryBtn,
-  .outlineBtn {
+  .primaryBtn {
     width: 100%;
     justify-content: center;
     padding: var(--space-3) var(--space-6);
