@@ -3,15 +3,19 @@ import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import styles from "./Exchangecard.module.css";
 
-const SwapIcon = ({ size = 20 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M17 1l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3" />
+// Straight double-headed arrow: a single line, arrowheads on both ends,
+// pointing directly left (toward "give") and right (toward "get").
+const StraightSwapIcon = ({ size = 26 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 28 28" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M4 14h20" />
+    <path d="M8 9l-4 5 4 5" />
+    <path d="M20 9l4 5-4 5" />
   </svg>
 );
 
-const ArrowIcon = ({ size = 16 }: { size?: number }) => (
+const StraightArrowIcon = ({ size = 16 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M5 12h14M13 6l6 6-6 6" />
+    <path d="M4 12h16M14 6l6 6-6 6" />
   </svg>
 );
 
@@ -49,14 +53,7 @@ const PAIRS: ExchangePair[] = [
 const N = PAIRS.length;
 const CYCLE_MS = 3000;
 const FLASH_MS = 650;
-const STACK_VISIBLE = 2;
-
-function getOffset(i: number, currentIndex: number): number {
-  return (i - currentIndex + N) % N;
-}
-
-const STACK_TILT = [6, -6, 4, -4];
-const STACK_SHIFT_X = [22, -22, 34, -34];
+const STACK_LAYERS = 3;
 
 export default function ExchangeCard() {
   const [currentIndex, setCurrentIndex] = useState<number>(0);
@@ -85,38 +82,20 @@ export default function ExchangeCard() {
       <div className={styles.stage}>
         <div className={styles.bgGlow} aria-hidden="true" />
 
-        {/* ── Background stack: upcoming pairs peeking behind the active card ── */}
+        {/* ── Layered card silhouettes peeking out behind the active card ── */}
         <div className={styles.stackArea} aria-hidden="true">
-          {PAIRS.map((pair) => {
-            const offset = getOffset(pair.id - 1, currentIndex);
-            if (offset === 0 || offset > STACK_VISIBLE) return null;
-
-            const depth = offset;
-            const tilt = STACK_TILT[(offset - 1) % STACK_TILT.length];
-            const shiftX = STACK_SHIFT_X[(offset - 1) % STACK_SHIFT_X.length];
-            const scale = Math.max(0.85, 0.97 - depth * 0.06);
-            const translateY = -10 - depth * 8;
-            const opacity = Math.max(0.5, 0.85 - depth * 0.2);
-            const zIndex = 10 - depth;
-
+          {Array.from({ length: STACK_LAYERS }).map((_, i) => {
+            const depth = STACK_LAYERS - i; // furthest layer first
             return (
               <div
-                key={pair.id}
-                className={styles.stackCard}
+                key={i}
+                className={styles.stackLayer}
                 style={{
-                  transform: `translate(${shiftX}px, ${translateY}px) scale(${scale}) rotate(${tilt}deg)`,
-                  opacity,
-                  zIndex,
+                  transform: `translate(${depth * 10}px, ${depth * 12}px)`,
+                  opacity: Math.max(0.25, 0.6 - depth * 0.15),
+                  zIndex: i,
                 }}
-              >
-                <span className={styles.stackImgWrap}>
-                  <Image src={pair.give.src} alt={pair.give.name} fill sizes="60px" style={{ objectFit: "contain", transform: `scale(${pair.give.scale ?? 1.3})` }} />
-                </span>
-                <span className={styles.stackDivider} />
-                <span className={styles.stackImgWrap}>
-                  <Image src={pair.get.src} alt={pair.get.name} fill sizes="60px" style={{ objectFit: "contain", transform: `scale(${pair.get.scale ?? 1.3})` }} />
-                </span>
-              </div>
+              />
             );
           })}
         </div>
@@ -130,7 +109,7 @@ export default function ExchangeCard() {
                 src={activePair.give.src}
                 alt={activePair.give.name}
                 fill
-                sizes="200px"
+                sizes="240px"
                 style={{ objectFit: "contain", transform: `scale(${activePair.give.scale ?? 1.3})` }}
                 priority
               />
@@ -139,24 +118,24 @@ export default function ExchangeCard() {
             <span className={`${styles.tag} ${styles.tagGive}`}>{activePair.give.tag}</span>
           </div>
 
-          {/* Center swap column with outward-firing arrows */}
+          {/* Center: straight double arrow, plus arrows firing outward on exchange */}
           <div className={styles.swapCol}>
             <span className={styles.flyTrackLeft}>
               {isFlashing && (
                 <span className={styles.flyArrowLeft}>
-                  <ArrowIcon size={14} />
+                  <StraightArrowIcon size={14} />
                 </span>
               )}
             </span>
 
             <span className={`${styles.swapCircle} ${isFlashing ? styles.swapCirclePulse : ""}`}>
-              <SwapIcon size={22} />
+              <StraightSwapIcon size={26} />
             </span>
 
             <span className={styles.flyTrackRight}>
               {isFlashing && (
                 <span className={styles.flyArrowRight}>
-                  <ArrowIcon size={14} />
+                  <StraightArrowIcon size={14} />
                 </span>
               )}
             </span>
@@ -169,7 +148,7 @@ export default function ExchangeCard() {
                 src={activePair.get.src}
                 alt={activePair.get.name}
                 fill
-                sizes="200px"
+                sizes="240px"
                 style={{ objectFit: "contain", transform: `scale(${activePair.get.scale ?? 1.3})` }}
                 priority
               />
