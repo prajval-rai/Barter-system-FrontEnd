@@ -27,8 +27,7 @@
   pointer-events: none;
 }
 
-/* ── Layered card silhouettes: plain fanned rectangles peeking bottom-right,
-   matching the reference "stacked deck" look ── */
+/* ── Layered deck behind the active card ── */
 .stackArea {
   position: absolute;
   inset: 0;
@@ -46,10 +45,41 @@
   background: var(--color-white);
   border-radius: var(--radius-2xl, 28px);
   box-shadow: 0 18px 40px rgba(23, 43, 99, 0.12);
-  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.5s ease;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 32px;
+  /* This transition is what makes each layer glide forward smoothly
+     when currentIndex changes and offsets recompute — the "next layer
+     opens up with a new product" motion. */
+  transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.6s ease;
 }
 
-/* ── Active pair: sized to visually balance the hero content on the left ── */
+.stackPreviewRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  opacity: 0.9;
+}
+
+.stackImgWrap {
+  position: relative;
+  width: 70px;
+  height: 70px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--color-primary-light, #eef3ff);
+  flex-shrink: 0;
+}
+
+.stackDivider {
+  width: 18px;
+  height: 2px;
+  border-radius: var(--radius-full);
+  background: var(--color-border, #dbe4f3);
+}
+
+/* ── Active pair ── */
 .activePair {
   position: relative;
   z-index: 10;
@@ -235,6 +265,11 @@
   .stackLayer {
     width: 90%;
     height: 84%;
+    padding-top: 18px;
+  }
+  .stackImgWrap {
+    width: 46px;
+    height: 46px;
   }
   .activePair {
     padding: 22px 18px;
