@@ -3,11 +3,13 @@ import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import styles from "./Exchangecard.module.css";
 
-const StraightSwapIcon = ({ size = 24 }: { size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 28 28" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M4 14h20" />
-    <path d="M8 9l-4 5 4 5" />
-    <path d="M20 9l4 5-4 5" />
+// Loop/repeat style arrow — matches the reference icon
+const RepeatSwapIcon = ({ size = 22 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M17 1l4 4-4 4" />
+    <path d="M3 11V9a4 4 0 0 1 4-4h14" />
+    <path d="M7 23l-4-4 4-4" />
+    <path d="M21 13v2a4 4 0 0 1-4 4H3" />
   </svg>
 );
 
@@ -44,56 +46,44 @@ const PAIRS: ExchangePair[] = [
 
 const N = PAIRS.length;
 const CYCLE_MS = 3000;
-const FLIP_MS = 600; // total flip duration; content swaps at the halfway point (edge-on)
-
-type FlipPhase = "idle" | "out" | "in";
+const FLASH_MS = 450;
 
 export default function ExchangeCard() {
   const [currentIndex, setCurrentIndex] = useState<number>(0);
-  const [flipPhase, setFlipPhase] = useState<FlipPhase>("idle");
-  const timeouts = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const [isFlashing, setIsFlashing] = useState<boolean>(false);
+  const flashTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setFlipPhase("out");
-
-      const half = setTimeout(() => {
+      setIsFlashing(true);
+      flashTimeout.current = setTimeout(() => {
         setCurrentIndex((i) => (i + 1) % N);
-        setFlipPhase("in");
-      }, FLIP_MS / 2);
-
-      const full = setTimeout(() => {
-        setFlipPhase("idle");
-      }, FLIP_MS);
-
-      timeouts.current.push(half, full);
+        setIsFlashing(false);
+      }, FLASH_MS);
     }, CYCLE_MS);
 
     return () => {
       clearInterval(interval);
-      timeouts.current.forEach(clearTimeout);
-      timeouts.current = [];
+      if (flashTimeout.current) clearTimeout(flashTimeout.current);
     };
   }, []);
 
   const activePair = PAIRS[currentIndex];
-  const isFlipping = flipPhase !== "idle";
-  const flipClass = flipPhase === "out" ? styles.flipOut : flipPhase === "in" ? styles.flipIn : "";
 
   return (
     <div className={styles.wrap}>
       <div className={styles.stage}>
         <div className={styles.bgGlow} aria-hidden="true" />
 
-        {/* ── Static layered edges peeking behind the card ── */}
         <span className={`${styles.staticLayer} ${styles.staticLayerFar}`} aria-hidden="true" />
         <span className={`${styles.staticLayer} ${styles.staticLayerNear}`} aria-hidden="true" />
 
-        {/* ── Fixed-size card: position and dimensions never change ── */}
+        {/* ── Card: every dimension is fixed. Nothing inside can ever change
+            the card's width/height/padding — only image content swaps. ── */}
         <div className={styles.card}>
           <div className={styles.itemCol}>
-            <div className={styles.flipStage}>
-              <div className={`${styles.itemImgWrap} ${styles.itemImgGive} ${flipClass}`}>
+            <div className={styles.imgSlot}>
+              <div key={`give-${activePair.id}`} className={`${styles.itemImgWrap} ${styles.itemImgGive} ${styles.imgSwap}`}>
                 <Image
                   src={activePair.give.src}
                   alt={activePair.give.name}
@@ -109,14 +99,14 @@ export default function ExchangeCard() {
           </div>
 
           <div className={styles.swapCol}>
-            <span className={`${styles.swapCircle} ${isFlipping ? styles.swapCirclePulse : ""}`}>
-              <StraightSwapIcon size={24} />
+            <span className={`${styles.swapCircle} ${isFlashing ? styles.swapCirclePulse : ""}`}>
+              <RepeatSwapIcon size={22} />
             </span>
           </div>
 
           <div className={styles.itemCol}>
-            <div className={styles.flipStage}>
-              <div className={`${styles.itemImgWrap} ${styles.itemImgGet} ${flipClass}`}>
+            <div className={styles.imgSlot}>
+              <div key={`get-${activePair.id}`} className={`${styles.itemImgWrap} ${styles.itemImgGet} ${styles.imgSwap}`}>
                 <Image
                   src={activePair.get.src}
                   alt={activePair.get.name}
@@ -134,7 +124,7 @@ export default function ExchangeCard() {
       </div>
 
       <span className={styles.caption}>
-        {isFlipping ? "Exchanging now…" : "Waiting to match"}
+        {isFlashing ? "Exchanging now…" : "Waiting to match"}
       </span>
     </div>
   );
