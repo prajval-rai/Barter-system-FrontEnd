@@ -7,30 +7,15 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-4, 16px);
-  padding: 56px 0 32px;
-}
-
-.topPill {
-  font-family: var(--font-body);
-  font-size: 12px;
-  font-weight: var(--font-semibold);
-  letter-spacing: 0.4px;
-  text-transform: uppercase;
-  color: var(--color-primary);
-  background: var(--color-primary-light, #eef3ff);
-  padding: 6px 16px;
-  border-radius: var(--radius-full);
-  z-index: 5;
+  padding: 0 0 24px;
 }
 
 .stage {
   position: relative;
   width: 100%;
-  height: 340px;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
-  padding-bottom: 24px;
 }
 
 .bgGlow {
@@ -39,48 +24,6 @@
   z-index: 0;
   background: radial-gradient(55% 60% at 50% 35%, rgba(191, 219, 254, 0.55), rgba(255, 255, 255, 0) 70%);
   pointer-events: none;
-}
-
-/* ── Background stack peeking behind the active card ── */
-.stackArea {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  pointer-events: none;
-}
-
-.stackCard {
-  position: absolute;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: var(--color-white);
-  border-radius: var(--radius-xl, 20px);
-  padding: 14px 20px;
-  box-shadow: 0 12px 28px rgba(23, 43, 99, 0.14);
-  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.5s ease;
-}
-
-.stackImgWrap {
-  position: relative;
-  width: 52px;
-  height: 52px;
-  border-radius: 12px;
-  overflow: hidden;
-  background: var(--color-primary-light, #eef3ff);
-  flex-shrink: 0;
-}
-
-.stackDivider {
-  width: 14px;
-  height: 2px;
-  border-radius: var(--radius-full);
-  background: var(--color-border, #dbe4f3);
 }
 
 /* ── Active pair ── */
@@ -94,13 +37,9 @@
   background: var(--color-white);
   border-radius: var(--radius-2xl, 28px);
   box-shadow: 0 24px 60px rgba(23, 43, 99, 0.2);
-  padding: var(--space-6, 28px) var(--space-6, 28px);
-  animation: enterFromStack 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  padding: var(--space-6, 28px);
   min-width: 380px;
-}
-
-.activePairFlash {
-  animation: pairShake 0.65s ease;
+  overflow: hidden;
 }
 
 .itemCol {
@@ -108,19 +47,19 @@
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  min-width: 140px;
+  min-width: 160px;
 }
 
 .itemImgWrap {
   position: relative;
-  width: 130px;
-  height: 130px;
+  width: 170px;
+  height: 170px;
   border-radius: 20px;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 4px;
+  padding: 2px;
 }
 
 .itemImgGive {
@@ -190,16 +129,24 @@
   z-index: 5;
 }
 
-/* ── Animations ── */
-@keyframes enterFromStack {
-  0% { opacity: 0; transform: translateY(28px) scale(0.85); }
-  100% { opacity: 1; transform: translateY(0) scale(1); }
+/* ── Slide-replace animations: each new item slides in from its outer edge,
+   pushing the sense that it's swapping in to replace the previous one ── */
+.slideInLeft {
+  animation: enterFromLeft 0.6s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-@keyframes pairShake {
-  0%, 100% { transform: scale(1); }
-  30% { transform: scale(1.03); }
-  60% { transform: scale(0.97); }
+.slideInRight {
+  animation: enterFromRight 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes enterFromLeft {
+  0% { opacity: 0; transform: translateX(-60px) scale(0.85); }
+  100% { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+@keyframes enterFromRight {
+  0% { opacity: 0; transform: translateX(60px) scale(0.85); }
+  100% { opacity: 1; transform: translateX(0) scale(1); }
 }
 
 @keyframes swapSpin {
@@ -212,10 +159,7 @@
 @media (max-width: 640px) {
   .wrap {
     max-width: 340px;
-    padding: 36px 0 24px;
-  }
-  .stage {
-    height: 260px;
+    padding: 0 0 16px;
   }
   .activePair {
     padding: var(--space-4, 18px);
@@ -223,21 +167,13 @@
     gap: var(--space-2, 10px);
   }
   .itemImgWrap {
-    width: 84px;
-    height: 84px;
+    width: 100px;
+    height: 100px;
   }
   .itemCol {
-    min-width: 92px;
+    min-width: 100px;
   }
   .itemName {
     font-size: 12.5px;
-  }
-  .stackCard {
-    padding: 10px 14px;
-    gap: 8px;
-  }
-  .stackImgWrap {
-    width: 38px;
-    height: 38px;
   }
 }
