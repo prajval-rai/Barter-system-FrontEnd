@@ -569,7 +569,6 @@ export default function MarketplaceMap({ categories, selectedCategory, onSelectC
 
     fetch(`${PRODUCTS_API}?${params.toString()}`)
       .then((r) => {
-        if (r.status === 401) { window.location.href = "/login"; return; }
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.json();
       })

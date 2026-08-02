@@ -67,7 +67,7 @@ export default function ProductDetailClient({ productId }: { productId: string }
     setError(null);
     fetch(`/api/admin/products/${productId}`)
       .then((r) => {
-        if (r.status === 401) { window.location.href = "/login"; return null; }
+        if (r.status === 401) { window.location.href = "/"; return null; }
         if (r.status === 404) throw new Error("not_found");
         if (!r.ok) throw new Error("Failed to load");
         return r.json();
@@ -88,7 +88,6 @@ export default function ProductDetailClient({ productId }: { productId: string }
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),
       });
-      if (res.status === 401) { window.location.href = "/login"; return; }
       if (res.status === 403) { setError("You are not allowed to change status."); return; }
       if (!res.ok) throw new Error("Failed");
 

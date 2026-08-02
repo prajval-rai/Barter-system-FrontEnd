@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import styles from "./Exchangecard.module.css";
 
 // Loop/repeat style arrow — matches the reference icon
@@ -49,6 +50,7 @@ const CYCLE_MS = 3000;
 const FLASH_MS = 450;
 
 export default function ExchangeCard() {
+  const router = useRouter();
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [isFlashing, setIsFlashing] = useState<boolean>(false);
   const flashTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -70,6 +72,10 @@ export default function ExchangeCard() {
 
   const activePair = PAIRS[currentIndex];
 
+  const handleCardClick = () => {
+    router.push("/marketplace?view=map");
+  };
+
   return (
     <div className={styles.wrap}>
       <div className={styles.stage}>
@@ -80,7 +86,19 @@ export default function ExchangeCard() {
 
         {/* ── Card: every dimension is fixed. Nothing inside can ever change
             the card's width/height/padding — only image content swaps. ── */}
-        <div className={styles.card}>
+        <div
+          className={styles.card}
+          onClick={handleCardClick}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              handleCardClick();
+            }
+          }}
+          style={{ cursor: "pointer" }}
+        >
           <div className={styles.itemCol}>
             <div className={styles.imgSlot}>
               <div key={`give-${activePair.id}`} className={`${styles.itemImgWrap} ${styles.itemImgGive} ${styles.imgSwap}`}>

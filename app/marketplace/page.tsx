@@ -65,7 +65,6 @@ async function fetchInitialProducts(baseUrl: string): Promise<MarketplaceRespons
       cache: "no-store",
       headers: authHeaders,
     });
-    if (res.status === 401) redirect("/login");
     if (!res.ok)
       return { results: [], page: 1, page_size: 12, total: 0, has_next: false };
     return res.json();
@@ -81,7 +80,6 @@ async function fetchCategories(baseUrl: string): Promise<Category[]> {
       cache: "no-store",
       headers: authHeaders,
     });
-    if (res.status === 401) redirect("/login");
     if (!res.ok) return [];
     return res.json();
   } catch {

@@ -43,7 +43,7 @@ export default async function MyListingsPage() {
   const products = await fetchMyProducts();
 
   if (products === null) {
-    redirect('/login');
+    redirect('/');
   }
 
   return (

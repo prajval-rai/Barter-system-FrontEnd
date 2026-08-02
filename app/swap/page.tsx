@@ -49,7 +49,7 @@ export default async function DashboardPage() {
   const data = await fetchDashboardData();
 
   if (data === null) {
-    redirect('/login');
+    redirect('/');
   }
 
   return (

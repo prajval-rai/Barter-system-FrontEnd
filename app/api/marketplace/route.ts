@@ -2,7 +2,6 @@ import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
 const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL;
-console.log("000000000000000000",API_BASE)
 
 export async function GET(req: NextRequest) {
   try {

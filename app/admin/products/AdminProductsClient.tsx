@@ -72,7 +72,7 @@ export default function AdminProductsClient() {
     setError(null);
     fetch(`/api/admin/products?status=${status}`)
       .then((r) => {
-        if (r.status === 401) { window.location.href = "/login"; return null; }
+        if (r.status === 401) { window.location.href = "/"; return null; }
         if (!r.ok) throw new Error("Failed to load");
         return r.json();
       })
@@ -92,7 +92,7 @@ export default function AdminProductsClient() {
     setDetailLoading(true);
     fetch(`/api/admin/products/${id}`)
       .then((r) => {
-        if (r.status === 401) { window.location.href = "/login"; return null; }
+        if (r.status === 401) { window.location.href = "/"; return null; }
         if (!r.ok) throw new Error("Failed to load");
         return r.json();
       })
@@ -115,7 +115,6 @@ export default function AdminProductsClient() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),
       });
-      if (res.status === 401) { window.location.href = "/login"; return; }
       if (!res.ok) throw new Error("Failed");
 
       setDetail((d) => (d ? { ...d, status: newStatus } : d));

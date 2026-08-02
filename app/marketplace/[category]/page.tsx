@@ -15,7 +15,6 @@ async function getBaseUrl(): Promise<string> {
 async function fetchCategories(baseUrl: string): Promise<Category[]> {
   try {
     const res = await fetch(`${baseUrl}/api/categories`, { cache: "no-store" });
-    if (res.status === 401) redirect("/login");
     if (!res.ok) return [];
     return res.json();
   } catch {
@@ -32,7 +31,6 @@ async function fetchInitialProducts(
       `${baseUrl}/api/marketplace?page=1&page_size=12&sort=newest&category=${categoryId}`,
       { cache: "no-store" }
     );
-    if (res.status === 401) redirect("/login");
     if (!res.ok)
       return { results: [], page: 1, page_size: 12, total: 0, has_next: false };
     return res.json();
